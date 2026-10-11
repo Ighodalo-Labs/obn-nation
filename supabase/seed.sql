@@ -1,0 +1,4 @@
+-- Regions are seeded in migration 0001.
+-- First Global Admin: sign in once with the owner's phone (creates auth.users row), then run:
+--   insert into admins (id, phone, full_name, role)
+--   values ('<auth user id>', '+234XXXXXXXXXX', 'Name', 'global_admin');
