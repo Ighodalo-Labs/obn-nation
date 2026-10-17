@@ -1,0 +1,7 @@
+stateDiagram-v2
+  [*] --> draft: Seller creates the draft
+  draft --> pending_review: Submit with 1 to 6 photos
+  pending_review --> approved: One approval by the admin in charge
+  pending_review --> rejected: Rejection with a reason
+  rejected --> pending_review: Resubmit with a valid token, token burned
+  approved --> [*]

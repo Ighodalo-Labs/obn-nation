@@ -1,0 +1,41 @@
+sequenceDiagram
+  autonumber
+  actor AD as Admin
+  actor S as Seller
+  participant W as Web app
+  participant A as API route
+  participant DB as Postgres
+  participant T as Twilio WhatsApp
+
+  AD->>W: Taps Reject and writes the reason
+  W->>A: POST /api/listings/reject
+  A->>A: Make token (UUID), keep SHA-256 hash
+  A->>DB: reject_listing (actor, listing, reason, hash)
+  DB->>DB: Lock row, check admin, revoke older links, store hash, status = rejected
+  DB-->>A: Link expiry (30 days)
+  A->>T: Send utility template with the edit link
+  alt Delivered to Twilio
+    T-->>S: WhatsApp: Your listing needs changes + link
+    A-->>W: 200 notification sent
+  else Twilio failed
+    A-->>W: 200 notification failed
+    W-->>AD: Message not sent. Send new link button
+  end
+
+  S->>W: Opens /list/edit?token=UUID
+  W->>DB: get_listing_for_edit (hash)
+  alt Used, expired, revoked or unknown
+    DB-->>W: OB002, OB003, OB004 or OB001
+    W-->>S: Friendly message, no changes
+  else Valid
+    DB-->>W: Listing JSON
+    W-->>S: Pre-filled form and rejection reason. Link is not used up
+  end
+
+  S->>W: Fixes details, may add or remove photos, taps Resubmit
+  W->>A: POST /api/listings/resubmit
+  A->>DB: resubmit_listing (hash, fields)
+  DB->>DB: Lock token then listing. Update the same row. status = pending_review. Burn token. Audit
+  DB-->>A: listing_id
+  A-->>W: 200 pending_review
+  Note over S,DB: A second tap or a replay finds the token used (OB002) and changes nothing

@@ -1,0 +1,29 @@
+flowchart TD
+  A(["Listing becomes pending_review"]) --> B{"Valid referral code on the listing?"}
+
+  B -->|"Yes: active regional admin found"| C["Assigned to that admin. Region forced to the admin's region"]
+  B -->|"No, or code unknown, revoked or blacklisted"| D["Organic: region from the form. Nobody assigned"]
+
+  C --> C1["Visible to the assigned admin and the Global Admin only"]
+  D --> D1["Visible to every active admin of the region, seller details masked"]
+
+  C1 --> E{"Assigned admin decides"}
+  D1 --> F{"First admin to act"}
+
+  F -->|"Claim"| G["Claimer becomes admin in charge. Other admins stop seeing the listing"]
+  G --> E
+  F -->|"Approve"| H["Claim and approve in one step"]
+  F -->|"Reject with reason"| I["Claim and reject in one step"]
+
+  E -->|"Approve"| J["status = approved. One approval is enough"]
+  H --> J
+  E -->|"Reject with reason"| K["status = rejected. Go to flow 3"]
+  I --> K
+
+  J --> L["Joins the shared regional pool"]
+  L --> M["Every admin of the region sees it. Seller name and phone masked except for the admin in charge and the Global Admin"]
+
+  GA["Global Admin"] -.->|"can approve, reject or reassign at any point"| E
+  GA -.-> F
+
+  X["Two admins act at the same moment"] -.-> Y["Row lock: first action wins. The other sees: this listing was just handled by someone else"]

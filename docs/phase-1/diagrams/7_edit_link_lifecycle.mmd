@@ -1,0 +1,8 @@
+stateDiagram-v2
+  [*] --> live: Rejection creates the link
+  live --> used: Seller resubmits
+  live --> expired: 30 days pass
+  live --> revoked: Admin sends a new link
+  used --> [*]
+  expired --> [*]
+  revoked --> [*]

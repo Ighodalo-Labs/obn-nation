@@ -1,0 +1,29 @@
+flowchart TD
+  S0(["Signed-in seller opens /list/form"]) --> S1["Step 1: pick region and category"]
+  S1 -->|"ref cookie present"| S1a["Region is locked to the referring admin's region"]
+  S1 --> V1{"Step 1 complete?"}
+  S1a --> V1
+  V1 -->|"No"| S1
+  V1 -->|"Yes"| S2["Step 2: title, description, optional brand model size, age card, working card, price"]
+  S2 --> V2{"Step 2 valid?"}
+  V2 -->|"No: show field errors"| S2
+  V2 -->|"Yes"| S3["Step 3: add 1 to 6 photos and optionally 1 video"]
+  S3 --> P["Compress photos to WebP under 1 MB on the phone"]
+  S3 --> Q{"Video added?"}
+  Q -->|"No"| R
+  Q -->|"Yes"| Q1{"Longer than 60 seconds?"}
+  Q1 -->|"Yes"| Q2["Refuse: videos can be at most 60 seconds"] --> S3
+  Q1 -->|"No"| Q3["Load encoder, shrink to MP4 under 10 MB, show progress"]
+  Q3 -->|"Still too big or failed"| Q4["Show message, seller removes video or picks another"] --> S3
+  Q3 -->|"OK"| R
+  P --> R{"At least 1 photo OK?"}
+  R -->|"No"| S3
+  R -->|"Yes"| T["Tap Submit"]
+  T --> U["POST /api/listings/create with client_key: creates or finds the draft"]
+  U --> W["Upload files one at a time to the returned paths"]
+  W -->|"Network drops"| W1["Show Try again. Resume with the same client_key"] --> U
+  W -->|"All uploaded"| X["POST /api/listings/create with submit: true"]
+  X --> Y{"Daily limit reached?"}
+  Y -->|"Yes"| Y1["Show limit message"]
+  Y -->|"No"| Z["Status becomes pending_review. Trigger routes the listing"]
+  Z --> Z1(["Screen: Under review"])

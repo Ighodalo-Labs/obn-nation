@@ -1,0 +1,44 @@
+sequenceDiagram
+  autonumber
+  actor S as Seller
+  participant W as Web app
+  participant M as Edge middleware
+  participant A as API route
+  participant AU as Supabase Auth
+  participant H as OTP hook route
+  participant T as Twilio WhatsApp
+  participant DB as Postgres
+
+  S->>M: Opens /list?ref=CODE
+  M->>M: Check CODE shape, set obn_ref cookie (30 days)
+  M->>W: Serve /list
+  S->>W: Enters phone number
+  W->>A: POST /api/auth/otp/send
+  A->>DB: Is this phone blacklisted?
+  alt Blacklisted
+    A-->>W: 403 phone_blocked
+    W-->>S: This number cannot be used
+  else Allowed
+    A->>AU: signInWithOtp (phone)
+    AU->>H: Send SMS hook with the code
+    H->>T: Send approved OTP template
+    T-->>S: WhatsApp message with 6-digit code
+    A-->>W: 200 sent, resend after 60 seconds
+  end
+  S->>W: Types the code
+  W->>A: POST /api/auth/otp/verify
+  A->>AU: verifyOtp (phone, code)
+  alt Wrong or expired
+    AU-->>A: Error
+    A-->>W: 400 invalid_code or 410 code_expired
+  else Correct
+    AU->>DB: First time only: create auth user
+    DB->>DB: Trigger creates seller profile
+    AU-->>A: Session
+    A-->>W: 200 and session cookies, needs_name flag
+    opt needs_name is true
+      W->>A: PATCH /api/profile/name
+      A->>DB: Update own full_name
+    end
+    W-->>S: Opens /list/form
+  end

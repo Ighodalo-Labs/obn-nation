@@ -1,0 +1,35 @@
+flowchart LR
+  subgraph Browser["Browser (low to mid Android phones)"]
+    UI["Next.js client components"]
+    CMP["Compression: browser-image-compression, FFmpeg.wasm"]
+  end
+
+  subgraph Vercel["Vercel"]
+    MW["Edge middleware: ref cookie, route guard, security headers"]
+    RSC["App Router pages (server components)"]
+    API["Route handlers /api/* (serverless functions)"]
+    CRON["Scheduled route: purge stale drafts"]
+  end
+
+  subgraph Supabase["Supabase"]
+    AUTH["Auth: phone OTP, Send SMS hook"]
+    PG[("PostgreSQL 15: tables, RLS, triggers, functions, masking view")]
+    STG[("Storage: /photos and /videos, private")]
+  end
+
+  TW["Twilio WhatsApp API"]
+  WA["WhatsApp users"]
+  ZOHO["Zoho Mail (DNS: MX, SPF, DKIM)"]
+
+  UI --> MW --> RSC
+  UI --> API
+  CMP --> UI
+  UI -- "signed-in session, RLS applies" --> PG
+  UI -- "direct upload, own folder only" --> STG
+  RSC -- "user session" --> PG
+  API -- "user session (checks) and service role (server-only functions)" --> PG
+  API --> AUTH
+  AUTH -- "Send SMS hook (HTTPS, signed)" --> API
+  API -- "template messages" --> TW --> WA
+  CRON --> PG
+  ZOHO -. "DNS only" .- Vercel

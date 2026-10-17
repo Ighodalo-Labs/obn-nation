@@ -1,0 +1,27 @@
+flowchart TD
+  G(["Global Admin opens /admin/global"]) --> T{"Choose a tool"}
+
+  T -->|"Reassign a listing"| R1["Pick listing, pick another active admin of the same region or a Global Admin"]
+  R1 --> R2{"Reason of 5 or more characters?"}
+  R2 -->|"No"| R1
+  R2 -->|"Yes"| R3["reassign_listing: lock row, set admin in charge, write audit entry"]
+  R3 --> R4["Old admin now sees the listing masked. New admin sees the seller details"]
+
+  T -->|"Revoke an admin"| V1["Pick admin, enter reason"]
+  V1 --> V2["revoke_admin: is_active = false at once"]
+  V2 --> V3["Pending listings of that admin return to the open queue"]
+  V3 --> V4["Admin's next request returns nothing: Your access has ended"]
+  V4 --> V5{"Change of mind?"}
+  V5 -->|"Yes"| V6["reinstate_admin: access returns"]
+  V5 -->|"No"| V7["Stays revoked. Approved listings appear in Orphaned for reassignment"]
+
+  T -->|"Blacklist an admin"| B1["Pick admin, enter reason, type the admin's name to confirm"]
+  B1 --> B2["POST /api/admin/blacklist"]
+  B2 --> B3["blacklist_admin: is_blacklisted = true, is_active = false, pending listings released, audit entry"]
+  B3 --> B4["Server bans the Supabase Auth user so no new session can start"]
+  B4 --> B5["OTP send refuses this number. promote_to_admin refuses it. Profile cannot be deleted or un-blacklisted"]
+  B5 --> B6(["Permanent"])
+
+  T -->|"Override a review"| O1["Approve or reject any pending listing. Admin in charge does not change"]
+
+  V7 --> R1
