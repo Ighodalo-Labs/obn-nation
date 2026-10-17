@@ -105,3 +105,7 @@ These answer the open questions above and change some earlier rules. The Phase 1
 | Masking | Phone shown as `+234 ••• ••• ••36`, name as `A***`, to every admin who is not in charge |
 | Global Admin | Aghughu Omo-Odion Destiny, 08053466836 |
 | Brand | Red `#D32F2F`, green `#2E7D32`, blue `#1565C0`, dark background `#0A0A0A`. Tagline: OBN NATION — Connecting People |
+
+| WhatsApp sender | One OBN NATION number for all messages: +234 707 276 7227 (17 Oct 2026) |
+| Video | Optional, confirmed 17 Oct 2026 |
+| Contacts shared | Delta +234 814 715 2732; Ekiti +234 916 238 8282; OBN NATION +234 707 276 7227 |

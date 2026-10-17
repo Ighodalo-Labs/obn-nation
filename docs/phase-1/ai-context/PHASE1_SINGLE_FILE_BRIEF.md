@@ -378,6 +378,8 @@ The words "attributed" and "non-attributed" always describe the relationship bet
 | BR-9 | The Global Admin can override, reassign listings and permanently blacklist admins |
 | BR-10 | Seller sign-in is by WhatsApp OTP only. No passwords |
 
+**Contacts from the client (17 Oct 2026).** Delta: +234 814 715 2732. Ekiti: +234 916 238 8282. OBN NATION (main): +234 707 276 7227. Global Admin: Aghughu Omo-Odion Destiny, +234 805 346 6836. The client has not said which region the main number belongs to or which of these people are regional admins. Confirm before creating admin accounts (T11).
+
 ### 5.1 Defaults set by the build team (confirm during beta)
 
 These were not specified, so the build uses the safest simple choice. Each is a setting or a one-line change.
@@ -398,6 +400,8 @@ These were not specified, so the build uses the safest simple choice. Each is a 
 | DF-12 | Price is in naira, whole naira, from ₦1 to ₦1,000,000,000 | Sensible bounds |
 | DF-13 | Admins are added by the Global Admin using the admin's phone number and region. The admin then signs in with a WhatsApp code like everyone else | No second login system |
 | DF-14 | Content cannot change while a listing is under review or live | Prevents edits after approval |
+| DF-15 | Every WhatsApp message (sign-in code and rejection notice) is sent from one sender: the OBN NATION number +234 707 276 7227 (client, 17 Oct 2026) | One trusted sender. The number must be registered with Meta and Twilio for the API. If it is still in use on the normal WhatsApp app, the client must move it first (see section 9) |
+| DF-16 | Video is optional, 0 or 1 (client confirmed, 17 Oct 2026) | Cheap phones struggle with video |
 
 ## 6. Functional requirements
 
@@ -630,7 +634,8 @@ Build order inside M1 is in `docs/build-plan.md`: core pipeline first, Global Ad
 
 | Dependency or risk | Owner | Plan |
 |---|---|---|
-| Meta business verification and WhatsApp template approval (authentication and utility) | OBN NATION | Start immediately. Build against a stub sender meanwhile |
+| Meta business verification (pending, client confirmed 15 Oct) and WhatsApp template approval (authentication and utility) | OBN NATION | Start immediately. Build against a stub sender meanwhile |
+| The sender number +234 707 276 7227 is also used for normal chats by the client | OBN NATION | Confirm that number can be registered for the API. A number active on the WhatsApp app usually has to be removed from it first, or a new dedicated number used. Check with Twilio before go-live |
 | Domain control for DNS records | OBN NATION | Needed before the landing page and mail go live |
 | Transparent PNG or SVG of the logo | OBN NATION | The flat JPG on black is used until it arrives |
 | Cheap phones struggle with video | Developer | Optional video, 60-second cap, progress bar, early device test |
