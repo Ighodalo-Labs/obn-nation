@@ -11,7 +11,10 @@ Nothing started. Next task: T01 (see docs/phase-1/09_BUILD_PLAN_GOALS_AND_AGENT_
 - [ ] Meta business verification started (client)
 - [ ] WhatsApp templates approved (client)
 - [ ] Domain DNS access (client)
-- [ ] Logo file and About Us approval (client)
+- [x] Logo (JPG on black) and About Us text received from client, 17 Oct 2026
+- [ ] Transparent PNG or SVG logo (client)
+- [ ] Client answer on video: optional or required? (see Decisions log)
+- [ ] Contacts for the first regional admins (client shared 3 contacts, not yet in the repo)
 
 ## Tasks
 ### Week 1
@@ -42,7 +45,8 @@ Nothing started. Next task: T01 (see docs/phase-1/09_BUILD_PLAN_GOALS_AND_AGENT_
 - [ ] T21 Closed beta and gate measurement
 
 ## Decisions log
-(date, decision, why)
+- 2026-10-17 OPEN: client message says "Video shouldn't be optional" (answer 8). PRD, schema and the CTO master spec say video is optional (FM-4, BR-3). Docs unchanged until confirmed. If required: change BR-3, FM-4, QA tests, OpenAPI and `submit_listing` check.
+- 2026-10-17 About Us text replaced with the client's own text. Tagline now carries the three heart emojis.
 
 ## Blockers
 (none)

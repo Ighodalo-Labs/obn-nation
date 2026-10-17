@@ -39,7 +39,7 @@ A seller can sign in, submit a listing, get rejected, fix it and resubmit. An ad
 | KR4.1 | Meta business verification started in week 1 | OBN NATION |
 | KR4.2 | Both WhatsApp templates approved before week 3 | OBN NATION |
 | KR4.3 | Domain DNS access in hand before week 4 | OBN NATION |
-| KR4.4 | Logo file and About Us approval received before week 4 | OBN NATION |
+| KR4.4 | Transparent PNG or SVG logo received before week 4 (JPG and About Us text are already in) | OBN NATION |
 
 ---
 
@@ -105,7 +105,8 @@ An AI tool cannot do these. Each one needs you or the client.
 | Push the repository to GitHub | Before T02 CI | You (`bosspetite`) |
 | Meta verification and the two template approvals | T20 (stub is used before) | Client |
 | Domain DNS access | T16 | Client |
-| Logo file and About Us approval | T16 | Client |
+| Transparent PNG or SVG logo | T16 | Client |
+| Answer: is video optional or required? | T07 | Client, through you |
 | First Global Admin signs in once, then run `bootstrap_global_admin('+2348053466836')` | T11 | You |
 | Real-phone checks: WhatsApp delivery, compression, two admins at once | T19 | You |
 | Any change to a business rule in PRD section 5 | Any time | Client, through you |

@@ -99,7 +99,7 @@ A seller can sign in, submit a listing, get rejected, fix it and resubmit. An ad
 | KR4.1 | Meta business verification started in week 1 | OBN NATION |
 | KR4.2 | Both WhatsApp templates approved before week 3 | OBN NATION |
 | KR4.3 | Domain DNS access in hand before week 4 | OBN NATION |
-| KR4.4 | Logo file and About Us approval received before week 4 | OBN NATION |
+| KR4.4 | Transparent PNG or SVG logo received before week 4 (JPG and About Us text are already in) | OBN NATION |
 
 ---
 
@@ -165,7 +165,8 @@ An AI tool cannot do these. Each one needs you or the client.
 | Push the repository to GitHub | Before T02 CI | You (`bosspetite`) |
 | Meta verification and the two template approvals | T20 (stub is used before) | Client |
 | Domain DNS access | T16 | Client |
-| Logo file and About Us approval | T16 | Client |
+| Transparent PNG or SVG logo | T16 | Client |
+| Answer: is video optional or required? | T07 | Client, through you |
 | First Global Admin signs in once, then run `bootstrap_global_admin('+2348053466836')` | T11 | You |
 | Real-phone checks: WhatsApp delivery, compression, two admins at once | T19 | You |
 | Any change to a business rule in PRD section 5 | Any time | Client, through you |
@@ -293,10 +294,11 @@ Pricing engine, chatbot, public item feed, escrow and payments, logistics, Farm 
 
 | Item | Value |
 |---|---|
-| Name | OBN NATION |
-| Tagline | Connecting People |
-| Full lockup | OBN NATION — Connecting People |
-| Voice | Friendly, community-minded, plain words. Short sentences. No jargon on seller screens |
+| Name | OBN NATION (One Beta Nation) |
+| Tagline | Connecting People ❤️💚💙 |
+| Full lockup | OBN NATION — Connecting People ❤️💚💙 |
+| Voice | Professional, friendly, approachable, trustworthy and community-oriented. Clear, human and persuasive without exaggeration. Short sentences. No jargon on seller screens |
+| Colour meaning | Red: action, urgency and speed. Green: growth, financial freedom and agricultural roots. Blue: trust, verification and community stability. Use all three consistently |
 | Language | English only in Phase 1 |
 
 ### 2.2 Colour tokens
@@ -333,20 +335,20 @@ Usage rules:
 | Layout | Single column. Maximum content width 480px, centred on larger screens |
 | Touch targets | At least 48 by 48px |
 | Spacing | 8px grid. 16px screen gutter |
-| Logo | The header shows the client's logo with the tagline beneath. If the logo file is not yet supplied, the header shows the text "OBN NATION" in bold white with "Connecting People" beneath in muted text |
+| Logo | Received 17 Oct 2026: `apps/web/public/brand/obn-logo-on-black.jpg` (flat JPG on black). The header shows the logo with the tagline beneath. A transparent PNG or SVG is still requested. The logo's own colours are darker than the screen tokens above; the tokens are tuned for contrast on dark. Fonts: the client asks for a clean, modern font that suits the logo. Phase 1 keeps the system font stack for speed on slow networks; revisit in Phase 2 |
 | Motion | Short fades only. Respects "reduce motion" |
 
 ## 3. Gateway "About Us" copy
 
-This is the complete text for the landing page card.
+This is the client's own text (message B4, 15 Oct 2026). Use it word for word.
 
 > **About OBN NATION**
 >
-> OBN NATION is a community marketplace for good things that still have life in them. Almost every home has a fridge, a TV, a phone or a generator that someone else would be glad to use. We help you pass it on, and we help the next person find it.
+> OBN NATION (One Beta Nation) is a Nigerian community-driven decluttering and asset-liquidation marketplace and advertising company. We connect people with products, services, opportunities and trusted transactions by helping individuals and businesses turn unused assets into value.
 >
-> We know buying second-hand can feel risky. So every listing on OBN NATION is checked by a real person from your region before it goes live. You list once, our regional team reviews it, and if something needs fixing we send you a link on WhatsApp to correct it. There are no passwords and no long forms.
+> Through our community networks, advertising channels and associate network, we help sellers reach potential buyers while making quality, affordable items more accessible to our communities. Our model combines community commerce, marketing and trust-focused transaction support.
 >
-> We are starting in Port Harcourt, Delta and Ekiti, with more regions to come. OBN NATION is built on trust and on a simple belief: when people connect, everybody wins. Ready to declutter? Tap the button and list your first item in a few minutes.
+> We believe that trust is an asset, reputation is capital, and integrity is a long-term business strategy. Our mission is to make buying, selling and decluttering easier by connecting people and creating value within our communities.
 
 Button label: **List an item**.
 
@@ -630,7 +632,7 @@ Build order inside M1 is in `docs/build-plan.md`: core pipeline first, Global Ad
 |---|---|---|
 | Meta business verification and WhatsApp template approval (authentication and utility) | OBN NATION | Start immediately. Build against a stub sender meanwhile |
 | Domain control for DNS records | OBN NATION | Needed before the landing page and mail go live |
-| Logo file | OBN NATION | Text wordmark is used until it arrives |
+| Transparent PNG or SVG of the logo | OBN NATION | The flat JPG on black is used until it arrives |
 | Cheap phones struggle with video | Developer | Optional video, 60-second cap, progress bar, early device test |
 | Twilio template costs rise with volume | Project Lead | Monthly spend report. Alert at 80% of the budget line |
 | Admin churn | Global Admin | Revoke and blacklist tools, reassign tool, audit log |

@@ -88,21 +88,16 @@ Legend: `░` is the dimmed page behind a modal. `●` filled step or selected o
 │                                      │
 │ ┌─ About OBN NATION ─────────────┐   │
 │ │                                │   │
-│ │ OBN NATION is a community      │   │
-│ │ marketplace for good things    │   │
-│ │ that still have life in them.  │   │
-│ │ Almost every home has a fridge,│   │
-│ │ a TV, a phone or a generator   │   │
-│ │ someone else would be glad to  │   │
-│ │ use.                           │   │
+│ │ OBN NATION (One Beta Nation)   │   │
+│ │ is a Nigerian community-driven │   │
+│ │ decluttering and asset-        │   │
+│ │ liquidation marketplace. ...   │   │
 │ │                                │   │
-│ │ Every listing is checked by a  │   │
-│ │ real person from your region   │   │
-│ │ before it goes live. ...       │   │
+│ │ Through our community networks │   │
+│ │ we help sellers reach buyers.  │   │
+│ │ ...                            │   │
 │ │                                │   │
-│ │ We are starting in Port        │   │
-│ │ Harcourt, Delta and Ekiti. ... │   │
-│ │ Ready to declutter?            │   │
+│ │ Trust is an asset. ...         │   │
 │ │                                │   │
 │ └────────────────────────────────┘   │
 │                                      │
@@ -442,7 +437,7 @@ Legend: `░` is the dimmed page behind a modal. `●` filled step or selected o
 
 | Screen | Notes |
 |---|---|
-| 1 Landing | Header and card are static HTML. The red button is sticky at the bottom. The full three-paragraph copy is in section 3 of the PRD. Only one link to the product, no menu |
+| 1 Landing | Header and card are static HTML. The red button is sticky at the bottom. The full three-paragraph copy (the client's own text) is in section 3 of the PRD. Only one link to the product, no menu |
 | 2 OTP modal | The phone field accepts `0803…`, `803…` and `+234803…`. Resend unlocks after 60 seconds. After 5 wrong codes the code is void. Name step shows only on first sign-in |
 | 3 Step 1 | Region buttons are full-width on narrow phones. With a referral link the region is selected and locked, and a note says the link set it. Category tiles are 48px or taller icon buttons |
 | 4 Step 2 | Brand, model and size are marked optional and can be skipped. Age and working status use cards with icons so a seller can pick without typing. Price formats with thousands separators as you type |
