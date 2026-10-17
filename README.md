@@ -5,18 +5,25 @@ Phase 1: the Listing Cloud (WhatsApp OTP sign-in, regional admin review, masked 
 
 ## Layout
 ```
-apps/web/            Next.js app: landing page, listing form, admin dashboards (to build)
-supabase/migrations/ Database schema and security rules
-supabase/tests/      SQL tests for the rules
-docs/                PRD, database guide, build plan, notes from the client documents
+apps/web/            Next.js app (to build). lib/ already holds the compression and server helper modules
+supabase/migrations/ Database schema and security rules (tested)
+supabase/tests/      SQL tests: 92 checks, run with the steps in docs/phase-1/03
+docs/phase-1/        The eight Phase 1 engineering documents (start here)
 docs/source/         Original documents from OBN NATION (blueprint, cost proposals, CTO sign-off)
+docs/archive/        Earlier v0.1 PRD and database notes, superseded
 ```
 
 ## Start here
-- `docs/PRD-phase1.md`: what we are building
-- `docs/database.md`: tables, who sees what, how to run tests
+- `docs/phase-1/01_SYSTEM_ARCHITECTURE.md`: parts, security, phases 1 to 6
+- `docs/phase-1/02_PRD_PHASE_1.md`: what we are building, brand, every screen
+- `docs/phase-1/03_ERD_AND_DATABASE_SCHEMA.md`: tables, rules, the full SQL
+- `docs/phase-1/04_USER_AND_ADMIN_FLOWCHARTS.md`: flows and state machines
+- `docs/phase-1/05_UI_WIREFRAMES_AND_IA.md`: site map and phone wireframes
+- `docs/phase-1/06_RACI_AND_RBAC_MATRIX.md`: who can do what, who does what
+- `docs/phase-1/07_API_CONTRACTS_AND_INTEGRATIONS.md`: API, Twilio, compression code
+- `docs/phase-1/08_QA_TEST_CASES_AND_ACCEPTANCE.md`: tests and the Phase 1 gate
 - `docs/build-plan.md`: week-by-week order of work
-- `docs/source-notes.md`: everything from the client documents, with open questions
+- `docs/source-notes.md`: everything from the client documents
 
 ## Stack
 Next.js on Vercel · Supabase (Postgres, Auth, Storage) · Twilio WhatsApp · browser-side compression.

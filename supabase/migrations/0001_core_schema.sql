@@ -1,529 +1,649 @@
--- OBN NATION · Phase 1 · core schema
--- Target: Supabase (Postgres 15+). See docs/PRD-phase1.md and docs/database.md.
--- Rules enforced here, in the database:
---   * region routing, referral assignment
---   * 1-or-2 approval consensus
---   * single-use edit tokens (double-tap safe)
---   * seller contact masking (row-level security)
---   * global admin override, revoke, blacklist, audit log
+-- OBN NATION Phase 1: core schema.
+-- Matches the client decisions of Oct 2026 (profiles, listings, listing_tokens,
+-- regional_listings_feed masking view, single-approval review, 30-day edit token).
+-- Target: Supabase Postgres 15. Tested on Postgres 16 with supabase/tests/.
 
--- ───────────────────────── enums ─────────────────────────
-create type admin_role        as enum ('regional_admin', 'global_admin');
-create type admin_status      as enum ('active', 'revoked', 'blacklisted');
-create type listing_status    as enum ('pending', 'approved', 'rejected');
-create type media_kind        as enum ('photo', 'video');
-create type item_age          as enum ('new_sealed', 'new_open_box', 'premium_used', 'neatly_used', 'fairly_used');
-create type functional_status as enum ('working_perfectly', 'minor_issues', 'not_working');
-create type review_decision   as enum ('approve', 'reject');
+-- ============================================================ ENUMS
+create type public.user_role      as enum ('seller', 'regional_admin', 'global_admin');
+create type public.region_type    as enum ('port_harcourt', 'delta', 'ekiti');
+create type public.listing_status as enum ('draft', 'pending_review', 'rejected', 'approved');
+create type public.condition_age  as enum ('new_sealed', 'new_open_box', 'premium_used', 'neatly_used', 'fairly_used');
+create type public.condition_work as enum ('working_perfectly', 'minor_issues', 'not_working');
+create type public.item_category  as enum ('phones', 'computers', 'tvs', 'fridges', 'generators', 'kitchen', 'furniture', 'other');
 
--- ───────────────────────── tables ─────────────────────────
-create table regions (
-  id    smallint generated always as identity primary key,
-  slug  text unique not null,
-  name  text not null
-);
-insert into regions (slug, name) values
-  ('port-harcourt', 'Port Harcourt'),
-  ('delta',         'Delta'),
-  ('ekiti',         'Ekiti');
-
--- Sellers sign in with a WhatsApp OTP (Supabase Auth, phone). No password.
-create table sellers (
-  id         uuid primary key references auth.users (id) on delete cascade,
-  phone      text unique not null check (phone ~ '^\+[1-9][0-9]{7,14}$'),
-  full_name  text,
-  created_at timestamptz not null default now()
+-- ============================================================ TABLES
+create table public.profiles (
+  id             uuid primary key references auth.users (id) on delete cascade,
+  role           public.user_role not null default 'seller',
+  full_name      text not null default '' check (char_length(full_name) <= 80),
+  phone          text not null unique check (phone ~ '^\+[1-9][0-9]{7,14}$'),
+  region         public.region_type,
+  referral_code  text unique check (referral_code ~ '^[a-f0-9]{8}$'),
+  is_active      boolean not null default true,
+  is_blacklisted boolean not null default false,
+  revoked_at     timestamptz,
+  revoked_by     uuid references public.profiles (id),
+  blacklisted_at timestamptz,
+  blacklisted_by uuid references public.profiles (id),
+  status_reason  text check (status_reason is null or char_length(status_reason) <= 500),
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now(),
+  constraint regional_admin_has_region check ((role = 'regional_admin') = (region is not null)),
+  constraint referral_only_regional_admin check (role = 'regional_admin' or referral_code is null),
+  constraint blacklist_implies_inactive check (not is_blacklisted or not is_active)
 );
 
-create table admins (
-  id                uuid primary key references auth.users (id) on delete cascade,
-  phone             text unique not null check (phone ~ '^\+[1-9][0-9]{7,14}$'),
-  full_name         text not null,
-  role              admin_role   not null default 'regional_admin',
-  region_id         smallint references regions (id),
-  status            admin_status not null default 'active',
-  referral_code     text unique not null
-                    default substr(md5(random()::text || clock_timestamp()::text), 1, 8),
-  status_reason     text,
-  status_changed_at timestamptz,
-  status_changed_by uuid references admins (id),
-  created_at        timestamptz not null default now(),
-  check (role = 'global_admin' or region_id is not null)
-);
-create index admins_region_idx on admins (region_id) where status = 'active';
-
--- Permanent block list. A phone in here can never become an admin again.
-create table blacklist (
-  phone          text primary key,
-  former_admin   uuid references admins (id),
-  reason         text not null,
-  blacklisted_by uuid references admins (id),
-  created_at     timestamptz not null default now()
-);
-
-create table listings (
+create table public.listings (
   id                uuid primary key default gen_random_uuid(),
-  seller_id         uuid not null references sellers (id),
-  client_key        uuid not null,                       -- idempotency key from the form
-  region_id         smallint not null references regions (id),
-  admin_in_charge   uuid references admins (id),         -- who owns sales + sees contacts
-  referral_code_used text,
-  category          text not null,
-  title             text not null check (char_length(title) between 3 and 120),
-  description       text check (char_length(description) <= 2000),
-  item_age          item_age not null,
-  functional_status functional_status not null,
-  price_ngn         numeric(14,2) not null check (price_ngn > 0),
-  status            listing_status not null default 'pending',
-  rejection_reason  text,
-  revision          int not null default 1,
-  submitted_at      timestamptz not null default now(),
+  client_key        uuid not null,
+  seller_id         uuid not null references public.profiles (id) on delete restrict,
+  ref_code          text,
+  assigned_admin_id uuid references public.profiles (id) on delete restrict,
+  region            public.region_type not null,
+  category          public.item_category not null,
+  title             text not null check (char_length(title) between 3 and 80),
+  description       text not null check (char_length(description) between 10 and 1000),
+  price_ngn         numeric(14, 2) not null check (price_ngn > 0 and price_ngn <= 1000000000),
+  condition_age     public.condition_age not null,
+  condition_work    public.condition_work not null,
+  brand             text check (brand is null or char_length(brand) between 1 and 60),
+  model             text check (model is null or char_length(model) between 1 and 60),
+  size              text check (size is null or char_length(size) between 1 and 60),
+  photo_urls        text[] not null default '{}',   -- storage object paths in bucket "photos"
+  video_url         text,                            -- storage object path in bucket "videos"; optional
+  status            public.listing_status not null default 'draft',
+  rejection_reason  text check (rejection_reason is null or char_length(rejection_reason) between 5 and 500),
+  claimed_at        timestamptz,
+  submitted_at      timestamptz,
   approved_at       timestamptz,
+  approved_by       uuid references public.profiles (id),
+  rejected_at       timestamptz,
+  rejected_by       uuid references public.profiles (id),
+  resubmit_count    integer not null default 0 check (resubmit_count >= 0),
   created_at        timestamptz not null default now(),
   updated_at        timestamptz not null default now(),
-  unique (seller_id, client_key)
-);
-create index listings_region_status_idx on listings (region_id, status);
-create index listings_in_charge_idx     on listings (admin_in_charge);
-
--- Seller identity lives apart from the listing so it can be locked down.
-create table listing_contacts (
-  listing_id   uuid primary key references listings (id) on delete cascade,
-  seller_name  text not null,
-  seller_phone text not null
+  constraint listings_idempotency unique (seller_id, client_key),
+  constraint photos_max_six check (cardinality(photo_urls) <= 6),
+  constraint submitted_has_photos check (status = 'draft' or cardinality(photo_urls) between 1 and 6),
+  constraint rejected_has_reason check (status <> 'rejected' or rejection_reason is not null),
+  constraint approved_has_approver check (status <> 'approved' or (approved_by is not null and approved_at is not null))
 );
 
-create table listing_media (
-  id           uuid primary key default gen_random_uuid(),
-  listing_id   uuid not null references listings (id) on delete cascade,
-  kind         media_kind not null,
-  storage_path text not null,
-  size_bytes   bigint not null check (size_bytes between 1 and 10485760),  -- under 10MB
-  position     smallint not null default 0,
-  created_at   timestamptz not null default now(),
-  unique (listing_id, position)
-);
-
-create table listing_decisions (
+create table public.listing_tokens (
   id         uuid primary key default gen_random_uuid(),
-  listing_id uuid not null references listings (id) on delete cascade,
-  admin_id   uuid not null references admins (id),
-  revision   int  not null,
-  decision   review_decision not null,
-  reason     text,
+  listing_id uuid not null references public.listings (id) on delete cascade,
+  token_hash text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),   -- SHA-256 of the UUID in the link
+  created_by uuid references public.profiles (id),
   created_at timestamptz not null default now(),
-  unique (listing_id, admin_id, revision),
-  check (decision = 'approve' or coalesce(char_length(reason), 0) > 0)
-);
-
--- Edit links: raw token is only ever in the WhatsApp message. We store its hash.
-create table edit_tokens (
-  id         uuid primary key default gen_random_uuid(),
-  listing_id uuid not null references listings (id) on delete cascade,
-  revision   int  not null,
-  token_hash text unique not null,
+  expires_at timestamptz not null default now() + interval '30 days',
   used_at    timestamptz,
-  created_at timestamptz not null default now()
+  revoked_at timestamptz
 );
-create unique index edit_tokens_one_open_per_listing on edit_tokens (listing_id) where used_at is null;
+create unique index listing_tokens_one_live_per_listing
+  on public.listing_tokens (listing_id) where used_at is null and revoked_at is null;
 
--- Outbox for WhatsApp templates. A worker sends these with the service role.
-create table notifications (
-  id                  uuid primary key default gen_random_uuid(),
-  listing_id          uuid references listings (id) on delete set null,
-  to_phone            text not null,
-  template            text not null,
-  payload             jsonb not null default '{}',   -- worker clears the token after sending
-  status              text not null default 'queued' check (status in ('queued', 'sent', 'failed')),
-  attempts            int  not null default 0,
-  provider_message_id text,
-  created_at          timestamptz not null default now(),
-  sent_at             timestamptz
-);
-create index notifications_queue_idx on notifications (created_at) where status = 'queued';
-
-create table audit_log (
+create table public.audit_log (
   id         bigint generated always as identity primary key,
-  actor_id   uuid,
+  actor_id   uuid references public.profiles (id),
   action     text not null,
-  entity     text not null,
-  entity_id  text,
-  meta       jsonb not null default '{}',
+  listing_id uuid references public.listings (id) on delete set null,
+  profile_id uuid references public.profiles (id) on delete set null,
+  detail     jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 
--- ───────────────────────── helper functions ─────────────────────────
--- security definer so they can read admins without tripping RLS on admins itself.
-create function is_active_admin() returns boolean
-language sql stable security definer set search_path = public as $$
+-- ============================================================ INDEXES
+create index listings_region_status_idx   on public.listings (region, status, created_at desc);
+create index listings_admin_status_idx    on public.listings (assigned_admin_id, status) where assigned_admin_id is not null;
+create index listings_seller_idx          on public.listings (seller_id, created_at desc);
+create index listings_photo_urls_gin      on public.listings using gin (photo_urls);
+create index listings_video_url_idx       on public.listings (video_url) where video_url is not null;
+create index profiles_admin_region_idx    on public.profiles (role, region) where role = 'regional_admin';
+create index listing_tokens_listing_idx   on public.listing_tokens (listing_id);
+create index audit_log_listing_idx        on public.audit_log (listing_id, created_at desc);
+create index audit_log_actor_idx          on public.audit_log (actor_id, created_at desc);
+
+-- ============================================================ HELPER FUNCTIONS
+-- All helpers are SECURITY DEFINER so policies on profiles never recurse into themselves.
+create function public.is_usable() returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.profiles p
+                 where p.id = auth.uid() and p.is_active and not p.is_blacklisted)
+$$;
+
+create function public.my_role() returns public.user_role
+language sql stable security definer set search_path = '' as $$
+  select p.role from public.profiles p
+  where p.id = auth.uid() and p.is_active and not p.is_blacklisted
+$$;
+
+create function public.my_region() returns public.region_type
+language sql stable security definer set search_path = '' as $$
+  select p.region from public.profiles p
+  where p.id = auth.uid() and p.is_active and not p.is_blacklisted
+$$;
+
+create function public.is_global_admin() returns boolean
+language sql stable security definer set search_path = '' as $$
+  select coalesce((select p.role = 'global_admin' from public.profiles p
+                   where p.id = auth.uid() and p.is_active and not p.is_blacklisted), false)
+$$;
+
+create function public.is_in_charge_of_seller(p_seller uuid) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select exists (select 1 from public.listings l
+                 where l.seller_id = p_seller and l.assigned_admin_id = auth.uid()
+                   and l.status <> 'draft')
+     and public.my_role() in ('regional_admin', 'global_admin')
+$$;
+
+create function public._audit(p_actor uuid, p_action text, p_listing uuid, p_profile uuid, p_detail jsonb default '{}'::jsonb)
+returns void language sql security definer set search_path = '' as $$
+  insert into public.audit_log (actor_id, action, listing_id, profile_id, detail)
+  values (p_actor, p_action, p_listing, p_profile, coalesce(p_detail, '{}'::jsonb))
+$$;
+
+-- May this person review this listing? Global admins always. Regional admins only in their
+-- own region, and only if the listing is unassigned or assigned to them.
+create function public._reviewer_ok(p_actor uuid, p_region public.region_type, p_assigned uuid)
+returns boolean language sql stable security definer set search_path = '' as $$
   select exists (
-    select 1 from admins a
-    where a.id = auth.uid() and a.status = 'active'
-      and not exists (select 1 from blacklist b where b.phone = a.phone)
-  );
+    select 1 from public.profiles p
+    where p.id = p_actor and p.is_active and not p.is_blacklisted
+      and (p.role = 'global_admin'
+           or (p.role = 'regional_admin' and p.region = p_region
+               and (p_assigned is null or p_assigned = p.id))))
 $$;
 
-create function is_global_admin() returns boolean
-language sql stable security definer set search_path = public as $$
-  select coalesce((select a.role = 'global_admin' from admins a
-                   where a.id = auth.uid() and a.status = 'active'
-                     and not exists (select 1 from blacklist b where b.phone = a.phone)), false);
-$$;
+create function public.set_updated_at() returns trigger language plpgsql as $$
+begin new.updated_at := now(); return new; end $$;
 
-create function my_region() returns smallint
-language sql stable security definer set search_path = public as $$
-  select a.region_id from admins a where a.id = auth.uid() and a.status = 'active';
-$$;
-
-create function is_admin_in_charge(p_listing uuid) returns boolean
-language sql stable security definer set search_path = public as $$
-  select is_active_admin()
-     and exists (select 1 from listings l where l.id = p_listing and l.admin_in_charge = auth.uid());
-$$;
-
-create function is_phone_blacklisted(p_phone text) returns boolean
-language sql stable security definer set search_path = public as $$
-  select exists (select 1 from blacklist where phone = p_phone);
-$$;
-
--- 2 or fewer active regional admins -> 1 approval. 3 or more -> 2 approvals.
-create function approvals_required(p_region smallint) returns int
-language sql stable security definer set search_path = public as $$
-  select case when count(*) <= 2 then 1 else 2 end
-  from admins
-  where region_id = p_region and role = 'regional_admin' and status = 'active';
-$$;
-
-create function log_audit(p_action text, p_entity text, p_entity_id text, p_meta jsonb default '{}')
-returns void language sql security definer set search_path = public as $$
-  insert into audit_log (actor_id, action, entity, entity_id, meta)
-  values (auth.uid(), p_action, p_entity, p_entity_id, p_meta);
-$$;
-
--- ───────────────────────── triggers ─────────────────────────
--- A blacklisted phone can never be added as an admin.
-create function trg_admin_block_blacklisted() returns trigger
-language plpgsql as $$
+-- ============================================================ TRIGGERS
+-- New auth user (first verified WhatsApp OTP) -> seller profile. Phone is unique, so a
+-- blacklisted phone can never get a second account.
+create function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = '' as $$
 begin
-  if exists (select 1 from blacklist where phone = new.phone) then
-    raise exception 'phone_blacklisted' using errcode = 'P0001';
+  if new.phone is null or btrim(new.phone) = '' then
+    raise exception 'phone_required' using errcode = '23514';
+  end if;
+  insert into public.profiles (id, phone)
+  values (new.id, '+' || regexp_replace(btrim(new.phone), '^\+', ''));
+  return new;
+end $$;
+create trigger on_auth_user_created after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+create function public.profiles_guard() returns trigger language plpgsql as $$
+begin
+  if tg_op = 'DELETE' then
+    if old.is_blacklisted then
+      raise exception 'blacklisted_profile_cannot_be_deleted' using errcode = '55006';
+    end if;
+    return old;
+  end if;
+  if old.is_blacklisted and not new.is_blacklisted then
+    raise exception 'blacklist_is_permanent' using errcode = '55006';
+  end if;
+  if new.phone <> old.phone or new.id <> old.id then
+    raise exception 'immutable_field' using errcode = '23514';
   end if;
   return new;
 end $$;
-create trigger admins_block_blacklisted before insert on admins
-  for each row execute function trg_admin_block_blacklisted();
+create trigger profiles_guard_upd before update on public.profiles
+  for each row execute function public.profiles_guard();
+create trigger profiles_guard_del before delete on public.profiles
+  for each row execute function public.profiles_guard();
+create trigger profiles_touch before update on public.profiles
+  for each row execute function public.set_updated_at();
 
--- Validate a review decision and stamp the current revision.
-create function trg_decision_validate() returns trigger
-language plpgsql security definer set search_path = public as $$
-declare l listings; a admins;
+-- Media paths must live inside <seller_id>/<listing_id>/ so nobody can point at another seller's files.
+create function public._media_paths_ok(p_seller uuid, p_listing uuid, p_photos text[], p_video text)
+returns boolean language sql immutable as $$
+  select not exists (select 1 from unnest(p_photos) u
+                     where u not like (p_seller::text || '/' || p_listing::text || '/%'))
+     and (p_video is null or p_video like (p_seller::text || '/' || p_listing::text || '/%'))
+$$;
+
+create function public.listings_before_insert() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare v_admin public.profiles; v_count integer; v_name text;
 begin
-  select * into l from listings where id = new.listing_id for update;
-  if not found then raise exception 'listing_not_found' using errcode = 'P0001'; end if;
-  select * into a from admins where id = new.admin_id;
-  if not found or a.status <> 'active' then raise exception 'admin_not_active' using errcode = 'P0001'; end if;
-  if a.role = 'regional_admin' and a.region_id is distinct from l.region_id then
-    raise exception 'wrong_region' using errcode = 'P0001';
-  end if;
-  if l.status <> 'pending' then raise exception 'listing_not_pending' using errcode = 'P0001'; end if;
-  new.revision := l.revision;
-  return new;
-end $$;
-create trigger decisions_validate before insert on listing_decisions
-  for each row execute function trg_decision_validate();
-
--- Issue a single-use edit token and queue the WhatsApp rejection template.
-create function issue_edit_token_and_notify(p_listing uuid) returns void
-language plpgsql security definer set search_path = public as $$
-declare l listings; raw text; c listing_contacts;
-begin
-  select * into l from listings where id = p_listing;
-  select * into c from listing_contacts where listing_id = p_listing;
-  raw := replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '');
-  insert into edit_tokens (listing_id, revision, token_hash)
-  values (p_listing, l.revision, encode(sha256(convert_to(raw, 'utf8')), 'hex'));
-  insert into notifications (listing_id, to_phone, template, payload)
-  values (p_listing, c.seller_phone, 'listing_rejected',
-          jsonb_build_object('token', raw, 'reason', l.rejection_reason, 'title', l.title));
-end $$;
-
--- Apply a decision: reject, or approve once enough independent approvals exist.
-create function trg_decision_apply() returns trigger
-language plpgsql security definer set search_path = public as $$
-declare l listings; a admins; n int; need int;
-begin
-  select * into l from listings where id = new.listing_id;
-  select * into a from admins   where id = new.admin_id;
-
-  if new.decision = 'reject' then
-    update listings set status = 'rejected', rejection_reason = new.reason, updated_at = now()
-     where id = l.id;
-    perform issue_edit_token_and_notify(l.id);
-    return null;
-  end if;
-
-  -- first regional admin to approve becomes admin in charge (if nobody is yet)
-  if a.role = 'regional_admin' and l.admin_in_charge is null then
-    update listings set admin_in_charge = a.id where id = l.id;
-  end if;
-
-  select count(*) into n from listing_decisions
-   where listing_id = l.id and revision = l.revision and decision = 'approve';
-  -- a global admin's approval is an override and is enough on its own
-  need := case when a.role = 'global_admin' then 1 else approvals_required(l.region_id) end;
-
-  if n >= need then
-    update listings set status = 'approved', approved_at = now(), updated_at = now() where id = l.id;
-  end if;
-  return null;
-end $$;
-create trigger decisions_apply after insert on listing_decisions
-  for each row execute function trg_decision_apply();
-
--- ───────────────────────── seller RPCs ─────────────────────────
--- Create a listing. Safe to call twice with the same p_client_key (double-tap).
-create function create_listing(
-  p_client_key        uuid,
-  p_region_id         smallint,
-  p_ref               text,
-  p_seller_name       text,
-  p_category          text,
-  p_title             text,
-  p_description       text,
-  p_item_age          item_age,
-  p_functional_status functional_status,
-  p_price_ngn         numeric,
-  p_media             jsonb default '[]'
-) returns uuid
-language plpgsql security definer set search_path = public as $$
-declare
-  uid uuid := auth.uid();
-  ph text; lid uuid; adm admins; in_charge uuid; m jsonb; i int := 0;
-begin
-  if uid is null then raise exception 'not_signed_in' using errcode = 'P0001'; end if;
-
-  select '+' || regexp_replace(u.phone, '[^0-9]', '', 'g') into ph from auth.users u where u.id = uid;
-  if ph is null or ph = '+' then raise exception 'no_verified_phone' using errcode = 'P0001'; end if;
-
-  insert into sellers (id, phone, full_name) values (uid, ph, p_seller_name)
-  on conflict (id) do update set full_name = coalesce(excluded.full_name, sellers.full_name);
-
-  -- already created with this key? return it (no duplicate).
-  select id into lid from listings where seller_id = uid and client_key = p_client_key;
-  if lid is not null then return lid; end if;
-
-  if not exists (select 1 from regions where id = p_region_id) then
-    raise exception 'unknown_region' using errcode = 'P0001';
-  end if;
-
-  -- referral: valid + active admin -> assigned. Anything else -> general routing.
-  if p_ref is not null then
-    select * into adm from admins
-     where referral_code = p_ref and status = 'active'
-       and not exists (select 1 from blacklist b where b.phone = admins.phone);
-    if found then
-      if adm.region_id is not null and adm.region_id <> p_region_id then
-        raise exception 'referral_region_mismatch' using errcode = 'P0001';
-      end if;
-      in_charge := adm.id;
+  -- Daily limit (assumed default: 10 new listings per seller per 24h). A retry of the same client_key is not counted.
+  if not exists (select 1 from public.listings where seller_id = new.seller_id and client_key = new.client_key) then
+    select count(*) into v_count from public.listings
+    where seller_id = new.seller_id and created_at > now() - interval '24 hours';
+    if v_count >= 10 then
+      raise exception 'daily_listing_limit' using errcode = '54000';
     end if;
   end if;
 
-  insert into listings (seller_id, client_key, region_id, admin_in_charge, referral_code_used,
-                        category, title, description, item_age, functional_status, price_ngn)
-  values (uid, p_client_key, p_region_id, in_charge, p_ref,
-          p_category, p_title, p_description, p_item_age, p_functional_status, p_price_ngn)
-  returning id into lid;
+  -- Routing is decided here, never by the client.
+  new.assigned_admin_id := null; new.claimed_at := null;
+  new.approved_at := null; new.approved_by := null;
+  new.rejected_at := null; new.rejected_by := null;
+  new.rejection_reason := null; new.resubmit_count := 0; new.submitted_at := null;
 
-  insert into listing_contacts (listing_id, seller_name, seller_phone)
-  values (lid, coalesce(p_seller_name, 'Seller'), ph);
+  if new.ref_code is not null then
+    new.ref_code := lower(btrim(new.ref_code));
+    select * into v_admin from public.profiles
+    where referral_code = new.ref_code and role = 'regional_admin' and is_active and not is_blacklisted;
+    if found then
+      new.assigned_admin_id := v_admin.id;
+      new.region := v_admin.region;          -- a referral listing always belongs to the admin's region
+      new.claimed_at := now();
+    end if;
+  end if;
 
-  for m in select * from jsonb_array_elements(coalesce(p_media, '[]')) loop
-    insert into listing_media (listing_id, kind, storage_path, size_bytes, position)
-    values (lid, (m->>'kind')::media_kind, m->>'storage_path', (m->>'size_bytes')::bigint, i);
-    i := i + 1;
-  end loop;
+  if not public._media_paths_ok(new.seller_id, new.id, new.photo_urls, new.video_url) then
+    raise exception 'invalid_media_path' using errcode = '23514';
+  end if;
 
-  return lid;
+  if new.status = 'pending_review' then
+    select full_name into v_name from public.profiles where id = new.seller_id;
+    if char_length(btrim(coalesce(v_name, ''))) < 2 then
+      raise exception 'seller_name_required' using errcode = '23514';
+    end if;
+    new.submitted_at := now();
+  elsif new.status <> 'draft' then
+    raise exception 'invalid_initial_status' using errcode = '23514';
+  end if;
+  return new;
+end $$;
+create trigger listings_before_insert_trg before insert on public.listings
+  for each row execute function public.listings_before_insert();
+
+create function public.listings_before_update() returns trigger
+language plpgsql security definer set search_path = '' as $$
+declare v_name text;
+begin
+  if new.id <> old.id or new.seller_id <> old.seller_id or new.client_key <> old.client_key
+     or new.ref_code is distinct from old.ref_code or new.created_at <> old.created_at then
+    raise exception 'immutable_field' using errcode = '23514';
+  end if;
+
+  if new.status <> old.status and (old.status, new.status) not in (
+       ('draft', 'pending_review'), ('pending_review', 'approved'),
+       ('pending_review', 'rejected'), ('rejected', 'pending_review')) then
+    raise exception 'invalid_transition' using errcode = '55000';
+  end if;
+
+  -- Content can change only while the listing is a draft or has been rejected.
+  if old.status in ('pending_review', 'approved') and
+     (new.category, new.title, new.description, new.price_ngn, new.condition_age, new.condition_work,
+      new.brand, new.model, new.size, new.photo_urls, new.video_url, new.region)
+     is distinct from
+     (old.category, old.title, old.description, old.price_ngn, old.condition_age, old.condition_work,
+      old.brand, old.model, old.size, old.photo_urls, old.video_url, old.region) then
+    raise exception 'listing_locked' using errcode = '55006';
+  end if;
+
+  if not public._media_paths_ok(new.seller_id, new.id, new.photo_urls, new.video_url) then
+    raise exception 'invalid_media_path' using errcode = '23514';
+  end if;
+
+  if old.status = 'draft' and new.status = 'pending_review' then
+    select full_name into v_name from public.profiles where id = new.seller_id;
+    if char_length(btrim(coalesce(v_name, ''))) < 2 then
+      raise exception 'seller_name_required' using errcode = '23514';
+    end if;
+    new.submitted_at := now();
+  end if;
+  new.updated_at := now();
+  return new;
+end $$;
+create trigger listings_before_update_trg before update on public.listings
+  for each row execute function public.listings_before_update();
+
+-- ============================================================ REVIEW FUNCTIONS (signed-in admins)
+create function public.claim_listing(p_listing uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+declare l public.listings; v_actor uuid := auth.uid();
+begin
+  select * into l from public.listings where id = p_listing for update;
+  if not found or l.status = 'draft' then raise exception 'listing_not_found' using errcode = 'P0002'; end if;
+  if l.assigned_admin_id is not null then raise exception 'already_claimed' using errcode = 'OB005'; end if;
+  if not public._reviewer_ok(v_actor, l.region, null) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if l.status <> 'pending_review' then raise exception 'invalid_state' using errcode = '55000'; end if;
+  update public.listings set assigned_admin_id = v_actor, claimed_at = now() where id = l.id;
+  perform public._audit(v_actor, 'listing.claim', l.id, null, '{}');
 end $$;
 
--- Read a rejected listing for the edit page. The token is the credential.
-create function get_listing_for_edit(p_token text) returns jsonb
-language plpgsql security definer set search_path = public as $$
-declare t edit_tokens; l listings;
+-- One approval is enough. Whoever approves an unassigned listing becomes the admin in charge.
+create function public.approve_listing(p_listing uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+declare l public.listings; v_actor uuid := auth.uid();
 begin
-  select * into t from edit_tokens
-   where token_hash = encode(sha256(convert_to(p_token, 'utf8')), 'hex') and used_at is null;
-  if not found then raise exception 'invalid_or_used_token' using errcode = 'P0001'; end if;
-  select * into l from listings where id = t.listing_id and status = 'rejected';
-  if not found then raise exception 'invalid_or_used_token' using errcode = 'P0001'; end if;
+  select * into l from public.listings where id = p_listing for update;
+  if not found or l.status = 'draft' then raise exception 'listing_not_found' using errcode = 'P0002'; end if;
+  if not public._reviewer_ok(v_actor, l.region, l.assigned_admin_id) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if l.status <> 'pending_review' then raise exception 'invalid_state' using errcode = '55000'; end if;
+  update public.listings
+     set status = 'approved', approved_by = v_actor, approved_at = now(),
+         assigned_admin_id = coalesce(assigned_admin_id, v_actor),
+         claimed_at = coalesce(claimed_at, now())
+   where id = l.id;
+  perform public._audit(v_actor, 'listing.approve', l.id, null,
+                        jsonb_build_object('claimed_on_approve', l.assigned_admin_id is null));
+end $$;
+
+create function public.reassign_listing(p_listing uuid, p_new_admin uuid, p_reason text) returns void
+language plpgsql security definer set search_path = '' as $$
+declare l public.listings; v_actor uuid := auth.uid(); t public.profiles;
+begin
+  if not public.is_global_admin() then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if p_reason is null or char_length(btrim(p_reason)) < 5 or char_length(p_reason) > 500 then
+    raise exception 'reason_required' using errcode = '23514';
+  end if;
+  select * into l from public.listings where id = p_listing for update;
+  if not found or l.status = 'draft' then raise exception 'listing_not_found' using errcode = 'P0002'; end if;
+  select * into t from public.profiles where id = p_new_admin;
+  if not found or not t.is_active or t.is_blacklisted
+     or t.role not in ('regional_admin', 'global_admin')
+     or (t.role = 'regional_admin' and t.region <> l.region) then
+    raise exception 'invalid_target_admin' using errcode = '23514';
+  end if;
+  update public.listings set assigned_admin_id = p_new_admin, claimed_at = coalesce(claimed_at, now()) where id = l.id;
+  perform public._audit(v_actor, 'listing.reassign', l.id, p_new_admin,
+        jsonb_build_object('from', l.assigned_admin_id, 'to', p_new_admin, 'reason', btrim(p_reason)));
+end $$;
+
+-- ============================================================ GLOBAL ADMIN FUNCTIONS (signed-in)
+create function public.promote_to_admin(p_profile uuid, p_role public.user_role, p_region public.region_type default null)
+returns text language plpgsql security definer set search_path = '' as $$
+declare v_actor uuid := auth.uid(); t public.profiles; v_code text;
+begin
+  if not public.is_global_admin() then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if p_role not in ('regional_admin', 'global_admin') then raise exception 'invalid_role' using errcode = '23514'; end if;
+  if p_role = 'regional_admin' and p_region is null then raise exception 'region_required' using errcode = '23514'; end if;
+  select * into t from public.profiles where id = p_profile for update;
+  if not found then raise exception 'profile_not_found' using errcode = 'P0002'; end if;
+  if t.is_blacklisted then raise exception 'blacklisted' using errcode = '42501'; end if;
+  if t.role <> 'seller' then raise exception 'already_admin' using errcode = 'OB006'; end if;
+  if p_role = 'regional_admin' then
+    v_code := substr(replace(gen_random_uuid()::text, '-', ''), 1, 8);
+    update public.profiles set role = 'regional_admin', region = p_region, referral_code = v_code, is_active = true
+     where id = t.id;
+  else
+    update public.profiles set role = 'global_admin', region = null, referral_code = null, is_active = true
+     where id = t.id;
+  end if;
+  perform public._audit(v_actor, 'admin.promote', null, t.id,
+        jsonb_build_object('role', p_role, 'region', p_region));
+  return v_code;
+end $$;
+
+create function public.revoke_admin(p_profile uuid, p_reason text) returns void
+language plpgsql security definer set search_path = '' as $$
+declare v_actor uuid := auth.uid(); t public.profiles; v_released integer;
+begin
+  if not public.is_global_admin() then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if p_reason is null or char_length(btrim(p_reason)) < 5 or char_length(p_reason) > 500 then
+    raise exception 'reason_required' using errcode = '23514';
+  end if;
+  select * into t from public.profiles where id = p_profile for update;
+  if not found or t.role <> 'regional_admin' then raise exception 'profile_not_found' using errcode = 'P0002'; end if;
+  if t.is_blacklisted then raise exception 'blacklisted' using errcode = '55006'; end if;
+  update public.profiles
+     set is_active = false, revoked_at = now(), revoked_by = v_actor, status_reason = btrim(p_reason)
+   where id = t.id;
+  update public.listings set assigned_admin_id = null, claimed_at = null
+   where assigned_admin_id = t.id and status = 'pending_review';
+  get diagnostics v_released = row_count;
+  perform public._audit(v_actor, 'admin.revoke', null, t.id,
+        jsonb_build_object('reason', btrim(p_reason), 'pending_released', v_released));
+end $$;
+
+create function public.reinstate_admin(p_profile uuid) returns void
+language plpgsql security definer set search_path = '' as $$
+declare v_actor uuid := auth.uid(); t public.profiles;
+begin
+  if not public.is_global_admin() then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into t from public.profiles where id = p_profile for update;
+  if not found or t.role <> 'regional_admin' then raise exception 'profile_not_found' using errcode = 'P0002'; end if;
+  if t.is_blacklisted then raise exception 'blacklisted' using errcode = '55006'; end if;
+  if t.is_active then raise exception 'invalid_state' using errcode = '55000'; end if;
+  update public.profiles set is_active = true, revoked_at = null, revoked_by = null, status_reason = null where id = t.id;
+  perform public._audit(v_actor, 'admin.reinstate', null, t.id, '{}');
+end $$;
+
+-- ============================================================ SERVER-ONLY FUNCTIONS (service_role)
+-- These are called from Next.js route handlers after the route has verified the caller's JWT.
+-- The route passes the verified user id as p_actor; the function re-checks that user in the database.
+create function public.reject_listing(p_actor uuid, p_listing uuid, p_reason text, p_token_hash text)
+returns timestamptz language plpgsql security definer set search_path = '' as $$
+declare l public.listings; v_expires timestamptz;
+begin
+  if p_reason is null or char_length(btrim(p_reason)) < 5 or char_length(p_reason) > 500 then
+    raise exception 'reason_required' using errcode = '23514';
+  end if;
+  select * into l from public.listings where id = p_listing for update;
+  if not found or l.status = 'draft' then raise exception 'listing_not_found' using errcode = 'P0002'; end if;
+  if not public._reviewer_ok(p_actor, l.region, l.assigned_admin_id) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if l.status <> 'pending_review' then raise exception 'invalid_state' using errcode = '55000'; end if;
+  update public.listing_tokens set revoked_at = now()
+   where listing_id = l.id and used_at is null and revoked_at is null;
+  insert into public.listing_tokens (listing_id, token_hash, created_by)
+  values (l.id, p_token_hash, p_actor) returning expires_at into v_expires;
+  update public.listings
+     set status = 'rejected', rejection_reason = btrim(p_reason), rejected_by = p_actor, rejected_at = now(),
+         assigned_admin_id = coalesce(assigned_admin_id, p_actor), claimed_at = coalesce(claimed_at, now())
+   where id = l.id;
+  perform public._audit(p_actor, 'listing.reject', l.id, null, jsonb_build_object('reason', btrim(p_reason)));
+  return v_expires;
+end $$;
+
+create function public.reissue_edit_link(p_actor uuid, p_listing uuid, p_token_hash text)
+returns timestamptz language plpgsql security definer set search_path = '' as $$
+declare l public.listings; v_expires timestamptz;
+begin
+  select * into l from public.listings where id = p_listing for update;
+  if not found or l.status = 'draft' then raise exception 'listing_not_found' using errcode = 'P0002'; end if;
+  if not public._reviewer_ok(p_actor, l.region, l.assigned_admin_id) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if l.status <> 'rejected' then raise exception 'invalid_state' using errcode = '55000'; end if;
+  update public.listing_tokens set revoked_at = now()
+   where listing_id = l.id and used_at is null and revoked_at is null;
+  insert into public.listing_tokens (listing_id, token_hash, created_by)
+  values (l.id, p_token_hash, p_actor) returning expires_at into v_expires;
+  perform public._audit(p_actor, 'listing.reissue_link', l.id, null, '{}');
+  return v_expires;
+end $$;
+
+create function public.blacklist_admin(p_actor uuid, p_profile uuid, p_reason text) returns void
+language plpgsql security definer set search_path = '' as $$
+declare a public.profiles; t public.profiles; v_released integer;
+begin
+  select * into a from public.profiles where id = p_actor;
+  if not found or a.role <> 'global_admin' or not a.is_active or a.is_blacklisted then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  if p_reason is null or char_length(btrim(p_reason)) < 5 or char_length(p_reason) > 500 then
+    raise exception 'reason_required' using errcode = '23514';
+  end if;
+  select * into t from public.profiles where id = p_profile for update;
+  if not found or t.role <> 'regional_admin' then raise exception 'profile_not_found' using errcode = 'P0002'; end if;
+  if t.is_blacklisted then return; end if;   -- already done; safe to repeat
+  update public.profiles
+     set is_blacklisted = true, is_active = false, blacklisted_at = now(), blacklisted_by = p_actor,
+         status_reason = btrim(p_reason)
+   where id = t.id;
+  update public.listings set assigned_admin_id = null, claimed_at = null
+   where assigned_admin_id = t.id and status = 'pending_review';
+  get diagnostics v_released = row_count;
+  perform public._audit(p_actor, 'admin.blacklist', null, t.id,
+        jsonb_build_object('reason', btrim(p_reason), 'pending_released', v_released));
+end $$;
+
+create function public.get_listing_for_edit(p_token_hash text) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare tok public.listing_tokens; l public.listings;
+begin
+  select * into tok from public.listing_tokens where token_hash = p_token_hash;
+  if not found then raise exception 'token_invalid' using errcode = 'OB001'; end if;
+  if tok.revoked_at is not null then raise exception 'token_revoked' using errcode = 'OB004'; end if;
+  if tok.used_at is not null then raise exception 'token_used' using errcode = 'OB002'; end if;
+  if tok.expires_at <= now() then raise exception 'token_expired' using errcode = 'OB003'; end if;
+  select * into l from public.listings where id = tok.listing_id;
+  if l.status <> 'rejected' then raise exception 'invalid_state' using errcode = '55000'; end if;
   return jsonb_build_object(
-    'id', l.id, 'region_id', l.region_id, 'category', l.category, 'title', l.title,
-    'description', l.description, 'item_age', l.item_age, 'functional_status', l.functional_status,
-    'price_ngn', l.price_ngn, 'rejection_reason', l.rejection_reason,
-    'media', coalesce((select jsonb_agg(jsonb_build_object('kind', kind, 'storage_path', storage_path,
-                          'size_bytes', size_bytes, 'position', position) order by position)
-                       from listing_media where listing_id = l.id), '[]'));
+    'listing_id', l.id, 'seller_id', l.seller_id, 'region', l.region, 'category', l.category,
+    'title', l.title, 'description', l.description, 'price_ngn', l.price_ngn,
+    'condition_age', l.condition_age, 'condition_work', l.condition_work,
+    'brand', l.brand, 'model', l.model, 'size', l.size,
+    'photo_urls', to_jsonb(l.photo_urls), 'video_url', l.video_url,
+    'rejection_reason', l.rejection_reason, 'expires_at', tok.expires_at);
 end $$;
 
--- Resubmit. Updates the SAME listing, goes back to pending, burns the token.
--- The row lock makes a double tap safe: the second call sees the burned token and fails.
-create function resubmit_listing(
-  p_token             text,
-  p_category          text,
-  p_title             text,
-  p_description       text,
-  p_item_age          item_age,
-  p_functional_status functional_status,
-  p_price_ngn         numeric,
-  p_media             jsonb default null          -- null = keep existing media
-) returns uuid
-language plpgsql security definer set search_path = public as $$
-declare t edit_tokens; m jsonb; i int := 0;
+-- Resubmit updates the SAME listing and burns the token in one transaction. The row locks make a
+-- double tap safe: the second call waits, finds the token used, and fails with OB002.
+create function public.resubmit_listing(p_token_hash text, p_fields jsonb) returns uuid
+language plpgsql security definer set search_path = '' as $$
+declare tok public.listing_tokens; l public.listings;
 begin
-  select * into t from edit_tokens
-   where token_hash = encode(sha256(convert_to(p_token, 'utf8')), 'hex') for update;
-  if not found or t.used_at is not null then
-    raise exception 'invalid_or_used_token' using errcode = 'P0001';
-  end if;
+  select * into tok from public.listing_tokens where token_hash = p_token_hash for update;
+  if not found then raise exception 'token_invalid' using errcode = 'OB001'; end if;
+  if tok.revoked_at is not null then raise exception 'token_revoked' using errcode = 'OB004'; end if;
+  if tok.used_at is not null then raise exception 'token_used' using errcode = 'OB002'; end if;
+  if tok.expires_at <= now() then raise exception 'token_expired' using errcode = 'OB003'; end if;
+  select * into l from public.listings where id = tok.listing_id for update;
+  if l.status <> 'rejected' then raise exception 'invalid_state' using errcode = '55000'; end if;
 
-  update listings set
-      category = p_category, title = p_title, description = p_description,
-      item_age = p_item_age, functional_status = p_functional_status, price_ngn = p_price_ngn,
-      status = 'pending', rejection_reason = null, revision = revision + 1,
-      submitted_at = now(), updated_at = now()
-   where id = t.listing_id and status = 'rejected';
-  if not found then raise exception 'invalid_or_used_token' using errcode = 'P0001'; end if;
+  update public.listings set
+    category       = case when p_fields ? 'category'       then (p_fields->>'category')::public.item_category       else category end,
+    title          = case when p_fields ? 'title'          then p_fields->>'title'                                  else title end,
+    description    = case when p_fields ? 'description'    then p_fields->>'description'                            else description end,
+    price_ngn      = case when p_fields ? 'price_ngn'      then (p_fields->>'price_ngn')::numeric                   else price_ngn end,
+    condition_age  = case when p_fields ? 'condition_age'  then (p_fields->>'condition_age')::public.condition_age  else condition_age end,
+    condition_work = case when p_fields ? 'condition_work' then (p_fields->>'condition_work')::public.condition_work else condition_work end,
+    brand          = case when p_fields ? 'brand'          then nullif(btrim(p_fields->>'brand'), '')               else brand end,
+    model          = case when p_fields ? 'model'          then nullif(btrim(p_fields->>'model'), '')               else model end,
+    size           = case when p_fields ? 'size'           then nullif(btrim(p_fields->>'size'), '')                else size end,
+    photo_urls     = case when p_fields ? 'photo_urls'     then array(select jsonb_array_elements_text(p_fields->'photo_urls')) else photo_urls end,
+    video_url      = case when p_fields ? 'video_url'      then nullif(p_fields->>'video_url', '')                  else video_url end,
+    status = 'pending_review', rejection_reason = null,
+    resubmit_count = resubmit_count + 1, submitted_at = now()
+  where id = l.id;
 
-  update edit_tokens set used_at = now() where id = t.id;        -- burn
-
-  if p_media is not null then
-    delete from listing_media where listing_id = t.listing_id;
-    for m in select * from jsonb_array_elements(p_media) loop
-      insert into listing_media (listing_id, kind, storage_path, size_bytes, position)
-      values (t.listing_id, (m->>'kind')::media_kind, m->>'storage_path', (m->>'size_bytes')::bigint, i);
-      i := i + 1;
-    end loop;
-  end if;
-  return t.listing_id;
+  update public.listing_tokens set used_at = now() where id = tok.id;
+  perform public._audit(null, 'listing.resubmit', l.id, l.seller_id,
+        jsonb_build_object('resubmit_count', l.resubmit_count + 1));
+  return l.id;
 end $$;
 
--- ───────────────────────── Global Admin RPCs ─────────────────────────
-create function reassign_listing(p_listing uuid, p_new_admin uuid, p_reason text) returns void
-language plpgsql security definer set search_path = public as $$
-declare l listings; a admins;
+-- Deletes drafts older than p_days and returns the storage folder of each so the server can remove the files.
+create function public.purge_stale_drafts(p_days integer default 7) returns setof text
+language sql security definer set search_path = '' as $$
+  delete from public.listings
+   where status = 'draft' and created_at < now() - make_interval(days => p_days)
+  returning seller_id::text || '/' || id::text || '/'
+$$;
+
+-- Run once, by hand, in the Supabase SQL editor after the owner signs in with WhatsApp OTP.
+create function public.bootstrap_global_admin(p_phone text) returns uuid
+language plpgsql security definer set search_path = '' as $$
+declare v_id uuid;
 begin
-  if not is_global_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
-  select * into l from listings where id = p_listing for update;
-  if not found then raise exception 'listing_not_found' using errcode = 'P0001'; end if;
-  select * into a from admins where id = p_new_admin and status = 'active';
-  if not found then raise exception 'target_admin_not_active' using errcode = 'P0001'; end if;
-  if a.role = 'regional_admin' and a.region_id <> l.region_id then
-    raise exception 'wrong_region' using errcode = 'P0001';
-  end if;
-  update listings set admin_in_charge = p_new_admin, updated_at = now() where id = p_listing;
-  perform log_audit('listing.reassign', 'listing', p_listing::text,
-          jsonb_build_object('from', l.admin_in_charge, 'to', p_new_admin, 'reason', p_reason));
+  update public.profiles set role = 'global_admin', region = null, referral_code = null, is_active = true
+   where phone = p_phone and not is_blacklisted returning id into v_id;
+  if v_id is null then raise exception 'profile_not_found_sign_in_once_first' using errcode = 'P0002'; end if;
+  perform public._audit(v_id, 'admin.bootstrap_global', null, v_id, '{}');
+  return v_id;
 end $$;
 
-create function admin_revoke(p_admin uuid, p_reason text) returns void
-language plpgsql security definer set search_path = public as $$
-begin
-  if not is_global_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
-  if p_admin = auth.uid() then raise exception 'cannot_act_on_self' using errcode = 'P0001'; end if;
-  update admins set status = 'revoked', status_reason = p_reason,
-         status_changed_at = now(), status_changed_by = auth.uid()
-   where id = p_admin and status = 'active';
-  if not found then raise exception 'admin_not_active' using errcode = 'P0001'; end if;
-  perform log_audit('admin.revoke', 'admin', p_admin::text, jsonb_build_object('reason', p_reason));
-end $$;
+-- ============================================================ MASKING VIEW
+-- The only way a regional admin can read seller name and phone of a listing they are not in charge of,
+-- and they only ever get the masked form. It runs with the owner's rights and filters rows itself.
+create view public.regional_listings_feed with (security_invoker = false) as
+select
+  l.id, l.region, l.category, l.title, l.description, l.price_ngn,
+  l.condition_age, l.condition_work, l.brand, l.model, l.size,
+  l.photo_urls, l.video_url, l.status, l.created_at, l.submitted_at, l.approved_at,
+  l.assigned_admin_id,
+  split_part(btrim(a.full_name), ' ', 1)                   as admin_in_charge_name,
+  v.unmasked                                               as contact_visible,
+  case when v.unmasked then sp.full_name
+       else left(btrim(sp.full_name), 1) || '***' end      as seller_name,
+  case when v.unmasked then sp.phone
+       when sp.phone like '+234%' then '+234 ••• ••• ••' || right(sp.phone, 2)
+       else '••• ••• ••' || right(sp.phone, 2) end         as seller_phone
+from public.listings l
+join public.profiles sp on sp.id = l.seller_id
+left join public.profiles a on a.id = l.assigned_admin_id
+cross join lateral (
+  select coalesce(l.assigned_admin_id = (select auth.uid()), false) or (select public.is_global_admin()) as unmasked
+) v
+where (select public.is_usable())
+  and l.status <> 'draft'
+  and ( (select public.is_global_admin())
+        or ( (select public.my_role()) = 'regional_admin'
+             and ( l.assigned_admin_id = (select auth.uid())
+                   or ( l.region = (select public.my_region())
+                        and ( l.status = 'approved'
+                              or (l.status = 'pending_review' and l.assigned_admin_id is null) ) ) ) ) );
 
-create function admin_blacklist(p_admin uuid, p_reason text) returns void
-language plpgsql security definer set search_path = public as $$
-declare a admins;
-begin
-  if not is_global_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
-  if p_admin = auth.uid() then raise exception 'cannot_act_on_self' using errcode = 'P0001'; end if;
-  select * into a from admins where id = p_admin;
-  if not found then raise exception 'admin_not_found' using errcode = 'P0001'; end if;
-  update admins set status = 'blacklisted', status_reason = p_reason,
-         status_changed_at = now(), status_changed_by = auth.uid()
-   where id = p_admin;
-  insert into blacklist (phone, former_admin, reason, blacklisted_by)
-  values (a.phone, a.id, p_reason, auth.uid())
-  on conflict (phone) do nothing;
-  perform log_audit('admin.blacklist', 'admin', p_admin::text, jsonb_build_object('reason', p_reason));
-  -- The app server must also ban the auth user (auth.admin.updateUserById ban_duration).
-end $$;
+-- ============================================================ ROW LEVEL SECURITY
+alter table public.profiles       enable row level security;
+alter table public.listings       enable row level security;
+alter table public.listing_tokens enable row level security;
+alter table public.audit_log      enable row level security;
 
--- ───────────────────────── row-level security ─────────────────────────
-alter table regions           enable row level security;
-alter table sellers           enable row level security;
-alter table admins            enable row level security;
-alter table blacklist         enable row level security;
-alter table listings          enable row level security;
-alter table listing_contacts  enable row level security;
-alter table listing_media     enable row level security;
-alter table listing_decisions enable row level security;
-alter table edit_tokens       enable row level security;   -- no policies: functions only
-alter table notifications     enable row level security;   -- no policies: service role only
-alter table audit_log         enable row level security;
+-- profiles: own row, global admin sees all, an admin sees sellers of listings they are in charge of.
+create policy profiles_select on public.profiles for select to authenticated
+  using (public.is_usable() and (id = auth.uid() or public.is_global_admin() or public.is_in_charge_of_seller(id)));
+create policy profiles_update_own on public.profiles for update to authenticated
+  using (id = auth.uid() and public.is_usable()) with check (id = auth.uid());   -- column grant limits this to full_name
 
-create policy regions_read on regions for select using (true);
+-- listings: no personal data lives here, so admins can read listing content directly.
+create policy listings_select_seller on public.listings for select to authenticated
+  using (seller_id = auth.uid() and public.is_usable());
+create policy listings_select_assigned on public.listings for select to authenticated
+  using (assigned_admin_id = auth.uid() and status <> 'draft' and public.my_role() in ('regional_admin', 'global_admin'));
+create policy listings_select_global on public.listings for select to authenticated
+  using (public.is_global_admin() and status <> 'draft');
+create policy listings_select_regional on public.listings for select to authenticated
+  using (public.my_role() = 'regional_admin' and region = public.my_region()
+         and (status = 'approved' or (status = 'pending_review' and assigned_admin_id is null)));
+create policy listings_insert_seller on public.listings for insert to authenticated
+  with check (seller_id = auth.uid() and public.is_usable() and status in ('draft', 'pending_review'));
+create policy listings_update_seller_draft on public.listings for update to authenticated
+  using (seller_id = auth.uid() and status = 'draft' and public.is_usable())
+  with check (seller_id = auth.uid() and status in ('draft', 'pending_review'));
+create policy listings_delete_seller_draft on public.listings for delete to authenticated
+  using (seller_id = auth.uid() and status = 'draft' and public.is_usable());
 
-create policy sellers_own on sellers for select using (id = auth.uid());
+-- audit_log: global admin reads; writes only through the functions above.
+create policy audit_select_global on public.audit_log for select to authenticated
+  using (public.is_global_admin());
 
-create policy admins_self_or_global on admins for select
-  using (id = auth.uid() or is_global_admin());
+-- listing_tokens: no policy for signed-in users at all. Only service_role (RLS bypass) touches it.
 
-create policy blacklist_global_read on blacklist for select using (is_global_admin());
+-- ============================================================ PRIVILEGES
+revoke all on all tables    in schema public from public, anon, authenticated;
+revoke all on all sequences in schema public from public, anon, authenticated;
+revoke execute on all functions in schema public from public, anon, authenticated;
 
--- Listing content: the seller, global admins, and every active admin in the region.
--- (Contact details are NOT in this table.)
-create policy listings_read on listings for select using (
-  seller_id = auth.uid()
-  or is_global_admin()
-  or (is_active_admin() and region_id = my_region())
-);
+grant select on public.profiles to authenticated;
+grant update (full_name) on public.profiles to authenticated;
+grant select, delete on public.listings to authenticated;
+grant insert (client_key, seller_id, ref_code, region, category, title, description, price_ngn,
+              condition_age, condition_work, brand, model, size, photo_urls, video_url, status)
+  on public.listings to authenticated;
+grant update (category, title, description, price_ngn, condition_age, condition_work,
+              brand, model, size, photo_urls, video_url, status)
+  on public.listings to authenticated;
+grant select on public.audit_log to authenticated;
+grant select on public.regional_listings_feed to authenticated;
 
--- Masked contact details: seller, admin in charge, global admins. Nobody else.
-create policy contacts_read on listing_contacts for select using (
-  is_global_admin()
-  or is_admin_in_charge(listing_id)
-  or exists (select 1 from listings l where l.id = listing_id and l.seller_id = auth.uid())
-);
+grant execute on function public.is_usable(), public.my_role(), public.my_region(),
+  public.is_global_admin(), public.is_in_charge_of_seller(uuid) to authenticated;
+grant execute on function public.claim_listing(uuid), public.approve_listing(uuid),
+  public.reassign_listing(uuid, uuid, text),
+  public.promote_to_admin(uuid, public.user_role, public.region_type),
+  public.revoke_admin(uuid, text), public.reinstate_admin(uuid) to authenticated;
 
-create policy media_read on listing_media for select using (
-  exists (select 1 from listings l where l.id = listing_id)   -- inherits listings_read
-);
-
-create policy decisions_read on listing_decisions for select using (
-  is_global_admin()
-  or (is_active_admin() and exists (select 1 from listings l where l.id = listing_id))
-);
-create policy decisions_insert on listing_decisions for insert
-  with check (admin_id = auth.uid() and is_active_admin());
-
-create policy audit_global_read on audit_log for select using (is_global_admin());
-
--- ───────────────────────── privileges ─────────────────────────
-revoke all on all tables    in schema public from anon, authenticated;
-revoke all on all functions in schema public from public, anon, authenticated;
-
-grant select on regions to anon, authenticated;
-grant select on sellers, admins, blacklist, listings, listing_contacts,
-                listing_media, listing_decisions, audit_log to authenticated;
-grant insert on listing_decisions to authenticated;
-
-grant execute on function is_active_admin(), is_global_admin(), my_region(),
-                          is_admin_in_charge(uuid), approvals_required(smallint) to authenticated;
-grant execute on function create_listing(uuid, smallint, text, text, text, text, text,
-                                         item_age, functional_status, numeric, jsonb) to authenticated;
-grant execute on function reassign_listing(uuid, uuid, text),
-                          admin_revoke(uuid, text),
-                          admin_blacklist(uuid, text) to authenticated;
--- Edit links work without a login: the token is the credential.
-grant execute on function get_listing_for_edit(text) to anon, authenticated;
-grant execute on function resubmit_listing(text, text, text, text, item_age,
-                                           functional_status, numeric, jsonb) to anon, authenticated;
--- is_phone_blacklisted() is for the server (service role) to check before sending an OTP.
+grant all on all tables    in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+grant execute on function public.reject_listing(uuid, uuid, text, text),
+  public.reissue_edit_link(uuid, uuid, text), public.blacklist_admin(uuid, uuid, text),
+  public.get_listing_for_edit(text), public.resubmit_listing(text, jsonb),
+  public.purge_stale_drafts(integer) to service_role;

@@ -88,3 +88,20 @@ Once the CTO confirms, funds are released for Milestone 1.
 8. What are the listing/verification fees in Phase 1? Not stated.
 9. Real start date. The blueprint says 1 Aug 2026; today is 11 Oct 2026.
 10. Domain name: `obnn.com` appears in the example link, but the document title says `ONLINE.COM`.
+
+## 8. Client decisions received (Oct 2026)
+
+These answer the open questions above and change some earlier rules. The Phase 1 documents in `docs/phase-1/` are the source of truth.
+
+| Topic | Decision |
+|---|---|
+| Consensus | Dropped. A referral listing is single-approval by its assigned admin. An organic listing is claimed and approved by the first reviewing regional or global admin |
+| Admin in charge without a referral link | The first admin to claim or approve it |
+| Rejection | Any rejection needs a mandatory reason and sends a WhatsApp edit link |
+| Edit link | Single use, valid 30 days, burned on resubmit (not when opened) |
+| Form fields | Title, description, price (NGN), age of item (5 cards), working status (3 cards), optional brand, model, size |
+| Categories | Phones, Computers, TVs, Fridges, Generators, Kitchen, Furniture, Other |
+| Media | 1 to 6 photos under 1 MB each as WebP. Video optional (0 or 1), at most 60 s, under 10 MB, MP4 |
+| Masking | Phone shown as `+234 ••• ••• ••36`, name as `A***`, to every admin who is not in charge |
+| Global Admin | Aghughu Omo-Odion Destiny, 08053466836 |
+| Brand | Red `#D32F2F`, green `#2E7D32`, blue `#1565C0`, dark background `#0A0A0A`. Tagline: OBN NATION — Connecting People |

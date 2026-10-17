@@ -1,4 +1,5 @@
--- Regions are seeded in migration 0001.
--- First Global Admin: sign in once with the owner's phone (creates auth.users row), then run:
---   insert into admins (id, phone, full_name, role)
---   values ('<auth user id>', '+234XXXXXXXXXX', 'Name', 'global_admin');
+-- First Global Admin (Aghughu Omo-Odion Destiny, 08053466836).
+-- 1. He opens /list and signs in once with WhatsApp OTP. That creates his profile as a seller.
+-- 2. Run this once in the Supabase SQL editor:
+--      select public.bootstrap_global_admin('+2348053466836');
+-- 3. From then on he adds regional admins from the Global Admin screen.
