@@ -111,6 +111,8 @@ Route handlers translate database errors with this table ([03](03_ERD_AND_DATABA
 | 11 | `POST /api/hooks/send-otp` | Supabase Send SMS hook (internal) | Webhook signature |
 | 12 | `GET /api/cron/purge-drafts` | Daily draft cleanup (internal) | Cron secret |
 | 13 | `POST /api/listings/decide` | Claim or approve a listing (wraps the two database functions, maps errors) | Admin session |
+| 14 | `POST /api/admin/status` | Revoke or reinstate a regional admin | Global Admin session |
+| 15 | `POST /api/listings/reassign` | Change the admin in charge of a listing | Global Admin session |
 
 ## 3. Endpoint contracts
 
@@ -464,6 +466,22 @@ Request: `{ "listing_id": "<uuid>", "action": "claim" | "approve" }`
 Success `200`: `{ "listing_id": "<uuid>", "action": "approve" }`
 
 Errors: `401 unauthenticated`; `403 not_authorized`; `404 listing_not_found`; `409 already_claimed` with the message "This listing was just handled by someone else." (also returned when the listing is no longer waiting for review). Approving an unclaimed listing makes the approver the admin in charge in the same step.
+
+### 3.14 `POST /api/admin/status`
+
+Global Admin only. Revoke or reinstate a regional admin. Added in T15; it wraps `revoke_admin` and `reinstate_admin` and maps their errors.
+
+Request: `{ "action": "revoke", "profile_id": "<uuid>", "reason": "Left the team" }` or `{ "action": "reinstate", "profile_id": "<uuid>" }`. A revoke needs a reason of 5 to 500 characters.
+
+Success `200`: `{ "profile_id": "<uuid>", "action": "revoke" }`. Errors: `400 validation_failed`, `401`, `403 not_authorized`, `404 profile_not_found`, `409 phone_blacklisted` (a blacklisted admin cannot be changed).
+
+### 3.15 `POST /api/listings/reassign`
+
+Global Admin only. Changes the admin in charge. Wraps `reassign_listing`; the new admin must be an active admin of the listing's region or a Global Admin.
+
+Request: `{ "listing_id": "<uuid>", "new_admin_id": "<uuid>", "reason": "Admin on leave" }`
+
+Success `200`: `{ "listing_id": "<uuid>", "assigned_admin_id": "<uuid>" }`. Errors: `400 validation_failed` (also for a target that is not allowed), `401`, `403 not_authorized`, `404 listing_not_found`.
 
 ## 4. Direct database calls (no server route)
 
