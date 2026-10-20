@@ -25,7 +25,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ### Week 1
 - [x] T01 App scaffold and brand tokens (2026-10-20, branch feat/t01-scaffold)
 - [ ] T02 Supabase project, migrations, CI for SQL tests
-- [ ] T03 Env validation and Supabase clients
+- [x] T03 Env validation and Supabase clients (2026-10-20)
 - [ ] T04 Edge middleware (ref cookie, guards)
 - [ ] T05 OTP routes, hook, stub WhatsApp sender
 - [ ] T06 `/list` page and name capture

@@ -15,11 +15,15 @@
     "@ffmpeg/core": "^0.12.6",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.118.0",
     "browser-image-compression": "^2.0.2",
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "twilio": "^5.13.1"
+    "server-only": "^0.0.1",
+    "twilio": "^5.13.1",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
