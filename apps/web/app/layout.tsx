@@ -11,7 +11,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-bg font-sans text-white antialiased">
+      <body className="min-h-screen overflow-x-clip bg-bg font-sans text-white antialiased">
         <div className="mx-auto min-h-screen w-full max-w-screen480 px-4">{children}</div>
       </body>
     </html>
