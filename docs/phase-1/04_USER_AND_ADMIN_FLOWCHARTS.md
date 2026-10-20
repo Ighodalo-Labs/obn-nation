@@ -76,7 +76,7 @@ flowchart TD
   V1 -->|"Yes"| S2["Step 2: title, description, optional brand model size, age card, working card, price"]
   S2 --> V2{"Step 2 valid?"}
   V2 -->|"No: show field errors"| S2
-  V2 -->|"Yes"| S3["Step 3: add 1 to 6 photos and optionally 1 video"]
+  V2 -->|"Yes"| S3["Step 3: add 1 to 6 photos and 1 video"]
   S3 --> P["Compress photos to WebP under 1 MB on the phone"]
   S3 --> Q{"Video added?"}
   Q -->|"No"| R

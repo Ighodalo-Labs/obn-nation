@@ -172,7 +172,7 @@ An AI tool cannot do these. Each one needs you or the client.
 | Meta verification and the two template approvals | T20 (stub is used before) | Client |
 | Domain DNS access | T16 | Client |
 | Transparent PNG or SVG logo | T16 | Client |
-| Answer: is video optional or required? | T07 | Client, through you |
+| Answer: is video optional or required? Decided 20 Oct 2026: required | T07 | Done |
 | First Global Admin signs in once, then run `bootstrap_global_admin('+2348053466836')` | T11 | You |
 | Real-phone checks: WhatsApp delivery, compression, two admins at once | T19 | You |
 | Any change to a business rule in PRD section 5 | Any time | Client, through you |

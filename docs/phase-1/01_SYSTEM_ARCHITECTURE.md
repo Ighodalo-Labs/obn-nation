@@ -257,7 +257,7 @@ No other outbound destinations are used. There is no third-party analytics scrip
 | Risk | Impact | Plan |
 |---|---|---|
 | Meta business verification and template approval take time (client side) | Go-live blocked | Start now. Build against a stub sender until approved |
-| Video encoding is slow on cheap phones | Sellers abandon the form | Video is optional. 60-second cap. Progress bar. Test early on a low-end device |
+| Video encoding is slow on cheap phones | Sellers abandon the form | Video is required (owner decision, 20 Oct 2026). 60-second cap. Progress bar. Test early on a low-end device |
 | WhatsApp conversation fees grow with volume | Cost above the proposal | Alert at 80% of the line. Report monthly spend to the CTO |
 | One developer for Milestone 1 | Slips | Build order puts the core pipeline first and the Global Admin screens and landing page last |
 | Free-tier pausing before Milestone 2 | Demo outage | Use staging only for demos. Upgrade on schedule |

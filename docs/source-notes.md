@@ -101,11 +101,11 @@ These answer the open questions above and change some earlier rules. The Phase 1
 | Edit link | Single use, valid 30 days, burned on resubmit (not when opened) |
 | Form fields | Title, description, price (NGN), age of item (5 cards), working status (3 cards), optional brand, model, size |
 | Categories | Phones, Computers, TVs, Fridges, Generators, Kitchen, Furniture, Other |
-| Media | 1 to 6 photos under 1 MB each as WebP. Video optional (0 or 1), at most 60 s, under 10 MB, MP4 |
+| Media | 1 to 6 photos under 1 MB each as WebP. Video required (exactly 1), at most 60 s, under 10 MB, MP4 |
 | Masking | Phone shown as `+234 ••• ••• ••36`, name as `A***`, to every admin who is not in charge |
 | Global Admin | Aghughu Omo-Odion Destiny, 08053466836 |
 | Brand | Red `#D32F2F`, green `#2E7D32`, blue `#1565C0`, dark background `#0A0A0A`. Tagline: OBN NATION — Connecting People |
 
 | WhatsApp sender | One OBN NATION number for all messages: +234 707 276 7227 (17 Oct 2026) |
-| Video | Optional, confirmed 17 Oct 2026 |
+| Video | Client said optional on 17 Oct 2026. Owner decided required on 20 Oct 2026 (this one wins) |
 | Contacts shared | Delta +234 814 715 2732; Ekiti +234 916 238 8282; OBN NATION +234 707 276 7227 |

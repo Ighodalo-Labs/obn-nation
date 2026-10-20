@@ -250,7 +250,7 @@ Legend: `░` is the dimmed page behind a modal. `●` filled step or selected o
 └──────────────────────────────────────┘
 ```
 
-### Screen 5 · Step 3: photo drop zone and optional video
+### Screen 5 · Step 3: photo drop zone and video
 
 ```text
        Phone 360 x 640 (scrolls)
@@ -269,7 +269,7 @@ Legend: `░` is the dimmed page behind a modal. `●` filled step or selected o
 │  └────────┘ └────────┘ └────────┘    │
 │  Each photo is shrunk to under 1 MB  │
 │                                      │
-│  Video (optional, up to 60 seconds)  │
+│  Video (required, up to 60 seconds)  │
 │ ┌────────────────────────────────┐   │
 │ │ [+ Record]  [+ Gallery]        │   │
 │ │ Shrinking video ...   62%      │   │

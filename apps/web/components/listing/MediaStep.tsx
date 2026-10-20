@@ -72,7 +72,7 @@ export function MediaStep({ media }: { media: MediaApi }) {
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="video-h">
-        <h2 id="video-h" className="text-base">Video <span className="text-sm text-muted">(optional, up to 60 seconds)</span></h2>
+        <h2 id="video-h" className="text-base">Video <span className="text-sm text-muted">(required, up to 60 seconds)</span></h2>
         {video.status === 'idle' || video.status === 'error' ? (
           <div className="flex gap-2">
             <button type="button" className={tile} onClick={() => videoCamera.current?.click()}>
@@ -110,7 +110,7 @@ export function MediaStep({ media }: { media: MediaApi }) {
             </div>
           </div>
         )}
-        <p className="text-sm text-muted">The result is an MP4 under 10 MB. Skip this if you do not have a video.</p>
+        <p className="text-sm text-muted">The result is an MP4 under 10 MB. A video is needed to submit.</p>
       </section>
     </div>
   );

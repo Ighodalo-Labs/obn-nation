@@ -13,7 +13,7 @@ export interface SubmitInput {
   clientKey: string;
   draft: FormDraft;
   photos: Blob[];
-  video: Blob | null;
+  video: Blob;
 }
 
 export type SubmitResult =
@@ -44,14 +44,14 @@ export function listingBody(draft: FormDraft) {
  */
 export async function submitListing(deps: SubmitDeps, input: SubmitInput): Promise<SubmitResult> {
   const listing = listingBody(input.draft);
-  const total = input.photos.length + (input.video ? 1 : 0);
+  const total = input.photos.length + 1;
   deps.onProgress(0, total);
 
   const first = await deps.post({
     client_key: input.clientKey,
     submit: false,
     listing,
-    media_plan: { photo_count: input.photos.length, has_video: Boolean(input.video) },
+    media_plan: { photo_count: input.photos.length, has_video: true },
   });
   if (!first.ok) return { ok: false, code: first.error.code, message: first.error.message, retry: retryable(first.error.code) };
   if (!first.data.upload) {
@@ -59,24 +59,22 @@ export async function submitListing(deps: SubmitDeps, input: SubmitInput): Promi
     return { ok: true, status: first.data.status, submittedAt: null };
   }
 
-  const { photos, video } = first.data.upload as { photos: string[]; video: string | null };
+  const { photos, video } = first.data.upload as { photos: string[]; video: string };
   let done = 0;
   for (let i = 0; i < input.photos.length; i++) {
     const r = await deps.upload('photos', photos[i], input.photos[i]);
     if (r.error) return { ok: false, code: 'upload_failed', message: UPLOAD_STOPPED, retry: true };
     deps.onProgress(++done, total);
   }
-  if (input.video && video) {
-    const r = await deps.upload('videos', video, input.video);
-    if (r.error) return { ok: false, code: 'upload_failed', message: UPLOAD_STOPPED, retry: true };
-    deps.onProgress(++done, total);
-  }
+  const rv = await deps.upload('videos', video, input.video);
+  if (rv.error) return { ok: false, code: 'upload_failed', message: UPLOAD_STOPPED, retry: true };
+  deps.onProgress(++done, total);
 
   const last = await deps.post({
     client_key: input.clientKey,
     submit: true,
     listing,
-    media: { photo_paths: photos, video_path: input.video ? video : null },
+    media: { photo_paths: photos, video_path: video },
   });
   if (!last.ok) return { ok: false, code: last.error.code, message: last.error.message, retry: retryable(last.error.code) };
   return { ok: true, status: last.data.status, submittedAt: last.data.submitted_at ?? null };

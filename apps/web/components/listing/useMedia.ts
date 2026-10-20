@@ -113,7 +113,7 @@ export function useMedia() {
       setVideo({ status: 'done', percent: 100, name: file.name, file: out, url: track(out), bytes: out.size });
     } catch (e) {
       if (abort.signal.aborted) return setVideo(IDLE_VIDEO);
-      setVideo({ status: 'error', percent: 0, name: file.name, error: friendlyMediaError(e, 'This video could not be prepared. You can submit without it.') });
+      setVideo({ status: 'error', percent: 0, name: file.name, error: friendlyMediaError(e, 'This video could not be prepared. Please try another video.') });
     } finally {
       videoAbort.current = null;
     }

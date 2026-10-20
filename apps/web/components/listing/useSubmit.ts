@@ -21,9 +21,10 @@ export function useSubmit(form: SavedForm | null, media: MediaApi) {
   const submit = useCallback(async () => {
     if (!form || running.current) return; // ignore double taps
     const photos = media.photos.filter((p) => p.status === 'done' && p.file).map((p) => p.file as File);
-    if (photos.length === 0) return;
+    const video = media.video.file;
+    if (photos.length === 0 || !video) return;
     running.current = true;
-    setState({ phase: 'sending', done: 0, total: photos.length + (media.video.file ? 1 : 0) });
+    setState({ phase: 'sending', done: 0, total: photos.length + 1 });
     const supabase = createBrowserSupabase();
     const deps: SubmitDeps = {
       post: (body) => postJson('/api/listings/create', body),
@@ -37,7 +38,7 @@ export function useSubmit(form: SavedForm | null, media: MediaApi) {
       onProgress: (done, total) => setState({ phase: 'sending', done, total }),
     };
     try {
-      const r = await submitListing(deps, { clientKey: form.clientKey, draft: form.draft, photos, video: media.video.file ?? null });
+      const r = await submitListing(deps, { clientKey: form.clientKey, draft: form.draft, photos, video });
       if (r.ok) {
         clearForm(); // "List another item" starts clean with a new client_key
         setState({ phase: 'sent' });

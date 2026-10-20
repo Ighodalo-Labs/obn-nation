@@ -34,15 +34,9 @@ describe('submitListing', () => {
     expect((d.onProgress as any).mock.calls.at(-1)).toEqual([3, 3]);
   });
 
-  it('sends video_path null when there is no video', async () => {
-    const { d } = deps({ post: vi.fn(async (b: any) => (b.submit ? { ok: true as const, data: { status: 'pending_review', submitted_at: 'T' } } : { ok: true as const, data: { ...plan, upload: { photos: ['s/L/1.webp'], video: null } } })) });
-    await submitListing(d, { clientKey: 'K', draft, photos: [blob('a')], video: null });
-    expect((d.post as any).mock.calls[1][0].media).toEqual({ photo_paths: ['s/L/1.webp'], video_path: null });
-  });
-
   it('stops with a retry message when an upload fails, and never submits', async () => {
     const { d } = deps({ upload: vi.fn().mockResolvedValueOnce({ error: null }).mockResolvedValueOnce({ error: 'boom' }) });
-    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a'), blob('b')], video: null });
+    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a'), blob('b')], video: blob('v') });
     expect(r).toEqual({ ok: false, code: 'upload_failed', message: UPLOAD_STOPPED, retry: true });
     expect((d.post as any).mock.calls).toHaveLength(1);
   });
@@ -50,7 +44,7 @@ describe('submitListing', () => {
   it('shows the daily limit message and does not offer a retry', async () => {
     const msg = "You have reached today's limit of 10 listings. Please come back tomorrow.";
     const { d } = deps({ post: vi.fn(async () => ({ ok: false as const, error: { code: 'daily_limit_reached', message: msg } })) });
-    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a')], video: null });
+    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a')], video: blob('v') });
     expect(r).toEqual({ ok: false, code: 'daily_limit_reached', message: msg, retry: false });
     expect(d.upload).not.toHaveBeenCalled();
   });
@@ -58,13 +52,13 @@ describe('submitListing', () => {
   it('offers a retry after a network failure on submit', async () => {
     let n = 0;
     const { d } = deps({ post: vi.fn(async () => (++n === 1 ? { ok: true as const, data: plan } : { ok: false as const, error: { code: 'network', message: 'No connection.' } })) });
-    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a'), blob('b')], video: null });
+    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a'), blob('b')], video: blob('v') });
     expect(r).toMatchObject({ ok: false, retry: true });
   });
 
   it('treats an already submitted listing as success without uploading', async () => {
     const { d } = deps({ post: vi.fn(async () => ({ ok: true as const, data: { listing_id: 'L', status: 'pending_review', created: false, upload: null } })) });
-    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a')], video: null });
+    const r = await submitListing(d, { clientKey: 'K', draft, photos: [blob('a')], video: blob('v') });
     expect(r).toMatchObject({ ok: true, status: 'pending_review' });
     expect(d.upload).not.toHaveBeenCalled();
   });

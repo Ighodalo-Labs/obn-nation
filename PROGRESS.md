@@ -23,7 +23,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [ ] Domain DNS access (client)
 - [x] Logo (JPG on black) and About Us text received from client, 17 Oct 2026
 - [ ] Transparent PNG or SVG logo (client)
-- [x] Video optional (client confirmed 17 Oct 2026)
+- [x] Video REQUIRED (owner decision 20 Oct 2026; client had said optional on 17 Oct. Tell the client)
 - [ ] Confirm the 3 contacts: which are regional admins and which region each covers (PRD section 5)
 - [ ] Confirm +234 707 276 7227 can be registered as the WhatsApp API sender (not in use on the normal app)
 
@@ -39,7 +39,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T07 Form steps 1 and 2 complete, step 3 placeholder (2026-10-20). Rules tested; saved in browser session; checked on a 360px screen
 - [x] T08 Compression wired into step 3 (2026-10-20). Browser test: 11.7 MB JPG to 639 KB WebP; 20 s 720p clip to 9.1 MB MP4; 75 s clip refused; HEIC refused. Not yet tried on a real phone (T19)
 - [x] T09 Create/submit route, uploads, Under review screen (2026-10-20). `POST /api/listings/create` (two calls, idempotent by client_key, ref from cookie, checks uploaded files exist), retry-safe uploads, progress bar, daily-limit message. New migration 0004 lets a seller replace files in their own draft folder (needed for retry). 201 tests pass. Tested with fakes only; real run needs Supabase
-- [ ] T10 Referral region lock and assignment
+- [x] T10 Referral region lock and assignment (2026-10-20). Migration 0005 `region_for_ref` (tested, ref_region_test.sql) lets the form lock the region from the cookie; the database still forces region and admin on save (already covered by rls_test). Video made required the same day (owner decision)
 ### Week 3
 - [ ] T11 Admin dashboard, claim, approve
 - [ ] T12 Reject, WhatsApp notice, reissue
@@ -59,7 +59,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - 2026-10-20 New migration `0003_otp_attempts.sql`: Supabase cannot tell a wrong code from an expired one and does not void a code after 5 wrong tries, so the server counts tries (PRD SI-5). Service role only. Tests in `supabase/tests/otp_attempts_test.sql`.
 - 2026-10-20 `WHATSAPP_MODE=stub` sends nothing and never logs the code. Testers sign in with fixed codes from "Phone test OTPs" in the Supabase dashboard.
 - 2026-10-20 Provider send limits (60 s between codes, sends per hour) come from the Supabase Auth settings, not our code. Set them in the dashboard: OTP expiry 600 s, minimum interval 60 s.
-- 2026-10-17 CLOSED: video stays optional (confirmed by client). An earlier client line read "Video shouldn't be optional"; the client then confirmed optional. No doc change needed (FM-4, BR-3, DF-16).
+- 2026-10-20 CHANGED: owner says video is required (exactly 1). Docs, server and form updated. Client had said optional on 17 Oct, so the client must be told. Earlier note: video stayed optional (confirmed by client). An earlier client line read "Video shouldn't be optional"; the client then confirmed optional. No doc change needed (FM-4, BR-3, DF-16).
 - 2026-10-17 About Us text replaced with the client's own text. Tagline now carries the three heart emojis.
 
 ## Blockers

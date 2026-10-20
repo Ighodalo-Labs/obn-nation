@@ -25,7 +25,7 @@ export const createBodySchema = z.discriminatedUnion('submit', [
     client_key: z.string().uuid(),
     submit: z.literal(false),
     listing: listingFields,
-    media_plan: z.object({ photo_count: z.number().int().min(1).max(6), has_video: z.boolean() }),
+    media_plan: z.object({ photo_count: z.number().int().min(1).max(6), has_video: z.literal(true, { errorMap: () => ({ message: 'A video is required.' }) }) }),
   }),
   z.object({
     client_key: z.string().uuid(),
@@ -33,7 +33,7 @@ export const createBodySchema = z.discriminatedUnion('submit', [
     listing: listingFields,
     media: z.object({
       photo_paths: z.array(z.string().max(200)).min(1).max(6),
-      video_path: z.string().max(200).nullable(),
+      video_path: z.string().max(200, 'A video is required.'),
     }),
   }),
 ]);
@@ -53,7 +53,7 @@ export interface CreateDeps {
   /** Files that exist in the seller's folder for this listing: names only, like "1.webp". */
   listFiles(bucket: 'photos' | 'videos', folder: string): Promise<string[]>;
   /** Moves a draft to pending_review. Returns null if it was no longer a draft. */
-  submitDraft(id: string, fields: ListingFields, photoPaths: string[], videoPath: string | null): Promise<ListingRow | null>;
+  submitDraft(id: string, fields: ListingFields, photoPaths: string[], videoPath: string): Promise<ListingRow | null>;
 }
 
 export const photoName = (n: number) => `${n}.webp`;
@@ -79,13 +79,13 @@ export async function createOrSubmit(deps: CreateDeps, sellerId: string, refCode
     } else if (row.status === 'draft') {
       await deps.updateDraft(row.id, fields); // a retry may carry corrected text
     }
-    const body201 = { listing_id: row.id, status: row.status, created, upload: null as null | { photos: string[]; video: string | null } };
+    const body201 = { listing_id: row.id, status: row.status, created, upload: null as null | { photos: string[]; video: string } };
     if (row.status === 'draft') {
       const folder = folderOf(sellerId, row.id);
       const plan = body.media_plan;
       body201.upload = {
         photos: Array.from({ length: plan.photo_count }, (_, i) => `${folder}/${photoName(i + 1)}`),
-        video: plan.has_video ? `${folder}/${VIDEO_NAME}` : null,
+        video: `${folder}/${VIDEO_NAME}`,
       };
     }
     return { status: created ? 201 : 200, body: body201 };
@@ -100,15 +100,15 @@ export async function createOrSubmit(deps: CreateDeps, sellerId: string, refCode
   const folder = folderOf(sellerId, row.id);
   const { photo_paths, video_path } = body.media;
   const okPhoto = photo_paths.every((p, i) => p === `${folder}/${photoName(i + 1)}`);
-  if (!okPhoto || (video_path !== null && video_path !== `${folder}/${VIDEO_NAME}`)) throw new ApiError('invalid_media_path');
+  if (!okPhoto || video_path !== `${folder}/${VIDEO_NAME}`) throw new ApiError('invalid_media_path');
 
   // Every file must really be there. A half-finished upload must not be submitted.
   const [photos, videos] = await Promise.all([
     deps.listFiles('photos', folder),
-    video_path ? deps.listFiles('videos', folder) : Promise.resolve([] as string[]),
+    deps.listFiles('videos', folder),
   ]);
   const missingPhoto = photo_paths.some((_, i) => !photos.includes(photoName(i + 1)));
-  const missingVideo = video_path !== null && !videos.includes(VIDEO_NAME);
+  const missingVideo = !videos.includes(VIDEO_NAME);
   if (missingPhoto || missingVideo) {
     throw new ApiError('validation_failed', 'Upload stopped. Tap Try again.', { fields: [{ field: 'media', reason: 'upload_incomplete' }] });
   }

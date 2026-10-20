@@ -161,7 +161,7 @@ One row per item. No personal data.
 | `model` | text | null | Yes | Optional. 1 to 60 characters |
 | `size` | text | null | Yes | Optional. 1 to 60 characters |
 | `photo_urls` | text[] | `'{}'` | No | Storage paths in bucket `photos`, each starting `<seller_id>/<listing_id>/`. Up to 6. At least 1 once the status is not `draft`. The name says "urls" but the values are paths; signed URLs are made at read time |
-| `video_url` | text | null | Yes | Optional. Storage path in bucket `videos`, same folder rule. Null means no video |
+| `video_url` | text | null | Yes | Storage path in bucket `videos`, same folder rule. Null only while the listing is a draft. The app requires a video before submit (PRD FM-4) |
 | `status` | listing_status | `draft` | No | See the state machine in section 7 |
 | `rejection_reason` | text | null | Yes | 5 to 500 characters. Required while `rejected`. Cleared on resubmit |
 | `claimed_at` | timestamptz | null | Yes | When an admin took charge |
@@ -1017,7 +1017,7 @@ grant execute on function public.reject_listing(uuid, uuid, text, text),
 ```sql
 -- Private buckets for listing media. Guarded so it is skipped where Supabase Storage is absent.
 -- Object path layout (both buckets): <seller_id>/<listing_id>/<file>
---   photos: WebP, under 1MB each     videos: MP4, under 10MB, one per listing (optional)
+--   photos: WebP, under 1MB each     videos: MP4, under 10MB, one per listing (required before submit)
 do $$
 begin
   if to_regclass('storage.buckets') is not null then
@@ -1053,8 +1053,11 @@ psql obn_test -f supabase/tests/stub_auth.sql                      # stand-in fo
 psql obn_test -f supabase/migrations/0001_core_schema.sql
 psql obn_test -f supabase/migrations/0002_storage.sql
 psql obn_test -f supabase/migrations/0003_otp_attempts.sql
+psql obn_test -f supabase/migrations/0004_storage_replace_draft_files.sql
+psql obn_test -f supabase/migrations/0005_region_for_ref.sql
 psql obn_test -f supabase/tests/rls_test.sql                       # prints "ALL TESTS PASSED"
 psql obn_test -f supabase/tests/otp_attempts_test.sql              # prints "OTP TESTS PASSED"
+psql obn_test -f supabase/tests/ref_region_test.sql                # prints "REF REGION TESTS PASSED"
 ```
 
 The suite has 92 checks. They cover masking, claim races, single approval, referral routing, the token life cycle (valid, burned, expired, revoked, replay), duplicate prevention, revoke and blacklist effects, privilege boundaries, the daily limit, draft purge and storage access. Section 5 of [08](08_QA_TEST_CASES_AND_ACCEPTANCE.md) lists them and section 2 maps them to the QA scenarios.

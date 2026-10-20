@@ -14,7 +14,7 @@ OBN NATION is a trust-verified marketplace for second-hand goods in Nigeria. Tod
 
 Phase 1, the **Listing Cloud**, replaces that routine with one pipeline:
 
-1. A seller signs in with a WhatsApp code (no password) and fills a three-step form with photos and an optional video.
+1. A seller signs in with a WhatsApp code (no password) and fills a three-step form with photos and a video.
 2. The listing goes to the right regional admin for review. One approval from the admin in charge makes it live.
 3. If something is wrong, the admin rejects it with a reason. The seller gets a WhatsApp message with a private link, fixes the same listing and resubmits. The link works once.
 4. Approved listings join a shared regional pool that every admin in that region can see and advertise. Seller name and phone stay hidden from everyone except the admin in charge and the Global Admin. The database enforces this, not the screen.
@@ -124,7 +124,7 @@ The words "attributed" and "non-attributed" always describe the relationship bet
 |---|---|
 | BR-1 | Regions on day one: Port Harcourt, Delta, Ekiti |
 | BR-2 | Categories: Phones, Computers, TVs, Fridges, Generators, Kitchen, Furniture, Other |
-| BR-3 | The form has three steps. Photos: 1 to 6, each under 1 MB, WebP. Video: optional, 0 or 1, at most 60 seconds, under 10 MB, MP4 |
+| BR-3 | The form has three steps. Photos: 1 to 6, each under 1 MB, WebP. Video: required, exactly 1, at most 60 seconds, under 10 MB, MP4 |
 | BR-4 | A listing from an admin's referral link (`?ref=`) is single-approval by that admin |
 | BR-5 | A listing without a referral link is organic. The first reviewing regional or global admin claims it and approves it |
 | BR-6 | Rejection needs a reason. The seller gets a WhatsApp message through Twilio with a single-use edit link valid for 30 days. The link is not used up by opening it. It is burned when the seller resubmits |
@@ -156,7 +156,7 @@ These were not specified, so the build uses the safest simple choice. Each is a 
 | DF-13 | Admins are added by the Global Admin using the admin's phone number and region. The admin then signs in with a WhatsApp code like everyone else | No second login system |
 | DF-14 | Content cannot change while a listing is under review or live | Prevents edits after approval |
 | DF-15 | Every WhatsApp message (sign-in code and rejection notice) is sent from one sender: the OBN NATION number +234 707 276 7227 (client, 17 Oct 2026) | One trusted sender. The number must be registered with Meta and Twilio for the API. If it is still in use on the normal WhatsApp app, the client must move it first (see section 9) |
-| DF-16 | Video is optional, 0 or 1 (client confirmed, 17 Oct 2026) | Cheap phones struggle with video |
+| DF-16 | Video is required, exactly 1 (owner decision, 20 Oct 2026; this replaces the client's 17 Oct answer of optional) | Buyers trust listings with a video. Cheap phones struggle with video, so keep the 60 s cap and the progress bar |
 
 ## 6. Functional requirements
 
@@ -254,14 +254,14 @@ Common rules for all routes:
 | 2 | Working status | Three radio cards with icons: Working perfectly · Minor issues · Not working | Required |
 | 2 | Price | Number, naira, digits only, shown with thousands separators | Required, ₦1 to ₦1,000,000,000 |
 | 3 | Photos | Drop zone and camera button. Previews with a remove button and a size label | Required, 1 to 6. Each compressed to WebP under 1 MB in the browser |
-| 3 | Video | Drop zone and camera button. Progress bar while compressing | Optional, 0 or 1. At most 60 seconds. Output MP4 under 10 MB |
+| 3 | Video | Drop zone and camera button. Progress bar while compressing | Required, exactly 1. At most 60 seconds. Output MP4 under 10 MB |
 
 | ID | Priority | Requirement |
 |---|---|---|
 | FM-1 | Must | Step 2 shows only after step 1 is valid. Step 3 only after step 2 is valid. A "Back" link returns without losing anything |
 | FM-2 | Must | Typed answers are kept in the browser session, so a refresh, a phone call or switching apps does not wipe steps 1 and 2. Photos and video must be added again after a full page reload; the screen says so |
 | FM-3 | Must | Photos are compressed on the phone before upload (images module in [07](07_API_CONTRACTS_AND_INTEGRATIONS.md)). If a file cannot be brought under 1 MB, that photo is rejected with a message and the others are kept |
-| FM-4 | Must | Video is optional. A listing with zero videos submits normally |
+| FM-4 | Must | Video is required. Submit stays disabled until one video is ready. A listing with no video is refused by the server |
 | FM-5 | Must | A video longer than 60 seconds is refused before any encoding starts: "Videos can be at most 60 seconds." |
 | FM-6 | Must | The video encoder (about 30 MB) loads only when a seller adds a video, never on first page load |
 | FM-7 | Must | Submit runs three quiet steps: create a draft (idempotent), upload files to the returned paths one at a time with a progress bar, then submit. The seller sees one button and one progress bar |
@@ -393,7 +393,7 @@ Build order inside M1 is in `docs/build-plan.md`: core pipeline first, Global Ad
 | The sender number +234 707 276 7227 is also used for normal chats by the client | OBN NATION | Confirm that number can be registered for the API. A number active on the WhatsApp app usually has to be removed from it first, or a new dedicated number used. Check with Twilio before go-live |
 | Domain control for DNS records | OBN NATION | Needed before the landing page and mail go live |
 | Transparent PNG or SVG of the logo | OBN NATION | The flat JPG on black is used until it arrives |
-| Cheap phones struggle with video | Developer | Optional video, 60-second cap, progress bar, early device test |
+| Cheap phones struggle with video | Developer | Required video, 60-second cap, progress bar, early device test |
 | Twilio template costs rise with volume | Project Lead | Monthly spend report. Alert at 80% of the budget line |
 | Admin churn | Global Admin | Revoke and blacklist tools, reassign tool, audit log |
 

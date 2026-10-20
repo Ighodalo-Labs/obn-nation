@@ -202,7 +202,7 @@ Request:
     "model": "RT38",
     "size": "380 L"
   },
-  "media_plan": { "photo_count": 3, "has_video": true }
+  "media_plan": { "photo_count": 3, "has_video": true }  // has_video must be true
 }
 ```
 
@@ -226,7 +226,7 @@ Success `201` (new draft) or `200` (draft already existed):
 
 The browser uploads each compressed file to the matching path with its own session (`photos` bucket for photos, `videos` bucket for video). The `ref` cookie is read here, on the server, and written into the row's `ref_code`. The browser never sends or chooses the admin.
 
-**Call 2: submit (`submit: true`).** Same body, plus the media paths actually uploaded. `video_path` is `null` when there is no video.
+**Call 2: submit (`submit: true`).** Same body, plus the media paths actually uploaded. `video_path` is required: a listing needs one video (PRD FM-4). A missing video gives `400 validation_failed`.
 
 ```json
 {
@@ -239,7 +239,7 @@ The browser uploads each compressed file to the matching path with its own sessi
       "b0000000-0000-4000-8000-000000000001/c1111111-1111-4111-8111-111111111111/2.webp",
       "b0000000-0000-4000-8000-000000000001/c1111111-1111-4111-8111-111111111111/3.webp"
     ],
-    "video_path": null
+    "video_path": "b0000000-0000-4000-8000-000000000001/c1111111-1111-4111-8111-111111111111/video.mp4"
   }
 }
 ```
@@ -320,7 +320,7 @@ Request:
       "b0000000-0000-4000-8000-000000000001/c1111111-1111-4111-8111-111111111111/r1-1.webp",
       "b0000000-0000-4000-8000-000000000001/c1111111-1111-4111-8111-111111111111/r1-2.webp"
     ],
-    "video_path": null
+    "video_path": "b0000000-0000-4000-8000-000000000001/c1111111-1111-4111-8111-111111111111/video.mp4"
   }
 }
 ```
@@ -863,7 +863,7 @@ components:
           description: Needed when submit is true. Paths exactly as returned by the first call.
           properties:
             photo_paths: { type: array, minItems: 1, maxItems: 6, items: { type: string } }
-            video_path: { type: string, nullable: true }
+            video_path: { type: string }
     CreateListingResponse:
       type: object
       required: [listing_id, status]

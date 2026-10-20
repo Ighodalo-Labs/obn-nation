@@ -3,6 +3,7 @@
 Paste or upload this one file into any AI chat. It holds the agent rules, the PRD, the architecture, roles and permissions, the QA suite and the build plan. The database SQL and API code are in separate files in the repo (docs 03 and 07).
 
 
+
 ---
 
 <!-- FILE: AGENTS.md -->
@@ -12,7 +13,7 @@ Paste or upload this one file into any AI chat. It holds the agent rules, the PR
 Project: OBN NATION ONLINE.COM, Phase 1 (the Listing Cloud). A trust-verified marketplace for second-hand goods in Nigeria. Built by Ighodalo Labs.
 
 ## What Phase 1 is
-Sellers sign in with a WhatsApp code, submit a listing (photos, optional video), and regional admins review it. Rejected sellers get a WhatsApp link to fix and resubmit. Approved listings join a regional pool where seller contacts are masked. A Global Admin governs everything.
+Sellers sign in with a WhatsApp code, submit a listing (photos and a video), and regional admins review it. Rejected sellers get a WhatsApp link to fix and resubmit. Approved listings join a regional pool where seller contacts are masked. A Global Admin governs everything.
 
 ## Where the truth is
 Read in this order. Read only what your task needs.
@@ -52,7 +53,6 @@ Next.js 14 (App Router, TypeScript strict, Tailwind) on Vercel. Supabase: Postgr
 - After each task: update `PROGRESS.md`, then stop and report what changed, what passed, and what the human must do next.
 - Stop at a human gate or after 3 failed attempts on the same error. Write the blocker in `PROGRESS.md`.
 - Keep answers short and in plain language.
-
 
 ---
 
@@ -232,7 +232,7 @@ An AI tool cannot do these. Each one needs you or the client.
 | Meta verification and the two template approvals | T20 (stub is used before) | Client |
 | Domain DNS access | T16 | Client |
 | Transparent PNG or SVG logo | T16 | Client |
-| Answer: is video optional or required? | T07 | Client, through you |
+| Answer: is video optional or required? Decided 20 Oct 2026: required | T07 | Done |
 | First Global Admin signs in once, then run `bootstrap_global_admin('+2348053466836')` | T11 | You |
 | Real-phone checks: WhatsApp delivery, compression, two admins at once | T19 | You |
 | Any change to a business rule in PRD section 5 | Any time | Client, through you |
@@ -304,7 +304,6 @@ At the end of each week, answer four questions in `PROGRESS.md`:
 3. Did any client answer change a rule? If yes, which doc changed?
 4. What is the one outcome for next week?
 
-
 ---
 
 <!-- FILE: docs/phase-1/02_PRD_PHASE_1.md -->
@@ -325,7 +324,7 @@ OBN NATION is a trust-verified marketplace for second-hand goods in Nigeria. Tod
 
 Phase 1, the **Listing Cloud**, replaces that routine with one pipeline:
 
-1. A seller signs in with a WhatsApp code (no password) and fills a three-step form with photos and an optional video.
+1. A seller signs in with a WhatsApp code (no password) and fills a three-step form with photos and a video.
 2. The listing goes to the right regional admin for review. One approval from the admin in charge makes it live.
 3. If something is wrong, the admin rejects it with a reason. The seller gets a WhatsApp message with a private link, fixes the same listing and resubmits. The link works once.
 4. Approved listings join a shared regional pool that every admin in that region can see and advertise. Seller name and phone stay hidden from everyone except the admin in charge and the Global Admin. The database enforces this, not the screen.
@@ -435,7 +434,7 @@ The words "attributed" and "non-attributed" always describe the relationship bet
 |---|---|
 | BR-1 | Regions on day one: Port Harcourt, Delta, Ekiti |
 | BR-2 | Categories: Phones, Computers, TVs, Fridges, Generators, Kitchen, Furniture, Other |
-| BR-3 | The form has three steps. Photos: 1 to 6, each under 1 MB, WebP. Video: optional, 0 or 1, at most 60 seconds, under 10 MB, MP4 |
+| BR-3 | The form has three steps. Photos: 1 to 6, each under 1 MB, WebP. Video: required, exactly 1, at most 60 seconds, under 10 MB, MP4 |
 | BR-4 | A listing from an admin's referral link (`?ref=`) is single-approval by that admin |
 | BR-5 | A listing without a referral link is organic. The first reviewing regional or global admin claims it and approves it |
 | BR-6 | Rejection needs a reason. The seller gets a WhatsApp message through Twilio with a single-use edit link valid for 30 days. The link is not used up by opening it. It is burned when the seller resubmits |
@@ -467,7 +466,7 @@ These were not specified, so the build uses the safest simple choice. Each is a 
 | DF-13 | Admins are added by the Global Admin using the admin's phone number and region. The admin then signs in with a WhatsApp code like everyone else | No second login system |
 | DF-14 | Content cannot change while a listing is under review or live | Prevents edits after approval |
 | DF-15 | Every WhatsApp message (sign-in code and rejection notice) is sent from one sender: the OBN NATION number +234 707 276 7227 (client, 17 Oct 2026) | One trusted sender. The number must be registered with Meta and Twilio for the API. If it is still in use on the normal WhatsApp app, the client must move it first (see section 9) |
-| DF-16 | Video is optional, 0 or 1 (client confirmed, 17 Oct 2026) | Cheap phones struggle with video |
+| DF-16 | Video is required, exactly 1 (owner decision, 20 Oct 2026; this replaces the client's 17 Oct answer of optional) | Buyers trust listings with a video. Cheap phones struggle with video, so keep the 60 s cap and the progress bar |
 
 ## 6. Functional requirements
 
@@ -565,14 +564,14 @@ Common rules for all routes:
 | 2 | Working status | Three radio cards with icons: Working perfectly · Minor issues · Not working | Required |
 | 2 | Price | Number, naira, digits only, shown with thousands separators | Required, ₦1 to ₦1,000,000,000 |
 | 3 | Photos | Drop zone and camera button. Previews with a remove button and a size label | Required, 1 to 6. Each compressed to WebP under 1 MB in the browser |
-| 3 | Video | Drop zone and camera button. Progress bar while compressing | Optional, 0 or 1. At most 60 seconds. Output MP4 under 10 MB |
+| 3 | Video | Drop zone and camera button. Progress bar while compressing | Required, exactly 1. At most 60 seconds. Output MP4 under 10 MB |
 
 | ID | Priority | Requirement |
 |---|---|---|
 | FM-1 | Must | Step 2 shows only after step 1 is valid. Step 3 only after step 2 is valid. A "Back" link returns without losing anything |
 | FM-2 | Must | Typed answers are kept in the browser session, so a refresh, a phone call or switching apps does not wipe steps 1 and 2. Photos and video must be added again after a full page reload; the screen says so |
 | FM-3 | Must | Photos are compressed on the phone before upload (images module in [07](07_API_CONTRACTS_AND_INTEGRATIONS.md)). If a file cannot be brought under 1 MB, that photo is rejected with a message and the others are kept |
-| FM-4 | Must | Video is optional. A listing with zero videos submits normally |
+| FM-4 | Must | Video is required. Submit stays disabled until one video is ready. A listing with no video is refused by the server |
 | FM-5 | Must | A video longer than 60 seconds is refused before any encoding starts: "Videos can be at most 60 seconds." |
 | FM-6 | Must | The video encoder (about 30 MB) loads only when a seller adds a video, never on first page load |
 | FM-7 | Must | Submit runs three quiet steps: create a draft (idempotent), upload files to the returned paths one at a time with a progress bar, then submit. The seller sees one button and one progress bar |
@@ -704,14 +703,13 @@ Build order inside M1 is in `docs/build-plan.md`: core pipeline first, Global Ad
 | The sender number +234 707 276 7227 is also used for normal chats by the client | OBN NATION | Confirm that number can be registered for the API. A number active on the WhatsApp app usually has to be removed from it first, or a new dedicated number used. Check with Twilio before go-live |
 | Domain control for DNS records | OBN NATION | Needed before the landing page and mail go live |
 | Transparent PNG or SVG of the logo | OBN NATION | The flat JPG on black is used until it arrives |
-| Cheap phones struggle with video | Developer | Optional video, 60-second cap, progress bar, early device test |
+| Cheap phones struggle with video | Developer | Required video, 60-second cap, progress bar, early device test |
 | Twilio template costs rise with volume | Project Lead | Monthly spend report. Alert at 80% of the budget line |
 | Admin churn | Global Admin | Revoke and blacklist tools, reassign tool, audit log |
 
 ## 10. Acceptance
 
 Phase 1 is accepted when every **Must** requirement above passes its test in [08](08_QA_TEST_CASES_AND_ACCEPTANCE.md), the three gate targets in section 1.2 are met during the closed beta, and the Global Admin confirms the manual WhatsApp and Xender routine is no longer in use.
-
 
 ---
 
@@ -976,11 +974,10 @@ No other outbound destinations are used. There is no third-party analytics scrip
 | Risk | Impact | Plan |
 |---|---|---|
 | Meta business verification and template approval take time (client side) | Go-live blocked | Start now. Build against a stub sender until approved |
-| Video encoding is slow on cheap phones | Sellers abandon the form | Video is optional. 60-second cap. Progress bar. Test early on a low-end device |
+| Video encoding is slow on cheap phones | Sellers abandon the form | Video is required (owner decision, 20 Oct 2026). 60-second cap. Progress bar. Test early on a low-end device |
 | WhatsApp conversation fees grow with volume | Cost above the proposal | Alert at 80% of the line. Report monthly spend to the CTO |
 | One developer for Milestone 1 | Slips | Build order puts the core pipeline first and the Global Admin screens and landing page last |
 | Free-tier pausing before Milestone 2 | Demo outage | Use staging only for demos. Upgrade on schedule |
-
 
 ---
 
@@ -1107,7 +1104,6 @@ R = does the work · A = answers for it and signs it off (exactly one per row) �
 | Admin misconduct | Regional Admin reports | Global Admin decides revoke or blacklist |
 | Production outage | Developer | Project Lead, then Acting CTO |
 
-
 ---
 
 <!-- FILE: docs/phase-1/08_QA_TEST_CASES_AND_ACCEPTANCE.md -->
@@ -1163,7 +1159,7 @@ Related: [02 PRD](02_PRD_PHASE_1.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA
 | ID | Scenario | Steps | Expected result | Sev | Auto |
 |---|---|---|---|---|---|
 | QA-05 | Submit with 0 photos | 1) Fill steps 1 and 2. 2) On step 3 add no photos. 3) Tap Submit. 4) Call the create API directly with an empty photo list and `submit: true` | The form shows "Add at least one photo." The direct call is refused (`validation_failed`). The database also refuses a non-draft row without photos | S2 | Manual + Auto |
-| QA-06 | Submit with 0 videos (should pass) | 1) Fill the form with 2 photos and no video. 2) Submit | The listing is created as `pending_review` with `video_url` empty. No error, no prompt asking for a video | S2 | Manual + Auto |
+| QA-06 | Submit with no video (should fail) | 1) Fill the form with 2 photos and no video. 2) Try to submit. 3) Send the submit request directly with `video_path` null | The Submit button stays disabled and the page says a video is needed. The server refuses the direct request with `validation_failed`. No listing becomes `pending_review` | S2 | Manual + Auto |
 | QA-07 | Video longer than 60 seconds (should fail) | 1) On step 3 pick the 75-second video | The message "Videos can be at most 60 seconds." appears at once, before the encoder loads or any encoding starts. The video is not attached. The rest of the form still works | S2 | Manual |
 | QA-08 | A full-length video is compressed | 1) Pick the exactly-60-second 1080p video on the mid-range Android. 2) Wait. 3) Submit. 4) Download the stored file | A progress bar moves. The output is an MP4 under 10 MB (10,485,760 bytes) and plays. It is stored under `videos/<seller>/<listing>/video.mp4`. The encoder download happened only when the video button was tapped. Cancel works and leaves the form usable | S2 | Manual |
 | QA-09 | Photo compression and the six-photo limit | 1) Add 6 JPEGs of 4 to 8 MB. 2) Try to add a 7th. 3) Check stored files | Each stored file is WebP and under 1,048,576 bytes. The 7th is refused with "You can add up to 6 photos." Each photo takes under 5 seconds on the mid-range phone. Sizes are shown beside the thumbnails | S2 | Manual |
@@ -1215,7 +1211,7 @@ Related: [02 PRD](02_PRD_PHASE_1.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA
 | QA-35 | Landing page | 1) Open `/` on a throttled slow-4G profile at 360 px. 2) Scroll. 3) Tap the button | Largest content paints in under 2.5 s. No horizontal scroll. The About copy matches section 3 of the PRD exactly. The red button is sticky and opens `/list`. Page title and Open Graph tags are set | S2 | Manual |
 | QA-36 | DNS and Zoho Mail | 1) Run `dig MX`, `dig TXT` on the domain. 2) Send mail to a Zoho mailbox and back to Gmail. 3) Open the original headers. 4) Load the website | MX points to Zoho at priorities 10, 20, 50. SPF and DKIM show PASS in the headers. The website still loads over HTTPS from Vercel | S2 | Manual |
 | QA-37 | Accessibility | 1) Run an automated check (axe or Lighthouse). 2) Tab through the form with a keyboard. 3) Use TalkBack for the OTP and form. 4) Check contrast for each brand colour | No critical issues. Focus is always visible. Every field has a label. Errors are announced. Touch targets are at least 48 px. Brand colours are used as fills with white text, not as text on the dark background | S3 | Manual |
-| QA-38 | Low-end device run | 1) On the low-end Android complete a listing with 3 photos and no video. 2) Repeat with a 20-second video | The form never freezes. Photos compress one at a time. The video is optional and can be cancelled. If the phone runs out of memory the page shows a clear message instead of a blank screen | S2 | Manual |
+| QA-38 | Low-end device run | 1) On the low-end Android complete a listing with 3 photos and a 20-second video. 2) Repeat with the exactly-60-second video | The form never freezes. Photos compress one at a time. The video can be cancelled and chosen again. If the phone runs out of memory the page shows a clear message instead of a blank screen | S2 | Manual |
 | QA-39 | Audit log completeness | 1) Perform claim, approve, reject, reissue, reassign, promote, revoke, reinstate, blacklist and a resubmit. 2) Read the audit log as the Global Admin | One row per action with actor, target, time and detail (reason, old and new admin). No OTP codes or tokens appear in any row | S2 | Auto (reassign) + Manual |
 | QA-40 | Draft cleanup | 1) Make 3 drafts. 2) Age two of them past 7 days in staging. 3) Run the cron route | The two old drafts and their storage folders are deleted. The fresh draft and all submitted listings remain | S3 | Auto (database) + Manual |
 | QA-41 | WhatsApp failure on rejection | 1) In staging switch the Twilio token to an invalid one. 2) Reject a listing | The rejection is saved. The card shows "Message not sent" and a Send new link button. After fixing the token, Send new link delivers, and only the new link works | S2 | Manual |
@@ -1309,7 +1305,7 @@ Run with the commands in section 10 of [03](03_ERD_AND_DATABASE_SCHEMA.md). The 
 | Listing creation and validation | Same client_key twice creates one listing · new listing is an unassigned draft · 0 photos rejected · media path in another seller's folder rejected · more than 6 photos rejected · price must be above zero · drafts stay drafts after failed submits · listing with photos and no video submits · seller cannot edit a listing under review · seller without a name cannot submit |
 | Visibility and masking | PH admin sees unclaimed PH listing · name and phone masked on unclaimed listing · PH admin cannot read the seller profile · PH admin can read listing content · Ekiti admin sees nothing from Port Harcourt · global admin sees the real phone · other sellers see nothing |
 | Claim and approve | Ekiti admin cannot approve a PH listing · first admin to claim becomes admin in charge · admin in charge sees real phone · admin in charge can read the seller profile · second admin cannot claim · other PH admin cannot approve a listing assigned elsewhere · claimed listing disappears from other admins · one approval makes it live · cannot approve twice · approved pool shows masked name to other PH admin · feed shows admin in charge by first name only · approved PH listing not in the Ekiti pool |
-| Referral and override | Referral code assigns admin in charge and forces the admin region · listing with one video submits · other PH admin cannot see a referral listing under review · other PH admin cannot approve it · assigned admin sees seller details · Global Admin approves another admin's listing without taking over · Global Admin approving an unclaimed listing becomes in charge · only the assigned admin can reject a referral listing |
+| Referral and override | Referral code assigns admin in charge and forces the admin region · listing with a video submits · other PH admin cannot see a referral listing under review · other PH admin cannot approve it · assigned admin sees seller details · Global Admin approves another admin's listing without taking over · Global Admin approving an unclaimed listing becomes in charge · only the assigned admin can reject a referral listing |
 | Rejection and tokens | Rejection needs a real reason · rejection stores reason and one token hash · token lives 30 days · valid token returns the listing · resubmit updates the same listing · no duplicate after resubmit · resubmit moves back to pending with edits and video removed · token burned on resubmit · replay fails · used token cannot open the edit page · unknown token invalid · expired token refused · reissue revokes the older link · new link works · foreign media path refused · failed resubmit does not burn the token · second loop works |
 | Privileges | Signed-in users cannot call reject · cannot read tokens · cannot call resubmit · nobody can change their own role · admins cannot approve with a direct update · regional admin cannot read the audit log · anonymous visitors read nothing |
 | Governance | Regional admin cannot reassign · cannot reassign across regions · reassign needs a reason · global admin reassigns · previous admin sees it masked · reassign is audited · revoke releases pending listings · revoked admin sees nothing · revoked admin cannot act · reinstated admin sees the region again · only a global admin can blacklist · blacklist flips both flags · blacklisted admin reads nothing · blacklisted user cannot write · blacklisted admin cannot approve · blacklist cannot be undone by reinstate · blacklisted phone cannot be promoted · blacklist cannot be undone in SQL · deleting the login cannot free a blacklisted phone |

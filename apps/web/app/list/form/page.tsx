@@ -1,6 +1,8 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Header } from '@/components/Header';
 import { ListingForm } from '@/components/listing/ListingForm';
+import { REF_COOKIE, validRef } from '@/lib/middleware/rules';
 import { createServerSupabase } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -22,12 +24,25 @@ async function requireNamedSeller(): Promise<void> {
   if (!ok) redirect('/list');
 }
 
+/** Region of the admin whose referral link the visitor used (PRD DF-1). Null when there is no valid link. */
+async function regionFromRef(): Promise<string | null> {
+  const code = validRef(cookies().get(REF_COOKIE)?.value);
+  if (!code) return null;
+  try {
+    const { data } = await createServerSupabase().rpc('region_for_ref', { p_code: code });
+    return typeof data === 'string' ? data : null;
+  } catch {
+    return null; // the database still forces the region when the listing is saved
+  }
+}
+
 export default async function ListFormPage() {
   await requireNamedSeller();
+  const lockedRegion = await regionFromRef();
   return (
     <main>
       <Header />
-      <ListingForm lockedRegion={null} />
+      <ListingForm lockedRegion={lockedRegion} />
     </main>
   );
 }

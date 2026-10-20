@@ -137,7 +137,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
           </button>
         )}
         {step === 3 && (
-          <button type="button" className={primaryButton} disabled={media.busy || media.ready < 1 || sending || (state.phase === 'failed' && !state.retry)} onClick={submit}>
+          <button type="button" className={primaryButton} disabled={media.busy || media.ready < 1 || media.video.status !== 'done' || sending || (state.phase === 'failed' && !state.retry)} onClick={submit}>
             {sending ? 'Sending…' : state.phase === 'failed' && state.retry ? 'Try again' : 'Submit listing'}
           </button>
         )}
@@ -151,7 +151,9 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
         </div>
       )}
       {step === 3 && state.phase === 'failed' && <p role="alert" className="text-sm text-tint-red">{state.message}</p>}
-      {step === 3 && !sending && media.ready < 1 && <p className="text-sm text-muted">Add at least one photo to submit.</p>}
+      {step === 3 && !sending && (media.ready < 1 || media.video.status !== 'done') && (
+        <p className="text-sm text-muted">Add at least one photo and one video to submit.</p>
+      )}
     </form>
   );
 }
