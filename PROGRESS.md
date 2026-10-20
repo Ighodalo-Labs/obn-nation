@@ -13,6 +13,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - Session refresh in the middleware (`getUser()` with request and response cookies) so a signed-in person is not dropped after the access token expires. Add and test in T06 once keys exist.
 - Run the sign-in flow against the real project: send, verify, wrong code x5, expired code, blacklisted number.
 - Run the full submit flow against the real project (create, upload, submit, retry after a dropped upload). Migration 0004 storage policy is skipped locally (no Storage schema), so check it live.
+- Not built yet from doc 07: the 429 rate limit on `edit/upload-url` (needs a shared store, so add it with Vercel/Upstash or a small table). Old files removed during an edit stay in storage until a cleanup job exists (add to T17 hardening).
 - Configure the Send SMS hook URL and secret, OTP expiry 600 s, min interval 60 s, and test phone numbers.
 
 ## Gates still open
@@ -43,7 +44,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ### Week 3
 - [x] T11 Admin dashboard, claim, approve (2026-10-20). `/admin/dashboard` (tabs, cards, detail gallery and video, Claim, Approve with confirm, referral link with Copy and WhatsApp share, refresh on focus), `POST /api/listings/decide`. First-wins and masking are enforced and tested in the database. Reject button comes in T12. Screens not yet seen against a live project
 - [x] T12 Reject modal, reject and reissue routes, WhatsApp notice (2026-10-20). Reason 5 to 500 characters with quick-pick chips; token hash only stored; if WhatsApp fails the rejection still stands and the card shows "Message not sent" with Send new link. 223 tests pass. WhatsApp runs in stub mode until Twilio and Meta are ready
-- [ ] T13 Edit page and resubmit
+- [x] T13 Edit page and resubmit (2026-10-20). `/list/edit?token=` pre-filled form with the reason banner, keep/remove/add photos and video, `edit/upload-url` and `resubmit` routes, friendly messages for used, expired, replaced and unknown links, noindex and no-referrer. 247 tests pass. Live check needed: signed uploads and burn-on-resubmit against real Supabase
 - [ ] T14 Regional pool with masking
 ### Week 4
 - [ ] T15 Global Admin screens and blacklist

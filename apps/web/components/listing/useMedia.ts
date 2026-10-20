@@ -30,7 +30,7 @@ const IDLE_VIDEO: VideoState = { status: 'idle', percent: 0 };
  * Compression runs on the phone, one photo at a time. The video encoder is loaded only when a video is added (FM-6).
  * Nothing here is saved between page loads (FM-2).
  */
-export function useMedia() {
+export function useMedia(reserved = 0) {
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [video, setVideo] = useState<VideoState>(IDLE_VIDEO);
   const [notice, setNotice] = useState<string | null>(null);
@@ -40,6 +40,8 @@ export function useMedia() {
   const urls = useRef<Set<string>>(new Set());
 
   photosRef.current = photos;
+  const reservedRef = useRef(reserved);
+  reservedRef.current = reserved; // photos already attached to the listing (edit page) use up slots
 
   const track = (file: Blob) => {
     const url = URL.createObjectURL(file);
@@ -61,7 +63,7 @@ export function useMedia() {
 
   const addPhotos = useCallback((files: File[]) => {
     setNotice(null);
-    const { accepted, overflow } = planPhotoBatch(photosRef.current.filter((p) => p.status !== 'error').length, files);
+    const { accepted, overflow } = planPhotoBatch(photosRef.current.filter((p) => p.status !== 'error').length + reservedRef.current, files);
     if (overflow > 0) setNotice(TOO_MANY_PHOTOS);
     if (accepted.length === 0) return;
 

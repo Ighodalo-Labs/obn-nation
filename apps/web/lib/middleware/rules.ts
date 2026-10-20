@@ -10,6 +10,11 @@ export function validRef(value: string | null | undefined): string | null {
 }
 
 /** Pages where a `?ref=` value is picked up (PRD SI-6). */
+/** ED-10: the edit page must not leak its token in a Referer header. */
+export function referrerPolicyFor(pathname: string): string | null {
+  return pathname === '/list/edit' || pathname.startsWith('/list/edit/') ? 'no-referrer' : null;
+}
+
 export function readsRef(pathname: string): boolean {
   return pathname === '/' || pathname === '/list' || pathname.startsWith('/list/');
 }

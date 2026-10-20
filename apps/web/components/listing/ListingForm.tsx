@@ -3,14 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { loadForm, saveForm, type SavedForm } from '@/lib/listing/draft';
 import {
-  formatPrice, priceDigits, validateStep1, validateStep2, type FieldErrors, type FormDraft,
+  validateStep1, validateStep2, type FieldErrors, type FormDraft,
 } from '@/lib/listing/schema';
+import { DetailsFields } from './DetailsFields';
 import { MediaStep } from './MediaStep';
 import { useMedia } from './useMedia';
 import { useSubmit } from './useSubmit';
 import { UnderReview } from './UnderReview';
-import { ageOptions, categoryOptions, regionOptions, workOptions } from './options';
-import { CardChoice, Field, StepHeader, inputClass, primaryButton, secondaryButton } from './ui';
+import { categoryOptions, regionOptions } from './options';
+import { CardChoice, StepHeader, primaryButton, secondaryButton } from './ui';
 
 /**
  * Step 3 shows photos and video (T08) and sends the listing (T09).
@@ -86,42 +87,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
         </>
       )}
 
-      {step === 2 && (
-        <>
-          <Field id="title" label="Title" error={errors.title}>
-            <input id="title" className={inputClass} type="text" maxLength={80} value={draft.title} placeholder="Samsung double door fridge"
-              aria-invalid={Boolean(errors.title)} aria-describedby={errors.title ? 'title-error' : undefined}
-              onChange={(e) => set('title', e.target.value)} />
-          </Field>
-          <Field id="description" label="Description" hint={`${draft.description.length} / 1000`} error={errors.description}>
-            <textarea id="description" className={`${inputClass} min-h-28`} rows={4} maxLength={1000} value={draft.description}
-              placeholder="What it is, how old it is, what comes with it."
-              aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? 'description-error' : undefined}
-              onChange={(e) => set('description', e.target.value)} />
-          </Field>
-          <Field id="brand" label="Brand" hint="optional" error={errors.brand}>
-            <input id="brand" className={inputClass} type="text" maxLength={60} value={draft.brand} onChange={(e) => set('brand', e.target.value)} />
-          </Field>
-          <Field id="model" label="Model" hint="optional" error={errors.model}>
-            <input id="model" className={inputClass} type="text" maxLength={60} value={draft.model} onChange={(e) => set('model', e.target.value)} />
-          </Field>
-          <Field id="size" label="Size" hint="optional, like 43 inch or 2.5 kVA" error={errors.size}>
-            <input id="size" className={inputClass} type="text" maxLength={60} value={draft.size} onChange={(e) => set('size', e.target.value)} />
-          </Field>
-          <CardChoice name="age" legend="Age of item" options={ageOptions} value={draft.condition_age}
-            onChange={(v) => set('condition_age', v)} error={errors.condition_age} columns={1} />
-          <CardChoice name="work" legend="Working status" options={workOptions} value={draft.condition_work}
-            onChange={(v) => set('condition_work', v)} error={errors.condition_work} columns={3} />
-          <Field id="price" label="Price" error={errors.price}>
-            <div className="flex gap-2">
-              <span className="flex min-h-12 items-center rounded-lg border border-border bg-surface px-3 text-base text-muted">₦</span>
-              <input id="price" className={inputClass} type="text" inputMode="numeric" autoComplete="off" placeholder="150,000"
-                value={formatPrice(draft.price)} aria-invalid={Boolean(errors.price)} aria-describedby={errors.price ? 'price-error' : undefined}
-                onChange={(e) => set('price', priceDigits(e.target.value))} />
-            </div>
-          </Field>
-        </>
-      )}
+      {step === 2 && <DetailsFields draft={draft} errors={errors} set={set} />}
 
       {step === 3 && <MediaStep media={media} />}
 

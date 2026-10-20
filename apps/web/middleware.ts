@@ -5,6 +5,7 @@ import {
   hasSessionCookie,
   needsSession,
   readsRef,
+  referrerPolicyFor,
   securityHeaders,
   signInRedirect,
   validRef,
@@ -42,6 +43,8 @@ export function middleware(request: NextRequest) {
   }
 
   for (const [key, value] of Object.entries(securityHeaders(production))) response.headers.set(key, value);
+  const referrer = referrerPolicyFor(pathname);
+  if (referrer) response.headers.set('Referrer-Policy', referrer);
   return response;
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { hasSessionCookie, needsSession, readsRef, safeNext, signInRedirect, validRef } from './rules';
+import { hasSessionCookie, needsSession, readsRef, referrerPolicyFor, safeNext, signInRedirect, validRef } from './rules';
 
 describe('referral code shape (SI-6)', () => {
   it('accepts 8 lowercase hex characters', () => {
@@ -53,5 +53,14 @@ describe('session cookie detection', () => {
   });
   it('ignores other cookies', () => {
     expect(hasSessionCookie(['obn_ref', 'sb-abcd-auth-token-code-verifier'])).toBe(false);
+  });
+});
+
+describe('edit page referrer policy (ED-10)', () => {
+  it('sends no referrer from the edit page only', () => {
+    expect(referrerPolicyFor('/list/edit')).toBe('no-referrer');
+    expect(referrerPolicyFor('/list/edit/anything')).toBe('no-referrer');
+    expect(referrerPolicyFor('/list')).toBeNull();
+    expect(referrerPolicyFor('/list/editor')).toBeNull();
   });
 });

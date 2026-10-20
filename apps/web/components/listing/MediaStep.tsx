@@ -9,13 +9,20 @@ import { secondaryButton } from './ui';
 
 const tile = 'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-white';
 
-export function MediaStep({ media }: { media: MediaApi }) {
+export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }: {
+  media: MediaApi;
+  /** Photos already on the listing (edit page). They use up slots. */
+  reserved?: number;
+  existingPhotos?: React.ReactNode;
+  /** When set, the video picker is hidden and this is shown instead. */
+  existingVideo?: React.ReactNode;
+}) {
   const gallery = useRef<HTMLInputElement>(null);
   const camera = useRef<HTMLInputElement>(null);
   const videoGallery = useRef<HTMLInputElement>(null);
   const videoCamera = useRef<HTMLInputElement>(null);
   const { photos, video, notice } = media;
-  const counted = photos.filter((p) => p.status !== 'error').length;
+  const counted = photos.filter((p) => p.status !== 'error').length + reserved;
   const full = counted >= IMAGE_MAX_COUNT;
   const videoBusy = video.status === 'checking' || video.status === 'compressing';
 
@@ -44,6 +51,7 @@ export function MediaStep({ media }: { media: MediaApi }) {
         <p className="text-sm text-muted" aria-live="polite">{counted} of {IMAGE_MAX_COUNT} photos added. Each photo is shrunk to under 1 MB.</p>
         {notice && <p role="alert" className="text-sm text-tint-red">{notice}</p>}
 
+        {existingPhotos}
         {photos.length > 0 && (
           <ul className="grid grid-cols-3 gap-2">
             {photos.map((p, i) => (
@@ -73,7 +81,8 @@ export function MediaStep({ media }: { media: MediaApi }) {
 
       <section className="flex flex-col gap-3" aria-labelledby="video-h">
         <h2 id="video-h" className="text-base">Video <span className="text-sm text-muted">(required, up to 60 seconds)</span></h2>
-        {video.status === 'idle' || video.status === 'error' ? (
+        {existingVideo}
+        {!existingVideo && (video.status === 'idle' || video.status === 'error') ? (
           <div className="flex gap-2">
             <button type="button" className={tile} onClick={() => videoCamera.current?.click()}>
               <Film size={20} aria-hidden="true" /> Record
