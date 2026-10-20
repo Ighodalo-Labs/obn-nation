@@ -12,6 +12,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ## Follow-ups that need a live Supabase project
 - Session refresh in the middleware (`getUser()` with request and response cookies) so a signed-in person is not dropped after the access token expires. Add and test in T06 once keys exist.
 - Run the sign-in flow against the real project: send, verify, wrong code x5, expired code, blacklisted number.
+- Run the full submit flow against the real project (create, upload, submit, retry after a dropped upload). Migration 0004 storage policy is skipped locally (no Storage schema), so check it live.
 - Configure the Send SMS hook URL and secret, OTP expiry 600 s, min interval 60 s, and test phone numbers.
 
 ## Gates still open
@@ -37,7 +38,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ### Week 2
 - [x] T07 Form steps 1 and 2 complete, step 3 placeholder (2026-10-20). Rules tested; saved in browser session; checked on a 360px screen
 - [x] T08 Compression wired into step 3 (2026-10-20). Browser test: 11.7 MB JPG to 639 KB WebP; 20 s 720p clip to 9.1 MB MP4; 75 s clip refused; HEIC refused. Not yet tried on a real phone (T19)
-- [ ] T09 Create/submit route, uploads, Under review screen
+- [x] T09 Create/submit route, uploads, Under review screen (2026-10-20). `POST /api/listings/create` (two calls, idempotent by client_key, ref from cookie, checks uploaded files exist), retry-safe uploads, progress bar, daily-limit message. New migration 0004 lets a seller replace files in their own draft folder (needed for retry). 201 tests pass. Tested with fakes only; real run needs Supabase
 - [ ] T10 Referral region lock and assignment
 ### Week 3
 - [ ] T11 Admin dashboard, claim, approve

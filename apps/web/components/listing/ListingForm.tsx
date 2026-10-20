@@ -7,11 +7,13 @@ import {
 } from '@/lib/listing/schema';
 import { MediaStep } from './MediaStep';
 import { useMedia } from './useMedia';
+import { useSubmit } from './useSubmit';
+import { UnderReview } from './UnderReview';
 import { ageOptions, categoryOptions, regionOptions, workOptions } from './options';
 import { CardChoice, Field, StepHeader, inputClass, primaryButton, secondaryButton } from './ui';
 
 /**
- * Steps 1 and 2 are complete. Step 3 shows photos and video (T08). Submit is added in T09.
+ * Step 3 shows photos and video (T08) and sends the listing (T09).
  * `lockedRegion` comes from the referral cookie on the server (T10). Until then it is always null.
  */
 export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
@@ -19,6 +21,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const heading = useRef<HTMLDivElement>(null);
   const media = useMedia();
+  const { state, submit } = useSubmit(form, media);
 
   useEffect(() => {
     const saved = loadForm();
@@ -35,6 +38,12 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
   }, [form?.step]);
 
   if (!form) return <p className="py-8 text-muted">Loading…</p>;
+
+  if (state.phase === 'sent') {
+    // The saved form was cleared. A reload gives a blank form with a new client_key.
+    return <UnderReview onAnother={() => window.location.assign('/list/form')} />;
+  }
+  const sending = state.phase === 'sending';
 
   const { draft, step } = form;
   const set = <K extends keyof FormDraft>(key: K, value: FormDraft[K]) => {
@@ -128,11 +137,21 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
           </button>
         )}
         {step === 3 && (
-          <button type="button" className={primaryButton} disabled>
-            Submit listing
+          <button type="button" className={primaryButton} disabled={media.busy || media.ready < 1 || sending || (state.phase === 'failed' && !state.retry)} onClick={submit}>
+            {sending ? 'Sending…' : state.phase === 'failed' && state.retry ? 'Try again' : 'Submit listing'}
           </button>
         )}
       </div>
+      {step === 3 && sending && (
+        <div className="flex flex-col gap-2" aria-live="polite">
+          <p className="text-sm">Uploading {state.done} of {state.total} files. Keep this page open.</p>
+          <div role="progressbar" aria-valuemin={0} aria-valuemax={state.total} aria-valuenow={state.done} className="h-2 overflow-hidden rounded bg-border">
+            <div className="h-full bg-tint-blue" style={{ width: `${state.total ? (state.done / state.total) * 100 : 0}%` }} />
+          </div>
+        </div>
+      )}
+      {step === 3 && state.phase === 'failed' && <p role="alert" className="text-sm text-tint-red">{state.message}</p>}
+      {step === 3 && !sending && media.ready < 1 && <p className="text-sm text-muted">Add at least one photo to submit.</p>}
     </form>
   );
 }

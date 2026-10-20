@@ -4,7 +4,7 @@ Project: OBN NATION ONLINE.COM · Phase 1, the Listing Cloud · Version 1.0 · 1
 Database: Supabase PostgreSQL 15 · Migrations: `supabase/migrations/0001_core_schema.sql`, `0002_storage.sql` · Tests: `supabase/tests/`
 Related: [01 Architecture](01_SYSTEM_ARCHITECTURE.md) · [02 PRD](02_PRD_PHASE_1.md) · [06 RBAC](06_RACI_AND_RBAC_MATRIX.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md)
 
-Migration `0003_otp_attempts.sql` (wrong-code counter for the WhatsApp sign-in, service role only, tested by `supabase/tests/otp_attempts_test.sql`) was added after this document and is not repeated in section 9. The SQL in section 9 is the exact content of the first two migration files and is the version that the automated tests run against (92 checks, all passing on PostgreSQL 16). If this document and the files ever disagree, the files win.
+Migration `0003_otp_attempts.sql` (wrong-code counter for the WhatsApp sign-in, service role only, tested by `supabase/tests/otp_attempts_test.sql`) and `0004_storage_replace_draft_files.sql` (lets a seller replace files in their own draft folder so an upload retry works) were added after this document and are not repeated in section 9. The SQL in section 9 is the exact content of the first two migration files and is the version that the automated tests run against (92 checks, all passing on PostgreSQL 16). If this document and the files ever disagree, the files win.
 
 ---
 
