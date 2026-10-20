@@ -4,7 +4,7 @@ Project: OBN NATION ONLINE.COM · Phase 1, the Listing Cloud · Version 1.0 · 1
 Database: Supabase PostgreSQL 15 · Migrations: `supabase/migrations/0001_core_schema.sql`, `0002_storage.sql` · Tests: `supabase/tests/`
 Related: [01 Architecture](01_SYSTEM_ARCHITECTURE.md) · [02 PRD](02_PRD_PHASE_1.md) · [06 RBAC](06_RACI_AND_RBAC_MATRIX.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md)
 
-The SQL in section 9 is the exact content of the two migration files and is the version that the automated tests run against (92 checks, all passing on PostgreSQL 16). If this document and the files ever disagree, the files win.
+Migration `0003_otp_attempts.sql` (wrong-code counter for the WhatsApp sign-in, service role only, tested by `supabase/tests/otp_attempts_test.sql`) was added after this document and is not repeated in section 9. The SQL in section 9 is the exact content of the first two migration files and is the version that the automated tests run against (92 checks, all passing on PostgreSQL 16). If this document and the files ever disagree, the files win.
 
 ---
 
@@ -1052,7 +1052,9 @@ createdb obn_test
 psql obn_test -f supabase/tests/stub_auth.sql                      # stand-in for Supabase auth and storage
 psql obn_test -f supabase/migrations/0001_core_schema.sql
 psql obn_test -f supabase/migrations/0002_storage.sql
+psql obn_test -f supabase/migrations/0003_otp_attempts.sql
 psql obn_test -f supabase/tests/rls_test.sql                       # prints "ALL TESTS PASSED"
+psql obn_test -f supabase/tests/otp_attempts_test.sql              # prints "OTP TESTS PASSED"
 ```
 
 The suite has 92 checks. They cover masking, claim races, single approval, referral routing, the token life cycle (valid, burned, expired, revoked, replay), duplicate prevention, revoke and blacklist effects, privilege boundaries, the daily limit, draft purge and storage access. Section 5 of [08](08_QA_TEST_CASES_AND_ACCEPTANCE.md) lists them and section 2 maps them to the QA scenarios.

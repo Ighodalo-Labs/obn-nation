@@ -471,7 +471,7 @@ Signed-in admins call these with the Supabase client and their own session. Row 
 
 ## 5. WhatsApp templates (Twilio Content API)
 
-Both templates must be submitted to Meta by OBN NATION's verified business account and approved before go-live. Until approval, development uses a stub sender that logs nothing sensitive.
+Both templates must be submitted to Meta by OBN NATION's verified business account and approved before go-live. Until approval, development and staging use a stub sender (`WHATSAPP_MODE=stub`): it sends nothing and never logs the code. Testers use the fixed codes from "Phone test OTPs" in the Supabase dashboard. The wrong-code counter and the 10-minute clock live in the `otp_attempts` table (migration 0003); the 60-second resend gap comes from the Supabase Auth settings.
 
 | Template | Category | Variables | Text |
 |---|---|---|---|

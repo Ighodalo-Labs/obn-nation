@@ -9,6 +9,11 @@ T01 done. Next task: T02 (blocked on the Supabase account, see Gates). T03 and T
 Complete when doc 09 section 2 is true. Target: built by 15 Nov 2026, signed off by 18 Nov 2026.
 Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 
+## Follow-ups that need a live Supabase project
+- Session refresh in the middleware (`getUser()` with request and response cookies) so a signed-in person is not dropped after the access token expires. Add and test in T06 once keys exist.
+- Run the sign-in flow against the real project: send, verify, wrong code x5, expired code, blacklisted number.
+- Configure the Send SMS hook URL and secret, OTP expiry 600 s, min interval 60 s, and test phone numbers.
+
 ## Gates still open
 - [x] GitHub repository pushed (Ighodalo-Labs/obn-nation, 2026-10-20)
 - [ ] Supabase, Vercel, Twilio accounts created; keys in `.env.local`
@@ -50,6 +55,9 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [ ] T21 Closed beta and gate measurement
 
 ## Decisions log
+- 2026-10-20 New migration `0003_otp_attempts.sql`: Supabase cannot tell a wrong code from an expired one and does not void a code after 5 wrong tries, so the server counts tries (PRD SI-5). Service role only. Tests in `supabase/tests/otp_attempts_test.sql`.
+- 2026-10-20 `WHATSAPP_MODE=stub` sends nothing and never logs the code. Testers sign in with fixed codes from "Phone test OTPs" in the Supabase dashboard.
+- 2026-10-20 Provider send limits (60 s between codes, sends per hour) come from the Supabase Auth settings, not our code. Set them in the dashboard: OTP expiry 600 s, minimum interval 60 s.
 - 2026-10-17 CLOSED: video stays optional (confirmed by client). An earlier client line read "Video shouldn't be optional"; the client then confirmed optional. No doc change needed (FM-4, BR-3, DF-16).
 - 2026-10-17 About Us text replaced with the client's own text. Tagline now carries the three heart emojis.
 
