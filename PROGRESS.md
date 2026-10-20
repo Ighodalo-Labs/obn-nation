@@ -33,7 +33,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T03 Env validation and Supabase clients (2026-10-20)
 - [x] T04 Edge middleware: ref cookie, guards, security headers (2026-10-20). Session cookie presence only; token refresh added in T05
 - [x] T05 OTP routes, hook, stub WhatsApp sender (2026-10-20). Logic and routes are tested with fakes. Not yet run against a real Supabase project
-- [ ] T06 `/list` page and name capture
+- [x] T06 /list page and name capture (2026-10-20). Checked on a 360px screen with mocked API; not yet against real Supabase
 ### Week 2
 - [ ] T07 Three-step form UI
 - [ ] T08 Compression wiring
