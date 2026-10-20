@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 /** Compact header for working screens: logo, name and tagline. */
 export function Header() {
@@ -9,6 +10,7 @@ export function Header() {
         <p className="text-base font-semibold leading-tight">OBN NATION</p>
         <p className="text-sm leading-tight text-muted">Connecting People ❤️💚💙</p>
       </div>
+      <Link href="/#about" className="ml-auto flex min-h-12 items-center px-2 text-sm text-tint-blue underline">About</Link>
     </header>
   );
 }

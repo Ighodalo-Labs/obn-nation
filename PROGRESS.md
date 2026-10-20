@@ -48,7 +48,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T14 Pool with masking (2026-10-20). `/admin/pool`: 20 per page with Load more, category filter, title search, region filter for Global Admin, Copy ad text without seller details, "You are in charge" badge. Masking comes from the database view only. AdminNav added to admin screens
 ### Week 4
 - [x] T15 Global screen (2026-10-20). `/admin/global` (not found for non-global): Admins tab with status, referral link and counts, Add admin, Revoke, Reinstate, Blacklist with reason and typed name; Listings tab with filters, orphaned list, Reassign; Audit tab (latest 200). Routes: admin/create, admin/status, admin/blacklist (also bans the login), listings/reassign. Override uses the review screen, where a Global Admin sees all pending. Live check needed for the Auth ban and createUser
-- [ ] T16 Landing page, About Us, DNS
+- [x] T16 Landing page (2026-10-20): static `/` with logo, tagline, the client About text word for word, sticky "List an item", title, description and Open Graph, About link in the header. Checked in a browser at 360 px; the ref cookie is set. DNS and Zoho steps are written in docs/phase-1/10_DNS_AND_ZOHO_RUNBOOK.md and need the client domain login (human gate)
 - [ ] T17 Cron, error pages, accessibility
 ### Weeks 5 to 8
 - [ ] T18 Automated end-to-end tests
