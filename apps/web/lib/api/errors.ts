@@ -24,7 +24,7 @@ const TABLE = {
   reason_required: [422, 'Please write a reason of at least 5 characters.'],
   rate_limited: [429, 'Too many requests. Please try again soon.'],
   too_many_attempts: [429, 'Too many wrong codes. Ask for a new one.'],
-  daily_limit_reached: [429, 'You have reached the daily limit of new listings.'],
+  daily_limit_reached: [429, "You have reached today's limit of 10 listings. Please come back tomorrow."],
   whatsapp_unavailable: [502, 'We could not send the code. Check your number and try again.'],
   internal_error: [500, 'Something went wrong on our side. Please try again.'],
 } as const;

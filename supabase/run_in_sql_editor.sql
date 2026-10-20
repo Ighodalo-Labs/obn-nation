@@ -1,6 +1,7 @@
 -- OBN NATION: all migrations in order, for one paste into the Supabase SQL Editor.
 -- Generated from supabase/migrations/*.sql. Run once on an empty project.
 
+
 -- ===== supabase/migrations/0001_core_schema.sql =====
 -- OBN NATION Phase 1: core schema.
 -- Matches the client decisions of Oct 2026 (profiles, listings, listing_tokens,
@@ -734,3 +735,23 @@ revoke execute on function public.otp_mark_sent(text), public.otp_state(text, in
 grant all on public.otp_attempts to service_role;
 grant execute on function public.otp_mark_sent(text), public.otp_state(text, integer),
   public.otp_register_wrong(text), public.otp_clear(text) to service_role;
+
+-- ===== supabase/migrations/0004_storage_replace_draft_files.sql =====
+-- Lets a seller replace a file in their own DRAFT listing folder.
+-- Why: a retry after a dropped connection uploads the same path again (upsert). Without this policy that retry fails.
+-- Once the listing is submitted the files are locked: the policy only matches while the listing is a draft.
+-- Object path layout: <seller_id>/<listing_id>/<file>. Guarded so it is skipped where Supabase Storage is absent.
+do $$
+begin
+  if to_regclass('storage.buckets') is not null then
+    create policy media_update_own_draft on storage.objects for update to authenticated
+      using (bucket_id in ('photos', 'videos')
+             and (storage.foldername(name))[1] = auth.uid()::text
+             and public.is_usable()
+             and exists (select 1 from public.listings l
+                         where l.id::text = (storage.foldername(name))[2]
+                           and l.seller_id = auth.uid() and l.status = 'draft'))
+      with check (bucket_id in ('photos', 'videos')
+             and (storage.foldername(name))[1] = auth.uid()::text);
+  end if;
+end $$;
