@@ -34,7 +34,14 @@ describe('server boundary (AGENTS.md rule 4)', () => {
       expect(text, file).not.toMatch(/lib\/supabase\/(admin|server)/);
       expect(text, file).not.toMatch(/serverEnv|SERVICE_ROLE|TWILIO_|CRON_SECRET|SEND_SMS_HOOK_SECRET/);
       expect(text, file).not.toMatch(/lib\/whatsapp|lib\/edit-token/);
+      expect(text, file).not.toMatch(/from '@\/lib\/env'/); // use '@/lib/env.public' in the browser
     }
+  });
+
+  it('the browser Supabase client reads only the public env file', () => {
+    const text = readFileSync(join(root, 'lib/supabase/browser.ts'), 'utf8');
+    expect(text).toMatch(/from '@\/lib\/env\.public'/);
+    expect(text).not.toMatch(/from '@\/lib\/env'/);
   });
 
   it('the service-role client is marked server-only', () => {

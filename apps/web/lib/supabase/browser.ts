@@ -1,6 +1,6 @@
 'use client';
 import { createBrowserClient } from '@supabase/ssr';
-import { publicEnv } from '@/lib/env';
+import { publicEnv } from '@/lib/env.public';
 
 /** Supabase client for client components. Uses the anon key and the signed-in session cookie. */
 export function createBrowserSupabase() {

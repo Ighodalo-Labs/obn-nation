@@ -31,7 +31,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ## Tasks
 ### Week 1
 - [x] T01 App scaffold and brand tokens (2026-10-20, branch feat/t01-scaffold)
-- [ ] T02 Supabase project, migrations, CI for SQL tests
+- [~] T02 Supabase project, migrations, CI. CI is written and tested locally: `.github/workflows/ci.yml` (check: types, lint, tests, build, bundle secret scan; db-tests: all SQL tests on Postgres 16). Still needs the real Supabase project and migrations applied (human gate)
 - [x] T03 Env validation and Supabase clients (2026-10-20)
 - [x] T04 Edge middleware: ref cookie, guards, security headers (2026-10-20). Session cookie presence only; token refresh added in T05
 - [x] T05 OTP routes, hook, stub WhatsApp sender (2026-10-20). Logic and routes are tested with fakes. Not yet run against a real Supabase project
