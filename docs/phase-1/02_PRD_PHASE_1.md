@@ -1,7 +1,7 @@
 # 02 · Product Requirements Document: Phase 1, the Listing Cloud
 
 Project: OBN NATION ONLINE.COM · Client: OBN NATION · Director and Global Admin: Aghughu Omo-Odion Destiny
-Owner: Ighodalo Labs · Developer: Bassey · Version 1.0 · 17 Oct 2026
+Owner: Ighodalo Labs · Developer: Boss Petite (GitHub: bosspetite) · Version 1.0 · 17 Oct 2026
 Related: [01 Architecture](01_SYSTEM_ARCHITECTURE.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA.md) · [04 Flows](04_USER_AND_ADMIN_FLOWCHARTS.md) · [05 Wireframes](05_UI_WIREFRAMES_AND_IA.md) · [06 RBAC](06_RACI_AND_RBAC_MATRIX.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md) · [08 QA](08_QA_TEST_CASES_AND_ACCEPTANCE.md)
 
 Priority labels: **Must** = needed for the Phase 1 gate. **Should** = included in the build if time allows inside Milestone 1.

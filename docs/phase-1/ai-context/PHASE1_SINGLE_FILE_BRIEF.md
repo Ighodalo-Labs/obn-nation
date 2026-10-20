@@ -311,7 +311,7 @@ At the end of each week, answer four questions in `PROGRESS.md`:
 # 02 · Product Requirements Document: Phase 1, the Listing Cloud
 
 Project: OBN NATION ONLINE.COM · Client: OBN NATION · Director and Global Admin: Aghughu Omo-Odion Destiny
-Owner: Ighodalo Labs · Developer: Bassey · Version 1.0 · 17 Oct 2026
+Owner: Ighodalo Labs · Developer: Boss Petite (GitHub: bosspetite) · Version 1.0 · 17 Oct 2026
 Related: [01 Architecture](01_SYSTEM_ARCHITECTURE.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA.md) · [04 Flows](04_USER_AND_ADMIN_FLOWCHARTS.md) · [05 Wireframes](05_UI_WIREFRAMES_AND_IA.md) · [06 RBAC](06_RACI_AND_RBAC_MATRIX.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md) · [08 QA](08_QA_TEST_CASES_AND_ACCEPTANCE.md)
 
 Priority labels: **Must** = needed for the Phase 1 gate. **Should** = included in the build if time allows inside Milestone 1.
@@ -718,7 +718,7 @@ Phase 1 is accepted when every **Must** requirement above passes its test in [08
 # 01 · System Architecture (ARD and Macro Overview)
 
 Project: OBN NATION ONLINE.COM · Phase 1, the Listing Cloud
-Owner: Ighodalo Labs · Developer: Bassey · Version 1.0 · 17 Oct 2026
+Owner: Ighodalo Labs · Developer: Boss Petite (GitHub: bosspetite) · Version 1.0 · 17 Oct 2026
 Related: [02 PRD](02_PRD_PHASE_1.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md)
 
 ---
@@ -1066,7 +1066,7 @@ Symbols: **✔** allowed · **✔ masked** allowed with seller name and phone ma
 
 ## 3. RACI for Phase 1 execution
 
-Roles: **PL** Project Lead (Ighodalo Labs Lead) · **DEV** Solo Developer (Bassey) · **CTO** Acting CTO (A.I.G.) · **GA** Global Admin (Destiny) · **RA** Regional Admins.
+Roles: **PL** Project Lead (Ighodalo Labs Lead) · **DEV** Solo Developer (Boss Petite, GitHub: bosspetite) · **CTO** Acting CTO (A.I.G.) · **GA** Global Admin (Destiny) · **RA** Regional Admins.
 
 R = does the work · A = answers for it and signs it off (exactly one per row) · C = consulted before · I = informed after. "A/R" means the same person does and answers for it.
 

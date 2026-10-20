@@ -1,6 +1,6 @@
 # OBN NATION
 
-Trust-verified marketplace for second-hand goods in Nigeria. Built by Ighodalo Labs.
+Trust-verified marketplace for second-hand goods in Nigeria. Built by Boss Petite (GitHub: bosspetite) in the Ighodalo Labs organisation.
 Phase 1: the Listing Cloud (WhatsApp OTP sign-in, regional admin review, masked seller contacts).
 
 ## Layout

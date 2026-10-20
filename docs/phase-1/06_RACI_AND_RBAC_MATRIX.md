@@ -81,7 +81,7 @@ Symbols: **✔** allowed · **✔ masked** allowed with seller name and phone ma
 
 ## 3. RACI for Phase 1 execution
 
-Roles: **PL** Project Lead (Ighodalo Labs Lead) · **DEV** Solo Developer (Bassey) · **CTO** Acting CTO (A.I.G.) · **GA** Global Admin (Destiny) · **RA** Regional Admins.
+Roles: **PL** Project Lead (Ighodalo Labs Lead) · **DEV** Solo Developer (Boss Petite, GitHub: bosspetite) · **CTO** Acting CTO (A.I.G.) · **GA** Global Admin (Destiny) · **RA** Regional Admins.
 
 R = does the work · A = answers for it and signs it off (exactly one per row) · C = consulted before · I = informed after. "A/R" means the same person does and answers for it.
 

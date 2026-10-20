@@ -1,7 +1,7 @@
 # 01 · System Architecture (ARD and Macro Overview)
 
 Project: OBN NATION ONLINE.COM · Phase 1, the Listing Cloud
-Owner: Ighodalo Labs · Developer: Bassey · Version 1.0 · 17 Oct 2026
+Owner: Ighodalo Labs · Developer: Boss Petite (GitHub: bosspetite) · Version 1.0 · 17 Oct 2026
 Related: [02 PRD](02_PRD_PHASE_1.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md)
 
 ---
