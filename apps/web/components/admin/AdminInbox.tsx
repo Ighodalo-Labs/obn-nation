@@ -7,6 +7,7 @@ import { badgeOf, naira, splitTabs, TABS, waitingFor, whatsappShareUrl, type Fee
 import { AGES, CATEGORIES, REGIONS, WORKING } from '@/lib/listing/schema';
 import { postJson } from '@/lib/auth/client';
 import { ListingDetail } from './ListingDetail';
+import { RejectModal } from './RejectModal';
 import { primaryButton, secondaryButton } from '../listing/ui';
 
 const label = (list: readonly { value: string; label: string }[], v: string) => list.find((x) => x.value === v)?.label ?? v;
@@ -21,6 +22,9 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [rejecting, setRejecting] = useState<FeedRow | null>(null);
+  const [failedIds, setFailedIds] = useState<Set<string>>(new Set()); // rejections saved but WhatsApp failed (AD-6)
+  const [notice, setNotice] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const isGlobal = me.role === 'global_admin';
   const tabs = useMemo(() => splitTabs(rows, me.id, isGlobal), [rows, me.id, isGlobal]);
@@ -38,11 +42,42 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (action === 'approve' && !window.confirm('Approve this listing? It will go live for buyers.')) return;
     setBusy(row.id);
     setMessage(null);
+    setNotice(null);
     const r = await postJson('/api/listings/decide', { listing_id: row.id, action });
     setBusy(null);
     if (!r.ok) setMessage(r.error.message);
     setOpen(null);
     refresh();
+  }
+
+  async function reject(row: FeedRow, reason: string) {
+    if (busy) return;
+    setBusy(row.id);
+    setMessage(null);
+    const r = await postJson<{ notification: { status: 'sent' | 'failed' } }>('/api/listings/reject', { listing_id: row.id, reason });
+    setBusy(null);
+    setRejecting(null);
+    setOpen(null);
+    if (!r.ok) setMessage(r.error.message);
+    else markNotice(row.id, r.data.notification.status === 'sent', 'Rejected. The seller has been messaged.');
+    refresh();
+  }
+
+  async function resend(row: FeedRow) {
+    if (busy) return;
+    setBusy(row.id);
+    setMessage(null);
+    const r = await postJson<{ notification: { status: 'sent' | 'failed' } }>('/api/listings/reissue', { listing_id: row.id });
+    setBusy(null);
+    if (!r.ok) setMessage(r.error.message);
+    else markNotice(row.id, r.data.notification.status === 'sent', 'New link sent to the seller.');
+    refresh();
+  }
+
+  function markNotice(id: string, sent: boolean, okText: string) {
+    setFailedIds((s) => { const n = new Set(s); if (sent) n.delete(id); else n.add(id); return n; });
+    setNotice(sent ? okText : null);
+    if (!sent) setMessage('Rejected, but the WhatsApp message was not sent. Tap “Send new link” on the card.');
   }
 
   async function copy() {
@@ -74,6 +109,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         </section>
       )}
 
+      {notice && <p role="status" className="rounded-lg border border-border bg-surface p-3 text-base text-tint-green">{notice}</p>}
       {message && <p role="alert" className="rounded-lg border border-tint-red bg-surface p-3 text-base text-tint-red">{message}</p>}
 
       <div role="tablist" aria-label="Listings" className="grid grid-cols-3 gap-1">
@@ -117,6 +153,13 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                     <button type="button" className={secondaryButton} disabled={busy === r.id} onClick={() => act(r, 'claim')}>Claim</button>
                   ) : <span />}
                   <button type="button" className={primaryButton} disabled={busy === r.id} onClick={() => act(r, 'approve')}>Approve</button>
+                  <button type="button" className={`${secondaryButton} col-span-2`} disabled={busy === r.id} onClick={() => setRejecting(r)}>Reject</button>
+                </div>
+              )}
+              {r.status === 'rejected' && (
+                <div className="flex flex-col gap-2 border-t border-border p-3">
+                  {failedIds.has(r.id) && <p className="text-sm text-tint-red">Message not sent</p>}
+                  <button type="button" className={secondaryButton} disabled={busy === r.id} onClick={() => resend(r)}>Send new link</button>
                 </div>
               )}
             </li>
@@ -132,7 +175,11 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
           onClose={() => setOpen(null)}
           onClaim={() => act(open, 'claim')}
           onApprove={() => act(open, 'approve')}
+          onReject={() => setRejecting(open)}
         />
+      )}
+      {rejecting && (
+        <RejectModal title={rejecting.title} busy={busy === rejecting.id} onCancel={() => setRejecting(null)} onSubmit={(reason) => reject(rejecting, reason)} />
       )}
     </div>
   );

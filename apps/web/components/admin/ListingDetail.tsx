@@ -10,8 +10,8 @@ import { primaryButton, secondaryButton } from '../listing/ui';
 const label = (list: readonly { value: string; label: string }[], v: string) => list.find((x) => x.value === v)?.label ?? v;
 
 /** Full listing view (PRD AD-3): swipe gallery, video, all fields, actions. */
-export function ListingDetail({ row, me, busy, onClose, onClaim, onApprove }: {
-  row: FeedRow; me: string; busy: boolean; onClose: () => void; onClaim: () => void; onApprove: () => void;
+export function ListingDetail({ row, me, busy, onClose, onClaim, onApprove, onReject }: {
+  row: FeedRow; me: string; busy: boolean; onClose: () => void; onClaim: () => void; onApprove: () => void; onReject: () => void;
 }) {
   const [photos, setPhotos] = useState<string[] | null>(null);
   const [video, setVideo] = useState<string | null>(null);
@@ -92,7 +92,8 @@ export function ListingDetail({ row, me, busy, onClose, onClaim, onApprove }: {
 
       {pending && (
         <div className="fixed inset-x-0 bottom-0 border-t border-border bg-bg p-4">
-          <div className="mx-auto grid max-w-xl grid-cols-2 gap-2">
+          <div className="mx-auto grid max-w-xl grid-cols-3 gap-2">
+            <button type="button" className={secondaryButton} disabled={busy} onClick={onReject}>Reject</button>
             {row.assigned_admin_id === null ? (
               <button type="button" className={secondaryButton} disabled={busy} onClick={onClaim}>Claim</button>
             ) : <button type="button" className={secondaryButton} onClick={onClose}>Close</button>}

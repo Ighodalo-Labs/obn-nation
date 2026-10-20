@@ -42,7 +42,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T10 Referral region lock and assignment (2026-10-20). Migration 0005 `region_for_ref` (tested, ref_region_test.sql) lets the form lock the region from the cookie; the database still forces region and admin on save (already covered by rls_test). Video made required the same day (owner decision)
 ### Week 3
 - [x] T11 Admin dashboard, claim, approve (2026-10-20). `/admin/dashboard` (tabs, cards, detail gallery and video, Claim, Approve with confirm, referral link with Copy and WhatsApp share, refresh on focus), `POST /api/listings/decide`. First-wins and masking are enforced and tested in the database. Reject button comes in T12. Screens not yet seen against a live project
-- [ ] T12 Reject, WhatsApp notice, reissue
+- [x] T12 Reject modal, reject and reissue routes, WhatsApp notice (2026-10-20). Reason 5 to 500 characters with quick-pick chips; token hash only stored; if WhatsApp fails the rejection still stands and the card shows "Message not sent" with Send new link. 223 tests pass. WhatsApp runs in stub mode until Twilio and Meta are ready
 - [ ] T13 Edit page and resubmit
 - [ ] T14 Regional pool with masking
 ### Week 4
