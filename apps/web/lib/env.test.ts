@@ -32,7 +32,9 @@ describe('environment checks', () => {
     } catch (e) {
       expect(e).toBeInstanceOf(EnvError);
       const message = (e as Error).message;
-      for (const name of Object.keys(good)) expect(message).toContain(name);
+      for (const name of ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SITE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SEND_SMS_HOOK_SECRET', 'CRON_SECRET']) {
+        expect(message).toContain(name);
+      }
       expect(message).toContain('.env.example');
     }
   });
@@ -44,6 +46,14 @@ describe('environment checks', () => {
   it('rejects a Twilio SID of the wrong kind', () => {
     expect(() => parseServerEnv({ ...good, TWILIO_ACCOUNT_SID: 'XX123' })).toThrow(/must start with AC/);
     expect(() => parseServerEnv({ ...good, TWILIO_OTP_CONTENT_SID: 'AB123' })).toThrow(/must start with HX/);
+  });
+
+  it('stub mode needs no Twilio values', () => {
+    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM, TWILIO_OTP_CONTENT_SID, TWILIO_REJECT_CONTENT_SID, ...rest } = good;
+    void [TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM, TWILIO_OTP_CONTENT_SID, TWILIO_REJECT_CONTENT_SID];
+    expect(parseServerEnv({ ...rest, WHATSAPP_MODE: 'stub' }).WHATSAPP_MODE).toBe('stub');
+    expect(() => parseServerEnv({ ...rest, WHATSAPP_MODE: 'live' })).toThrow(/TWILIO_ACCOUNT_SID/);
+    expect(() => parseServerEnv(rest)).toThrow(/is required when WHATSAPP_MODE is live/);
   });
 
   it('rejects a site URL that is not a URL', () => {

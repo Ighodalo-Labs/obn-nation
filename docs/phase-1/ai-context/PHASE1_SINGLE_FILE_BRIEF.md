@@ -32,7 +32,7 @@ Next.js 14 (App Router, TypeScript strict, Tailwind) on Vercel. Supabase: Postgr
 ## Hard rules
 1. The database enforces the rules (RLS, triggers, functions). The app never replaces that. Do not weaken a policy to make a screen work.
 2. Never edit an applied migration. Add a new numbered file in `supabase/migrations/`.
-3. Run the SQL tests after any change in `supabase/` (steps in doc 03). All 92 must pass.
+3. Run the SQL tests after any change in `supabase/` (steps in doc 03, section 10). All must pass: the 92 checks in `rls_test.sql` and the checks in `otp_attempts_test.sql`.
 4. The service-role key is used in server code only. It must never reach the browser.
 5. Edit tokens: a random UUID goes to the seller, only its SHA-256 hash is stored. Never log a token or an OTP.
 6. Masking: seller name and phone are masked everywhere except for the admin in charge and the Global Admin. Use the view `regional_listings_feed`.
