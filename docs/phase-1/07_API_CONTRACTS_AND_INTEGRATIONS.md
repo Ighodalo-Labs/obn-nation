@@ -1009,6 +1009,16 @@ All four compile under TypeScript 5.5 in strict mode (`noUnusedLocals` and `noUn
 
 ## 9. TypeScript modules
 
+### 3.13 `POST /api/listings/decide`
+
+Claim or approve a listing as the signed-in admin. Added in T11. The database functions `claim_listing` and `approve_listing` do the real checks (role, region, who was first).
+
+Request: `{ "listing_id": "<uuid>", "action": "claim" | "approve" }`
+
+Success `200`: `{ "listing_id": "<uuid>", "action": "approve" }`
+
+Errors: `401 unauthenticated`; `403 not_authorized`; `404 listing_not_found`; `409 already_claimed` with the message "This listing was just handled by someone else." (also returned when the listing is no longer waiting for review). Approving an unclaimed listing makes the approver the admin in charge in the same step.
+
 ### 9.1 `lib/compression/images.ts`
 
 ```ts

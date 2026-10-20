@@ -41,7 +41,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T09 Create/submit route, uploads, Under review screen (2026-10-20). `POST /api/listings/create` (two calls, idempotent by client_key, ref from cookie, checks uploaded files exist), retry-safe uploads, progress bar, daily-limit message. New migration 0004 lets a seller replace files in their own draft folder (needed for retry). 201 tests pass. Tested with fakes only; real run needs Supabase
 - [x] T10 Referral region lock and assignment (2026-10-20). Migration 0005 `region_for_ref` (tested, ref_region_test.sql) lets the form lock the region from the cookie; the database still forces region and admin on save (already covered by rls_test). Video made required the same day (owner decision)
 ### Week 3
-- [ ] T11 Admin dashboard, claim, approve
+- [x] T11 Admin dashboard, claim, approve (2026-10-20). `/admin/dashboard` (tabs, cards, detail gallery and video, Claim, Approve with confirm, referral link with Copy and WhatsApp share, refresh on focus), `POST /api/listings/decide`. First-wins and masking are enforced and tested in the database. Reject button comes in T12. Screens not yet seen against a live project
 - [ ] T12 Reject, WhatsApp notice, reissue
 - [ ] T13 Edit page and resubmit
 - [ ] T14 Regional pool with masking
