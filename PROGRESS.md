@@ -45,7 +45,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T11 Admin dashboard, claim, approve (2026-10-20). `/admin/dashboard` (tabs, cards, detail gallery and video, Claim, Approve with confirm, referral link with Copy and WhatsApp share, refresh on focus), `POST /api/listings/decide`. First-wins and masking are enforced and tested in the database. Reject button comes in T12. Screens not yet seen against a live project
 - [x] T12 Reject modal, reject and reissue routes, WhatsApp notice (2026-10-20). Reason 5 to 500 characters with quick-pick chips; token hash only stored; if WhatsApp fails the rejection still stands and the card shows "Message not sent" with Send new link. 223 tests pass. WhatsApp runs in stub mode until Twilio and Meta are ready
 - [x] T13 Edit page and resubmit (2026-10-20). `/list/edit?token=` pre-filled form with the reason banner, keep/remove/add photos and video, `edit/upload-url` and `resubmit` routes, friendly messages for used, expired, replaced and unknown links, noindex and no-referrer. 247 tests pass. Live check needed: signed uploads and burn-on-resubmit against real Supabase
-- [ ] T14 Regional pool with masking
+- [x] T14 Pool with masking (2026-10-20). `/admin/pool`: 20 per page with Load more, category filter, title search, region filter for Global Admin, Copy ad text without seller details, "You are in charge" badge. Masking comes from the database view only. AdminNav added to admin screens
 ### Week 4
 - [ ] T15 Global Admin screens and blacklist
 - [ ] T16 Landing page, About Us, DNS

@@ -1,21 +1,17 @@
-import { redirect } from 'next/navigation';
 import { AdminInbox } from '@/components/admin/AdminInbox';
+import { AdminNav } from '@/components/admin/AdminNav';
 import { Header } from '@/components/Header';
 import type { FeedRow } from '@/lib/admin/inbox';
 import { referralLink } from '@/lib/admin/inbox';
 import { publicEnv } from '@/lib/env';
-import { createServerSupabase } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/admin/guard';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Review · OBN NATION' };
 
 /** Active regional or global admins only (PRD 6.5). Everyone else, including revoked admins, goes to /list. */
 export default async function DashboardPage() {
-  const db = createServerSupabase();
-  const { data: auth } = await db.auth.getUser();
-  if (!auth.user) redirect('/list?next=%2Fadmin%2Fdashboard');
-  const { data: me } = await db.from('profiles').select('id, role, region, full_name, referral_code').eq('id', auth.user.id).maybeSingle();
-  if (!me || (me.role !== 'regional_admin' && me.role !== 'global_admin')) redirect('/list');
+  const { db, me } = await requireAdmin('/admin/dashboard');
 
   const { data: feed } = await db
     .from('regional_listings_feed')
@@ -35,11 +31,12 @@ export default async function DashboardPage() {
   return (
     <main>
       <Header />
+      <AdminNav current="review" isGlobal={me.role === 'global_admin'} />
       <AdminInbox
-        me={{ id: me.id, role: me.role, region: me.region, name: me.full_name }}
+        me={{ id: me.id, role: me.role, region: me.region, name: me.name }}
         rows={rows}
         thumbs={thumbs}
-        link={me.referral_code ? referralLink(publicEnv().NEXT_PUBLIC_SITE_URL, me.referral_code) : null}
+        link={me.referralCode ? referralLink(publicEnv().NEXT_PUBLIC_SITE_URL, me.referralCode) : null}
       />
     </main>
   );
