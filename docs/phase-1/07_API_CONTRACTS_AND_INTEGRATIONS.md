@@ -110,6 +110,7 @@ Route handlers translate database errors with this table ([03](03_ERD_AND_DATABA
 | 10 | `POST /api/admin/create` | Add a regional or global admin | Global Admin session |
 | 11 | `POST /api/hooks/send-otp` | Supabase Send SMS hook (internal) | Webhook signature |
 | 12 | `GET /api/cron/purge-drafts` | Daily draft cleanup (internal) | Cron secret |
+| 13 | `POST /api/listings/decide` | Claim or approve a listing (wraps the two database functions, maps errors) | Admin session |
 
 ## 3. Endpoint contracts
 
@@ -453,6 +454,16 @@ Success: `200` with `{}`. Refusal or failure: `400` with `{ "error": { "http_cod
 ### 3.12 `GET /api/cron/purge-drafts` (internal)
 
 Header `Authorization: Bearer <CRON_SECRET>`. Calls `purge_stale_drafts(7)`, removes each returned folder from the `photos` and `videos` buckets, answers `{ "purged": 9 }`.
+
+### 3.13 `POST /api/listings/decide`
+
+Claim or approve a listing as the signed-in admin. Added in T11. The database functions `claim_listing` and `approve_listing` do the real checks (role, region, who was first).
+
+Request: `{ "listing_id": "<uuid>", "action": "claim" | "approve" }`
+
+Success `200`: `{ "listing_id": "<uuid>", "action": "approve" }`
+
+Errors: `401 unauthenticated`; `403 not_authorized`; `404 listing_not_found`; `409 already_claimed` with the message "This listing was just handled by someone else." (also returned when the listing is no longer waiting for review). Approving an unclaimed listing makes the approver the admin in charge in the same step.
 
 ## 4. Direct database calls (no server route)
 
@@ -1008,16 +1019,6 @@ components:
 All four compile under TypeScript 5.5 in strict mode (`noUnusedLocals` and `noUnusedParameters` on) against the pinned library versions.
 
 ## 9. TypeScript modules
-
-### 3.13 `POST /api/listings/decide`
-
-Claim or approve a listing as the signed-in admin. Added in T11. The database functions `claim_listing` and `approve_listing` do the real checks (role, region, who was first).
-
-Request: `{ "listing_id": "<uuid>", "action": "claim" | "approve" }`
-
-Success `200`: `{ "listing_id": "<uuid>", "action": "approve" }`
-
-Errors: `401 unauthenticated`; `403 not_authorized`; `404 listing_not_found`; `409 already_claimed` with the message "This listing was just handled by someone else." (also returned when the listing is no longer waiting for review). Approving an unclaimed listing makes the approver the admin in charge in the same step.
 
 ### 9.1 `lib/compression/images.ts`
 
