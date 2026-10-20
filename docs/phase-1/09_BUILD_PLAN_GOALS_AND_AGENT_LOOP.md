@@ -14,7 +14,7 @@ A seller can sign in, submit a listing, get rejected, fix it and resubmit. An ad
 
 | KR | Target | How we check |
 |---|---|---|
-| KR1.1 | Tasks T01 to T17 are done | `PROGRESS.md` |
+| KR1.1 | Tasks T01 to T17 are done and section 2 (M1 complete) is true by 15 Nov 2026 | `PROGRESS.md` |
 | KR1.2 | QA scenarios QA-01 to QA-31 pass on a staging deploy | Doc 08 |
 | KR1.3 | One full loop (submit, reject, WhatsApp link, edit, resubmit, approve) works on a real phone | Manual run, recorded |
 
@@ -43,7 +43,73 @@ A seller can sign in, submit a listing, get rejected, fix it and resubmit. An ad
 
 ---
 
-## 2. Work breakdown
+## 2. Milestone 1: what "complete" means
+
+Milestone 1 (weeks 1 to 4) is complete when **every line below is true**. The person who signs it off is the Global Admin for the product side, and the CTO's office for the payment release.
+
+### 2.1 What must work (from PRD section 8)
+
+| # | M1 deliverable | Tasks | Proof |
+|---|---|---|---|
+| 1 | Database and security rules live on the real Supabase project | T02 | 92 of 92 checks pass. Migrations 0001 and 0002 applied |
+| 2 | Passwordless WhatsApp sign-in for sellers and admins | T03 to T06 | QA-01 to QA-04 pass |
+| 3 | Three-step listing form with on-phone compression and upload | T07 to T09 | QA-05 to QA-12 pass. Photo under 1 MB, video under 10 MB |
+| 4 | Referral links and regional routing | T04, T10 | Listing from `?ref=` is assigned to that admin. QA-13 and QA-14 pass |
+| 5 | Admin dashboard: claim, single approval, reject with reason | T11 | QA-15 to QA-18 pass. Two admins at once: the first wins |
+| 6 | Rejection WhatsApp, 30-day edit link, resubmit | T12, T13 | QA-19 to QA-25 pass |
+| 7 | Shared regional pool with masked seller details | T14 | Masking confirmed in the app and in the database |
+| 8 | Global Admin screens: reassign, revoke, reinstate, create admin, blacklist | T15 | QA-26 to QA-31 pass |
+| 9 | Landing page with the client's About Us text, and Zoho Mail DNS | T16 | Page live on the domain. Mail records verified |
+| 10 | Draft cleanup, error pages, empty states | T17 | Every route has loading, empty and error states |
+
+### 2.2 Quality bar
+
+- `npm run check` and `npm test` pass with no errors.
+- The SQL tests pass in CI on every change in `supabase/`.
+- No secret in the repository. The service-role key is not in the browser bundle.
+- The app is deployed to a staging URL on Vercel.
+- The WhatsApp sender can be the stub until Meta approves the templates. Live WhatsApp is checked in Milestone 2 (T20).
+
+### 2.3 The one end-to-end run
+
+On a real Android phone, on the staging URL, someone completes this without help:
+
+1. Open an admin's referral link and sign in with a code.
+2. Submit a listing with 3 photos and 1 video.
+3. As the admin, reject it with a reason.
+4. Open the edit link, fix the listing, resubmit.
+5. As the admin, approve it.
+6. As another admin of the same region, see it in the pool with the seller masked.
+7. As Global Admin, reassign it, then revoke and reinstate an admin.
+
+Record the run (screen recording). Keep it in the repo's `docs/evidence/` folder or the project drive.
+
+### 2.4 Sign-off
+
+| Step | Who | Done when |
+|---|---|---|
+| Demo of the end-to-end run | Developer | Recording shared with the client |
+| Client acceptance of M1 | Global Admin | Written yes in WhatsApp or email |
+| Payment release for M1 | CTO's office | Per the cost proposal: funds are released on confirmation |
+| Pro plans started | Developer | Supabase Pro and Vercel Pro active at the start of M2, as the CTO required |
+
+M1 is **not** complete while any Must requirement in section 6 of the PRD for these routes fails its test in doc 08.
+
+### 2.5 Target dates
+
+These assume the Supabase, Vercel and Twilio accounts exist by Thursday 22 Oct 2026. Each day the accounts are late moves every date by one day.
+
+| Week | Dates (2026) | Tasks | Ends with |
+|---|---|---|---|
+| 1 | 20 to 25 Oct | T01 to T06 | A phone signs in with a code |
+| 2 | 26 Oct to 1 Nov | T07 to T10 | A seller submits a listing with media |
+| 3 | 2 to 8 Nov | T11 to T14 | Full loop: submit, reject, edit, resubmit, approve |
+| 4 | 9 to 15 Nov | T15 to T17 | Everything in section 2.1 works on staging |
+| Sign-off | 16 to 18 Nov | Demo and acceptance | M1 accepted. M2 starts |
+
+---
+
+## 3. Work breakdown
 
 Each task is small enough for one AI session and one commit. "Docs" lists what the tool must read. "Done when" is the check that closes the task.
 
@@ -95,7 +161,7 @@ Each task is small enough for one AI session and one commit. "Docs" lists what t
 
 ---
 
-## 3. Human gates (the tool must stop and ask)
+## 4. Human gates (the tool must stop and ask)
 
 An AI tool cannot do these. Each one needs you or the client.
 
@@ -113,7 +179,7 @@ An AI tool cannot do these. Each one needs you or the client.
 
 ---
 
-## 4. The agent loop
+## 5. The agent loop
 
 One loop, repeated for each task. It works the same in Claude Code and in Antigravity.
 
@@ -130,7 +196,7 @@ SAVE    Commit on a feat/* branch. Update PROGRESS.md: tick the task, add the co
 STOP    If the next task is behind a human gate, stop and say exactly what is needed.
 ```
 
-### 4.1 Rules for the loop
+### 5.1 Rules for the loop
 
 1. One task per loop. Do not start the next task before the commit.
 2. The docs in `docs/phase-1/` are the truth. If code and docs disagree, stop and report. Do not guess and do not silently edit the docs.
@@ -140,17 +206,17 @@ STOP    If the next task is behind a human gate, stop and say exactly what is ne
 6. Keep every change testable. If you cannot test it, say why.
 7. Ask a human only at a gate or a BLOCKER. Otherwise decide, and write the decision in `PROGRESS.md`.
 
-### 4.2 Prompt to start a session
+### 5.2 Prompt to start a session
 
 Paste this into Claude Code or Antigravity:
 
 ```
-Read AGENTS.md. Then run the agent loop in docs/phase-1/09_BUILD_PLAN_GOALS_AND_AGENT_LOOP.md section 4.
+Read AGENTS.md. Then run the agent loop in docs/phase-1/09_BUILD_PLAN_GOALS_AND_AGENT_LOOP.md section 5.
 Work on the next unchecked task in PROGRESS.md. Stop after that one task is committed
 and tell me: what changed, what passed, what I must do next.
 ```
 
-### 4.3 Prompt to run a longer stretch
+### 5.3 Prompt to run a longer stretch
 
 ```
 Read AGENTS.md. Run the agent loop on the next tasks in PROGRESS.md, one at a time,
@@ -158,7 +224,7 @@ until you reach a human gate or a BLOCKER. After each task, commit and update PR
 At the end, give me a short report: tasks done, tests run, anything I must decide.
 ```
 
-### 4.4 Prompt for a review pass (use a second session)
+### 5.4 Prompt for a review pass (use a second session)
 
 ```
 Read AGENTS.md. Do not write code. Review the last commit against the requirement IDs in the docs
@@ -169,7 +235,7 @@ A fresh session for review gives a view that is not tied to the builder's reason
 
 ---
 
-## 5. Weekly check-in (for you)
+## 6. Weekly check-in (for you)
 
 At the end of each week, answer four questions in `PROGRESS.md`:
 

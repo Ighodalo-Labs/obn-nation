@@ -5,6 +5,10 @@ State file for people and AI tools. Update it at the end of every task.
 ## Current
 T01 done. Next task: T02 (blocked on the Supabase account, see Gates). T03 and T04 do not need it and can go first.
 
+## Milestone 1
+Complete when doc 09 section 2 is true. Target: built by 15 Nov 2026, signed off by 18 Nov 2026.
+Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
+
 ## Gates still open
 - [x] GitHub repository pushed (Ighodalo-Labs/obn-nation, 2026-10-20)
 - [ ] Supabase, Vercel, Twilio accounts created; keys in `.env.local`
