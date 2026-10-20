@@ -3,7 +3,7 @@
 State file for people and AI tools. Update it at the end of every task.
 
 ## Current
-T01 done. Next task: T02 (blocked on the Supabase account, see Gates). T03 and T04 do not need it and can go first.
+T01 and T03 to T17 are built and tested with fakes (276 unit tests, all SQL tests pass). Everything left in Milestone 1 needs a human gate: T02 (real Supabase project and migrations 0001 to 0005), a Vercel deploy, then a live run of the whole loop (sign in, list, review, reject, edit, approve, pool, global). Stop here until the Supabase and Vercel keys arrive.
 
 ## Milestone 1
 Complete when doc 09 section 2 is true. Target: built by 15 Nov 2026, signed off by 18 Nov 2026.
