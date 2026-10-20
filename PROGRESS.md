@@ -35,7 +35,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T05 OTP routes, hook, stub WhatsApp sender (2026-10-20). Logic and routes are tested with fakes. Not yet run against a real Supabase project
 - [x] T06 /list page and name capture (2026-10-20). Checked on a 360px screen with mocked API; not yet against real Supabase
 ### Week 2
-- [ ] T07 Three-step form UI
+- [x] T07 Form steps 1 and 2 complete, step 3 placeholder (2026-10-20). Rules tested; saved in browser session; checked on a 360px screen
 - [ ] T08 Compression wiring
 - [ ] T09 Create/submit route, uploads, Under review screen
 - [ ] T10 Referral region lock and assignment
