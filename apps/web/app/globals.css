@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { background: #0a0a0a; color: #fff; }
+body { font-size: 16px; line-height: 1.5; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }

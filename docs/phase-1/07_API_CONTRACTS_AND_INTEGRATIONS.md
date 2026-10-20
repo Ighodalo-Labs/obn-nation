@@ -1303,7 +1303,7 @@ export async function compressVideo(file: File, options: CompressVideoOptions = 
       }
       if (data.byteLength < VIDEO_BUCKET_LIMIT_BYTES) {
         options.onProgress?.(100);
-        return new File([data], 'video.mp4', { type: 'video/mp4', lastModified: Date.now() });
+        return new File([new Uint8Array(data)], 'video.mp4', { type: 'video/mp4', lastModified: Date.now() });
       }
       await ffmpeg.deleteFile(outputName);
     }

@@ -3,10 +3,10 @@
 State file for people and AI tools. Update it at the end of every task.
 
 ## Current
-Nothing started. Next task: T01 (see docs/phase-1/09_BUILD_PLAN_GOALS_AND_AGENT_LOOP.md).
+T01 done. Next task: T02 (blocked on the Supabase account, see Gates). T03 and T04 do not need it and can go first.
 
 ## Gates still open
-- [ ] GitHub repository pushed
+- [x] GitHub repository pushed (Ighodalo-Labs/obn-nation, 2026-10-20)
 - [ ] Supabase, Vercel, Twilio accounts created; keys in `.env.local`
 - [ ] Meta business verification started (client)
 - [ ] WhatsApp templates approved (client)
@@ -19,7 +19,7 @@ Nothing started. Next task: T01 (see docs/phase-1/09_BUILD_PLAN_GOALS_AND_AGENT_
 
 ## Tasks
 ### Week 1
-- [ ] T01 App scaffold and brand tokens
+- [x] T01 App scaffold and brand tokens (2026-10-20, branch feat/t01-scaffold)
 - [ ] T02 Supabase project, migrations, CI for SQL tests
 - [ ] T03 Env validation and Supabase clients
 - [ ] T04 Edge middleware (ref cookie, guards)
