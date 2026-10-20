@@ -102,7 +102,7 @@ An AI tool cannot do these. Each one needs you or the client.
 | Gate | Needed by | Who |
 |---|---|---|
 | Create Supabase, Vercel and Twilio accounts and give the tool the keys through `.env.local` (never in chat) | T02 | You |
-| Push the repository to GitHub | Before T02 CI | You (`bosspetite`) |
+| Push the repository to GitHub | Before T02 CI | You (`Desmath3`) |
 | Meta verification and the two template approvals | T20 (stub is used before) | Client |
 | Domain DNS access | T16 | Client |
 | Transparent PNG or SVG logo | T16 | Client |
