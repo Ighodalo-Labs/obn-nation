@@ -55,7 +55,7 @@ export function LandingMotion() {
         gsap.utils.toArray<HTMLElement>('.marquee-track').forEach((track) => {
           const reverse = track.classList.contains('reverse');
           track.style.animation = 'none';
-          const tween = gsap.fromTo(track, { xPercent: reverse ? -50 : 0 }, { xPercent: reverse ? 0 : -50, duration: 40, ease: 'none', repeat: -1 });
+          const tween = gsap.fromTo(track, { xPercent: reverse ? -50 : 0 }, { xPercent: reverse ? 0 : -50, duration: 50, ease: 'none', repeat: -1 });
           ScrollTrigger.create({
             trigger: track, start: 'top bottom', end: 'bottom top',
             onUpdate: (self) => {
@@ -66,12 +66,14 @@ export function LandingMotion() {
           });
         });
 
-        // Closing call to action: the three brand bars sweep across as you arrive.
-        gsap.utils.toArray<HTMLElement>('[data-bar]').forEach((bar, i) => {
-          gsap.fromTo(bar, { scaleX: 0 }, {
-            scaleX: 1, transformOrigin: 'left center', ease: 'none',
-            scrollTrigger: { trigger: '#closing', start: `top ${95 - i * 6}%`, end: 'top 35%', scrub: true },
+        // Photos: reveal from an inset frame, then drift slowly inside it as you scroll.
+        gsap.utils.toArray<HTMLElement>('[data-photo]').forEach((frame) => {
+          const img = frame.querySelector<HTMLElement>('[data-photo-img]');
+          gsap.fromTo(frame, { clipPath: 'inset(10% 8% 10% 8% round 28px)' }, {
+            clipPath: 'inset(0% 0% 0% 0% round 16px)', ease: 'none',
+            scrollTrigger: { trigger: frame, start: 'top 95%', end: 'top 45%', scrub: true },
           });
+          if (img) gsap.fromTo(img, { yPercent: -7 }, { yPercent: 7, ease: 'none', scrollTrigger: { trigger: frame, start: 'top bottom', end: 'bottom top', scrub: true } });
         });
       });
       cleanup = () => mm.revert();

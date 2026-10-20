@@ -9,20 +9,20 @@ body { font-size: 16px; line-height: 1.5; }
 
 /* ---- Landing page motion (CSS only, so the page reads and moves without scripts) ---- */
 @keyframes rise { from { transform: translateY(105%); } to { transform: none; } }
-@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes bob { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-14px) rotate(var(--r, 0deg)); } }
+@keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes settle { from { transform: scale(1.14); } to { transform: scale(1); } }
 @keyframes chip { 0% { opacity: 0; transform: translateY(8px); } 4%, 30% { opacity: 1; transform: none; } 34%, 100% { opacity: 0; transform: translateY(-8px); } }
 @keyframes slide { to { transform: translateX(-50%); } }
-@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(102,187,106,.55); } 100% { box-shadow: 0 0 0 14px rgba(102,187,106,0); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(46,125,50,.45); } 100% { box-shadow: 0 0 0 12px rgba(46,125,50,0); } }
 
-.mask, .line-mask { display: block; overflow: hidden; padding-bottom: .08em; }
-.line-mask > span { display: block; animation: rise .9s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0s); }
-.hero-fade { animation: fade .9s ease both; animation-delay: var(--d, .5s); }
-.bob { animation: bob var(--t, 7s) ease-in-out infinite; animation-delay: var(--d, 0s); }
-.marquee-track { display: flex; width: max-content; animation: slide var(--t, 38s) linear infinite; }
+.mask, .line-mask { display: block; overflow: hidden; padding-bottom: .12em; }
+.line-mask > span { display: block; animation: rise 1s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d, 0s); }
+.hero-fade { animation: fade 1s ease both; animation-delay: var(--d, .5s); }
+.settle { animation: settle 2.2s cubic-bezier(.2,.7,.2,1) both; }
+.marquee-track { display: flex; width: max-content; animation: slide var(--t, 50s) linear infinite; }
 .marquee-track.reverse { animation-direction: reverse; }
 
-/* Listing phone: three states shown one at a time */
+/* Listing card: three states shown one at a time */
 .chip { position: absolute; inset: 0; display: flex; align-items: center; gap: 10px; opacity: 0; }
 .phone[data-mode='auto'] .chip { animation: chip 9s infinite both; }
 .phone[data-mode='auto'] .chip:nth-child(2) { animation-delay: 3s; }
@@ -31,12 +31,11 @@ body { font-size: 16px; line-height: 1.5; }
 .phone[data-mode='stage'][data-stage='0'] .chip:nth-child(1),
 .phone[data-mode='stage'][data-stage='1'] .chip:nth-child(2),
 .phone[data-mode='stage'][data-stage='2'] .chip:nth-child(3) { opacity: 1; transform: none; }
-.phone[data-mode='stage'] .live { opacity: 0; transition: opacity .5s; }
-.phone[data-mode='stage'][data-stage='2'] .live { opacity: 1; animation: pulse-ring 1.6s ease-out infinite; }
-.phone[data-mode='auto'] .live { animation: chip 9s infinite both, pulse-ring 1.6s ease-out infinite; animation-delay: 6s, 6s; }
+.phone[data-mode='stage'][data-stage='2'] .live { animation: pulse-ring 1.8s ease-out infinite; }
+.phone[data-mode='auto'] .live { animation: pulse-ring 1.8s ease-out infinite; animation-delay: 6s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .line-mask > span, .hero-fade { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .line-mask > span, .hero-fade, .settle { animation: none !important; opacity: 1 !important; transform: none !important; }
   .marquee-track { animation: none !important; }
   .phone[data-mode='auto'] .chip:nth-child(3) { animation: none !important; opacity: 1; }
 }
