@@ -36,7 +36,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [x] T06 /list page and name capture (2026-10-20). Checked on a 360px screen with mocked API; not yet against real Supabase
 ### Week 2
 - [x] T07 Form steps 1 and 2 complete, step 3 placeholder (2026-10-20). Rules tested; saved in browser session; checked on a 360px screen
-- [ ] T08 Compression wiring
+- [x] T08 Compression wired into step 3 (2026-10-20). Browser test: 11.7 MB JPG to 639 KB WebP; 20 s 720p clip to 9.1 MB MP4; 75 s clip refused; HEIC refused. Not yet tried on a real phone (T19)
 - [ ] T09 Create/submit route, uploads, Under review screen
 - [ ] T10 Referral region lock and assignment
 ### Week 3

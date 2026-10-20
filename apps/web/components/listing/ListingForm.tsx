@@ -5,17 +5,20 @@ import { loadForm, saveForm, type SavedForm } from '@/lib/listing/draft';
 import {
   formatPrice, priceDigits, validateStep1, validateStep2, type FieldErrors, type FormDraft,
 } from '@/lib/listing/schema';
+import { MediaStep } from './MediaStep';
+import { useMedia } from './useMedia';
 import { ageOptions, categoryOptions, regionOptions, workOptions } from './options';
 import { CardChoice, Field, StepHeader, inputClass, primaryButton, secondaryButton } from './ui';
 
 /**
- * Steps 1 and 2 are complete. Step 3 (photos, video, submit) is added in T08 and T09.
+ * Steps 1 and 2 are complete. Step 3 shows photos and video (T08). Submit is added in T09.
  * `lockedRegion` comes from the referral cookie on the server (T10). Until then it is always null.
  */
 export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
   const [form, setForm] = useState<SavedForm | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const heading = useRef<HTMLDivElement>(null);
+  const media = useMedia();
 
   useEffect(() => {
     const saved = loadForm();
@@ -111,11 +114,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
         </>
       )}
 
-      {step === 3 && (
-        <p className="rounded-lg border border-border bg-surface p-4 text-muted">
-          Photos and video come next in the build (T08 and T09). Your answers are saved.
-        </p>
-      )}
+      {step === 3 && <MediaStep media={media} />}
 
       <div className={`grid gap-3 ${step > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {step > 1 && (
@@ -126,6 +125,11 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
         {step < 3 && (
           <button type="submit" className={primaryButton}>
             Next
+          </button>
+        )}
+        {step === 3 && (
+          <button type="button" className={primaryButton} disabled>
+            Submit listing
           </button>
         )}
       </div>
