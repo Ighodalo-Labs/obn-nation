@@ -121,7 +121,11 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         ))}
       </div>
 
-      {list.length === 0 && <p className="py-8 text-center text-muted">Nothing here right now.</p>}
+      {list.length === 0 && (
+        <p className="py-8 text-center text-muted">
+          {tab === 'review' ? 'Nothing waiting. Share your link to get more listings.' : 'Nothing here right now.'}
+        </p>
+      )}
       <ul className="flex flex-col gap-3">
         {list.map((r) => {
           const badge = badgeOf(r, me.id);

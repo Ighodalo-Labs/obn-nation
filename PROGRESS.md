@@ -49,7 +49,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ### Week 4
 - [x] T15 Global screen (2026-10-20). `/admin/global` (not found for non-global): Admins tab with status, referral link and counts, Add admin, Revoke, Reinstate, Blacklist with reason and typed name; Listings tab with filters, orphaned list, Reassign; Audit tab (latest 200). Routes: admin/create, admin/status, admin/blacklist (also bans the login), listings/reassign. Override uses the review screen, where a Global Admin sees all pending. Live check needed for the Auth ban and createUser
 - [x] T16 Landing page (2026-10-20): static `/` with logo, tagline, the client About text word for word, sticky "List an item", title, description and Open Graph, About link in the header. Checked in a browser at 360 px; the ref cookie is set. DNS and Zoho steps are written in docs/phase-1/10_DNS_AND_ZOHO_RUNBOOK.md and need the client domain login (human gate)
-- [ ] T17 Cron, error pages, accessibility
+- [x] T17 Draft cleanup and polish (2026-10-20): `GET /api/cron/purge-drafts` (Bearer CRON_SECRET, 7 days, removes files; daily Vercel cron in apps/web/vercel.json), not-found, error and loading pages, empty states (admin inbox, pool, global). 276 tests pass. Screen-reader and slow-phone pass still to do on real devices (T19)
 ### Weeks 5 to 8
 - [ ] T18 Automated end-to-end tests
 - [ ] T19 Cheap-phone testing
