@@ -142,7 +142,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
                     </button>
                   </div>
                 )}
-                <p className="ops-mute text-xs font-semibold">Last change {new Date(a.updated_at).toLocaleDateString('en-NG')}</p>
+                <p className="ops-mute text-xs font-semibold">Last change {new Date(a.updated_at).toLocaleDateString('en-NG', { timeZone: 'Africa/Lagos' })}</p>
                 {a.status_reason && <p className="ops-card2 p-3 text-sm font-semibold">Reason: {a.status_reason}</p>}
                 {(canRevoke(a) || canReinstate(a) || canBlacklist(a)) && (
                   <div className="mt-auto grid grid-cols-2 gap-2">
@@ -213,13 +213,13 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         <ol className="mt-6 flex max-w-3xl flex-col">
           {audit.slice(0, auditCount).map((a, i) => {
             const d = new Date(a.created_at);
-            const day = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
-            const prev = i > 0 ? new Date(audit[i - 1].created_at).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' }) : null;
+            const day = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' });
+            const prev = i > 0 ? new Date(audit[i - 1].created_at).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' }) : null;
             return (
               <li key={a.id}>
                 {day !== prev && <p className="ops-eyebrow mb-2 mt-6 first:mt-0">{day}</p>}
                 <div className="grid grid-cols-[64px_20px_1fr] gap-x-3 border-b border-[#D6CDB9] py-3">
-                  <p className="ops-mute pt-0.5 text-sm font-bold tabular-nums">{d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="ops-mute pt-0.5 text-sm font-bold tabular-nums">{d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })}</p>
                   <span className="mt-1.5 h-3 w-3 rounded-full" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true" />
                   <div className="text-[15px]">
                     <p><span className="font-extrabold">{a.actor_id ? nameOf.get(a.actor_id) ?? 'An admin' : 'A seller'}</span> {actionText(a.action)}</p>

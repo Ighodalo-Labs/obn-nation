@@ -46,7 +46,8 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   const [approving, setApproving] = useState<FeedRow | null>(null);
   const [failedIds, setFailedIds] = useState<Set<string>>(new Set()); // rejections saved but WhatsApp failed (AD-6)
   const [notice, setNotice] = useState<string | null>(null);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState(0);
+  useEffect(() => { setNow(Date.now()); }, []);
   const [updatedAt, setUpdatedAt] = useState(() => Date.now());
   const [q, setQ] = useState('');
   const [region, setRegion] = useState('');
@@ -197,8 +198,8 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
 
   const firstName = (me.name ?? '').trim().split(/\s+/)[0] || 'there';
   const hour = new Date(now).getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const dateText = new Date(now).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long' });
+  const greeting = !now ? 'Hello' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const dateText = !now ? '' : new Date(now).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long' });
   const approvedToday = tabs.done.filter((r) => r.approved_at && new Date(r.approved_at).toDateString() === new Date(now).toDateString()).length;
   const total = approvedToday + stats.waiting + stats.pending;
   const scopeText = isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region';
