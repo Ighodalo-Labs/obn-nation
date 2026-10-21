@@ -1,6 +1,5 @@
-import { AdminNav } from '@/components/admin/AdminNav';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { PoolView } from '@/components/admin/PoolView';
-import { Header } from '@/components/Header';
 import { requireAdmin } from '@/lib/admin/guard';
 import type { FeedRow } from '@/lib/admin/inbox';
 import { pageRange } from '@/lib/admin/pool';
@@ -26,10 +25,8 @@ export default async function PoolPage() {
     for (const s of signed ?? []) if (s.path && s.signedUrl) thumbs[s.path] = s.signedUrl;
   }
   return (
-    <main>
-      <Header />
-      <AdminNav current="pool" isGlobal={me.role === 'global_admin'} />
+    <AdminShell current="pool" me={{ name: me.name, role: me.role, region: me.region }}>
       <PoolView me={{ id: me.id, isGlobal: me.role === 'global_admin', region: me.region }} first={rows} firstThumbs={thumbs} />
-    </main>
+    </AdminShell>
   );
 }

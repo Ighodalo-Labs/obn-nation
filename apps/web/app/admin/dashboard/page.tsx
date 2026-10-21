@@ -1,6 +1,5 @@
 import { AdminInbox } from '@/components/admin/AdminInbox';
-import { AdminNav } from '@/components/admin/AdminNav';
-import { Header } from '@/components/Header';
+import { AdminShell } from '@/components/admin/AdminShell';
 import type { FeedRow } from '@/lib/admin/inbox';
 import { referralLink } from '@/lib/admin/inbox';
 import { publicEnv } from '@/lib/env';
@@ -29,15 +28,13 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main>
-      <Header />
-      <AdminNav current="review" isGlobal={me.role === 'global_admin'} />
+    <AdminShell current="review" me={{ name: me.name, role: me.role, region: me.region }} reviewCount={rows.filter((r) => r.status === 'pending_review').length}>
       <AdminInbox
         me={{ id: me.id, role: me.role, region: me.region, name: me.name }}
         rows={rows}
         thumbs={thumbs}
         link={me.referralCode ? referralLink(publicEnv().NEXT_PUBLIC_SITE_URL, me.referralCode) : null}
       />
-    </main>
+    </AdminShell>
   );
 }

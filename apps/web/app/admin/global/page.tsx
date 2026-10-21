@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-import { AdminNav } from '@/components/admin/AdminNav';
+import { AdminShell } from '@/components/admin/AdminShell';
 import { GlobalView } from '@/components/admin/GlobalView';
-import { Header } from '@/components/Header';
 import { requireAdmin } from '@/lib/admin/guard';
 import type { FeedRow } from '@/lib/admin/inbox';
 import type { AdminRow, AuditRow } from '@/lib/admin/overview';
@@ -22,15 +21,13 @@ export default async function GlobalPage() {
   ]);
 
   return (
-    <main>
-      <Header />
-      <AdminNav current="global" isGlobal />
+    <AdminShell current="global" me={{ name: me.name, role: me.role, region: me.region }}>
       <GlobalView
         siteUrl={publicEnv().NEXT_PUBLIC_SITE_URL}
         admins={(admins.data ?? []) as AdminRow[]}
         listings={(feed.data ?? []) as FeedRow[]}
         audit={(audit.data ?? []) as AuditRow[]}
       />
-    </main>
+    </AdminShell>
   );
 }
