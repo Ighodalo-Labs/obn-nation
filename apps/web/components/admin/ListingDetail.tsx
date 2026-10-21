@@ -55,9 +55,9 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
   const badge = badgeOf(row, me);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" data-drawer aria-label={row.title} className="ops-drawer flex h-full w-full max-w-[560px] flex-col overflow-hidden border-l border-[#232C3D] bg-[#0E1219] text-[#E6EAF2]">
-        <div className="flex items-center gap-2 border-b border-[#232C3D] px-4 py-3">
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#16140F]/55" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div role="dialog" aria-modal="true" data-drawer aria-label={row.title} className="ops-drawer flex h-full w-full max-w-[560px] flex-col overflow-hidden border-l-2 border-[#16140F] bg-[#F4F0E8] text-[#16140F]">
+        <div className="flex items-center gap-2 border-b-2 border-[#16140F] px-4 py-3">
           <Badge tone={badge === 'Unclaimed' ? 'amber' : badge === 'Assigned to you' ? 'green' : 'mute'}>{badge}</Badge>
           {pending && <span className="ops-mute text-xs">Waiting {waitingFor(row.submitted_at, now)}</span>}
           <span className="ml-auto flex items-center gap-1">
@@ -68,19 +68,19 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
         </div>
 
         <div className="ops-scroll flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-6">
-          {photos === null && <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-[#182030]" aria-label="Loading photos" />}
+          {photos === null && <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-[#EBE5D6]" aria-label="Loading photos" />}
           {photos && photos.length > 0 && (
             <div className="flex flex-col gap-2">
               <div className="relative overflow-hidden rounded-2xl bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photos[idx]} alt={`Photo ${idx + 1} of ${photos.length}`} className="aspect-[4/3] w-full object-contain" />
-                <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-xs">{idx + 1} / {photos.length}</span>
+                <span className="absolute bottom-2 right-2 rounded-md bg-[#16140F] px-2 py-0.5 text-xs font-bold text-white">{idx + 1} / {photos.length}</span>
               </div>
               {photos.length > 1 && (
                 <ul className="flex gap-2 overflow-x-auto" aria-label="Photos">
                   {photos.map((u, i) => (
                     <li key={u} className="flex-none">
-                      <button type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`} aria-current={i === idx} className={`block overflow-hidden rounded-lg border-2 ${i === idx ? 'border-[#42A5F5]' : 'border-transparent opacity-70 hover:opacity-100'}`}>
+                      <button type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`} aria-current={i === idx} className={`block overflow-hidden rounded-lg border-2 ${i === idx ? 'border-[#1565C0]' : 'border-transparent opacity-70 hover:opacity-100'}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={u} alt="" className="h-16 w-16 object-cover" />
                       </button>
@@ -90,26 +90,26 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
               )}
             </div>
           )}
-          {photos && photos.length === 0 && <p className="text-[#FF8A80]">Photos could not be loaded.</p>}
+          {photos && photos.length === 0 && <p className="text-brand-red">Photos could not be loaded.</p>}
 
           {row.video_url && (videoBad ? (
             <p className="ops-card2 p-3 text-sm ops-mute">Video unavailable</p>
           ) : video ? (
             <video src={video} controls playsInline className="max-h-72 w-full rounded-2xl bg-black" onError={() => setVideoBad(true)} />
-          ) : <div className="h-24 w-full animate-pulse rounded-2xl bg-[#182030]" aria-label="Loading video" />)}
+          ) : <div className="h-24 w-full animate-pulse rounded-2xl bg-[#EBE5D6]" aria-label="Loading video" />)}
 
           <div>
-            <h2 className="font-display text-2xl font-extrabold leading-tight tracking-tight">{row.title}</h2>
-            <p className="font-display mt-1 text-xl font-bold text-[#66BB6A]">{naira(row.price_ngn)}</p>
+            <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight">{row.title}</h2>
+            <p className="ops-num mt-3 text-6xl">{naira(row.price_ngn)}</p>
           </div>
-          <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-[#C7CEDB]">{row.description}</p>
+          <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{row.description}</p>
           <dl className="grid grid-cols-2 gap-2 text-sm">
             {facts.filter(([, v]) => v).map(([k, v]) => (
-              <div key={k} className="ops-card2 px-3 py-2"><dt className="ops-mute text-xs">{k}</dt><dd className="font-semibold">{v}</dd></div>
+              <div key={k} className="ops-card2 px-3 py-2"><dt className="ops-eyebrow !text-[11px]">{k}</dt><dd className="font-bold">{v}</dd></div>
             ))}
           </dl>
           <div className="ops-card2 p-4 text-sm">
-            <p className="ops-mute text-xs uppercase tracking-[0.14em]">Seller</p>
+            <p className="ops-eyebrow">Seller</p>
             <p className="mt-1 text-base font-semibold">{row.seller_name}</p>
             <p>{row.seller_phone}</p>
             {!row.contact_visible && (
@@ -119,12 +119,12 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
         </div>
 
         {pending && (
-          <div className="grid grid-cols-3 gap-2 border-t border-[#232C3D] bg-[#0E1219] p-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-            <button type="button" className="ops-btn ops-btn-stop" disabled={busy} onClick={onReject}>Reject <span className="ops-kbd hidden md:inline-flex">R</span></button>
+          <div className="grid grid-cols-3 gap-2 border-t-2 border-[#16140F] bg-[#F4F0E8] p-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+            <button type="button" className="ops-btn ops-btn-stop ops-btn-lg" disabled={busy} onClick={onReject}>Reject <span className="ops-kbd hidden md:inline-flex">R</span></button>
             {row.assigned_admin_id === null ? (
-              <button type="button" className="ops-btn" disabled={busy} onClick={onClaim}>Claim <span className="ops-kbd hidden md:inline-flex">C</span></button>
-            ) : <button type="button" className="ops-btn" onClick={onClose}>Close</button>}
-            <button type="button" className="ops-btn ops-btn-go" disabled={busy} onClick={onApprove}>Approve <span className="ops-kbd hidden md:inline-flex">A</span></button>
+              <button type="button" className="ops-btn ops-btn-blue ops-btn-lg" disabled={busy} onClick={onClaim}>Claim <span className="ops-kbd hidden md:inline-flex">C</span></button>
+            ) : <button type="button" className="ops-btn ops-btn-lg" onClick={onClose}>Close</button>}
+            <button type="button" className="ops-btn ops-btn-go ops-btn-lg" disabled={busy} onClick={onApprove}>Approve <span className="ops-kbd hidden md:inline-flex">A</span></button>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ClipboardList, ScrollText, ShieldAlert, UserPlus, Users } from 'lucide-react';
+import { Check, Copy, ShieldAlert, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { postJson } from '@/lib/auth/client';
 import { naira, referralLink, type FeedRow } from '@/lib/admin/inbox';
@@ -11,10 +11,12 @@ import {
 } from '@/lib/admin/overview';
 import { validateReason } from '@/lib/admin/reasons';
 import { REGIONS } from '@/lib/listing/schema';
-import { Badge, Dialog, Notice, PageTitle, regionLabelOf, StatCard, type Tone } from './ui';
+import { BigStat, Badge, Dialog, Notice, regionLabelOf, type Tone } from './ui';
 
 const regionLabel = regionLabelOf;
-type Tab = 'admins' | 'listings' | 'audit';
+const LISTING_STEP = 24;
+const AUDIT_STEP = 25;
+const PALETTE = ['#D32F2F', '#2E7D32', '#1565C0'];
 type Dialog =
   | { kind: 'revoke' | 'blacklist'; admin: AdminRow }
   | { kind: 'reassign'; listing: FeedRow }
@@ -25,7 +27,9 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
   siteUrl: string; admins: AdminRow[]; listings: FeedRow[]; audit: AuditRow[];
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('admins');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [listCount, setListCount] = useState(LISTING_STEP);
+  const [auditCount, setAuditCount] = useState(AUDIT_STEP);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [filters, setFilters] = useState({ region: '', status: '', admin: '' });
@@ -47,141 +51,188 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
   const approvedAll = listings.filter((l) => l.status === 'approved').length;
   const statusTone = (st: string): Tone => (st === 'Active' ? 'green' : st === 'Revoked' ? 'amber' : 'red');
   const initials = (n: string) => n.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase() || '?';
-  const TABS_G = [
-    { id: 'admins' as const, label: 'Admins', Icon: Users, n: admins.length },
-    { id: 'listings' as const, label: 'Listings', Icon: ClipboardList, n: listings.length },
-    { id: 'audit' as const, label: 'Audit', Icon: ScrollText, n: audit.length },
-  ];
+  const byRegion = REGIONS.map((r) => ({
+    ...r,
+    pending: listings.filter((l) => l.region === r.value && l.status === 'pending_review').length,
+    approved: listings.filter((l) => l.region === r.value && l.status === 'approved').length,
+  }));
+  const maxRegion = Math.max(1, ...byRegion.map((r) => r.pending + r.approved));
+  const statusColor = (st: string) => (st === 'approved' ? '#2E7D32' : st === 'rejected' ? '#F2B233' : '#D32F2F');
+
+  async function copyLink(id: string, text: string) {
+    try { await navigator.clipboard.writeText(text); setCopiedId(id); setTimeout(() => setCopiedId(null), 2000); } catch { setMessage({ ok: false, text: 'Copy did not work. Press and hold the link to copy it.' }); }
+  }
+
+  const sections = [['numbers', 'Numbers'], ['regions', 'Regions'], ['admins', 'Admins'], ['listings', 'Listings'], ['audit', 'Audit']] as const;
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageTitle title="Global console" sub="Admins, every listing, and the audit trail across all regions.">
-        <button type="button" className="ops-btn ops-btn-red" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={18} aria-hidden="true" />Add admin</button>
-      </PageTitle>
-
-      <section aria-label="Platform at a glance" className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <StatCard label="Active admins" value={active} tone="green" hint={`${admins.length} in total`} />
-        <StatCard label="Waiting review" value={pendingAll} tone="red" />
-        <StatCard label="Approved" value={approvedAll} tone="blue" />
-        <StatCard label="Listings loaded" value={listings.length} tone="amber" hint="Latest 300" />
-        <StatCard label="Needs an admin" value={orphans.length} tone={orphans.length ? 'red' : 'green'} hint={orphans.length ? 'Reassign below' : 'All covered'} />
-      </section>
+    <div className="flex flex-col gap-14">
+      <header className="ops-rise flex flex-col gap-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="ops-eyebrow">Global console</p>
+            <h1 className="font-display mt-3 text-[44px] font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-6xl">The whole platform, in one place.</h1>
+            <p className="ops-mute mt-3 max-w-xl">Admins, every listing, and the audit trail across all regions.</p>
+          </div>
+          <button type="button" className="ops-btn ops-btn-red" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={18} aria-hidden="true" />Add admin</button>
+        </div>
+        <nav aria-label="Sections" className="ops-seg self-start">
+          {sections.map(([id, label]) => (
+            <button key={id} type="button" onClick={() => document.getElementById(`g-${id}`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })}>{label}</button>
+          ))}
+        </nav>
+      </header>
 
       {message && <Notice kind={message.ok ? 'ok' : 'error'}>{message.text}</Notice>}
 
-      <div role="tablist" aria-label="Global sections" className="grid grid-cols-3 gap-1 rounded-2xl border border-[#232C3D] bg-[#0E1219] p-1 sm:max-w-xl">
-        {TABS_G.map(({ id, label, Icon, n }) => (
-          <button key={id} role="tab" type="button" aria-selected={tab === id} onClick={() => setTab(id)}
-            className={`flex min-h-11 items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold transition-colors ${tab === id ? 'bg-[#1F293C] text-white shadow' : 'ops-mute hover:text-white'}`}>
-            <Icon size={16} aria-hidden="true" />{label} <span className={tab === id ? 'text-[#64B5F6]' : ''}>({n})</span>
-          </button>
-        ))}
-      </div>
+      <section id="g-numbers" aria-label="Platform at a glance" className="scroll-mt-24">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 border-t-2 border-[#16140F] pt-8 lg:grid-cols-5">
+          <BigStat label="Active admins" value={active} tone="green" hint={`${admins.length} in total`} />
+          <BigStat label="Waiting review" value={pendingAll} tone="red" />
+          <BigStat label="Live in the pool" value={approvedAll} tone="blue" />
+          <BigStat label="Listings loaded" value={listings.length} tone="amber" hint="Latest 300" />
+          <BigStat label="Need an admin" value={orphans.length} tone={orphans.length ? 'red' : 'green'} hint={orphans.length ? 'Reassign below' : 'All covered'} />
+        </div>
+      </section>
 
-      {tab === 'admins' && (
-        <section aria-label="Admins">
-          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {admins.map((a) => {
-              const c = countsFor(a.id, listings);
-              const st = statusOf(a);
-              return (
-                <li key={a.id} className="ops-card flex flex-col gap-3 p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-brand-blue text-base font-extrabold" aria-hidden="true">{initials(a.full_name || a.phone)}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-display truncate text-lg font-extrabold tracking-tight">{a.full_name || 'No name yet'}</p>
-                      <p className="ops-mute text-sm">{a.phone}</p>
-                    </div>
-                    <Badge tone={statusTone(st)}>{st}</Badge>
+      <section id="g-regions" aria-label="Pending and approved by region" className="scroll-mt-24">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-display text-3xl font-extrabold tracking-tight">Region by region</h2>
+          <p className="flex items-center gap-4 text-sm font-bold"><span className="flex items-center gap-2"><i className="h-3 w-3 rounded-sm bg-brand-red" />Pending</span><span className="flex items-center gap-2"><i className="h-3 w-3 rounded-sm bg-brand-green" />Approved</span></p>
+        </div>
+        <ul className="mt-5 flex flex-col gap-4">
+          {byRegion.map((r) => (
+            <li key={r.value} className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[160px_1fr_130px]">
+              <p className="font-display text-lg font-extrabold">{r.label}</p>
+              <div className="ops-bar !h-6" role="img" aria-label={`${r.label}: ${r.pending} pending, ${r.approved} approved`} style={{ width: `${Math.max(6, ((r.pending + r.approved) / maxRegion) * 100)}%` }}>
+                <i className="bg-brand-red" style={{ flexGrow: r.pending }} /><i className="bg-brand-green" style={{ flexGrow: r.approved }} />
+              </div>
+              <p className="text-sm font-bold sm:text-right"><span className="text-brand-red">{r.pending}</span> pending · <span className="text-brand-green">{r.approved}</span> live</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section id="g-admins" aria-label="Admins" className="scroll-mt-24">
+        <h2 className="font-display border-t-2 border-[#16140F] pt-6 text-3xl font-extrabold tracking-tight">The team <span className="ops-mute">{admins.length}</span></h2>
+        <ul className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {admins.map((a, i) => {
+            const c = countsFor(a.id, listings);
+            const st = statusOf(a);
+            const link = a.referral_code ? referralLink(siteUrl, a.referral_code) : null;
+            return (
+              <li key={a.id} className="ops-card ops-lift flex flex-col gap-4 p-5">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-14 w-14 flex-none items-center justify-center rounded-full text-lg font-extrabold text-white" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true">{initials(a.full_name || a.phone)}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display truncate text-xl font-extrabold tracking-tight">{a.full_name || 'No name yet'}</p>
+                    <p className="ops-mute text-sm font-semibold">{a.role === 'global_admin' ? 'Global Admin' : regionLabel(a.region)} · {a.phone}</p>
                   </div>
-                  <p className="flex flex-wrap gap-1.5">
-                    <span className="ops-chip">{a.role === 'global_admin' ? 'Global' : regionLabel(a.region)}</span>
-                    <span className="ops-chip">{c.pending} pending</span>
-                    <span className="ops-chip">{c.approved} approved</span>
-                  </p>
-                  {a.referral_code && <p className="ops-mute break-all text-xs">{referralLink(siteUrl, a.referral_code)}</p>}
-                  <p className="ops-mute text-xs">Last change {new Date(a.updated_at).toLocaleDateString('en-NG')}</p>
-                  {a.status_reason && <p className="ops-card2 p-3 text-sm">Reason: {a.status_reason}</p>}
-                  {(canRevoke(a) || canReinstate(a) || canBlacklist(a)) && (
-                    <div className="mt-auto grid grid-cols-2 gap-2">
-                      {canRevoke(a) && <button type="button" className="ops-btn" onClick={() => setDialog({ kind: 'revoke', admin: a })}>Revoke</button>}
-                      {canReinstate(a) && <button type="button" className="ops-btn ops-btn-go" onClick={() => run('/api/admin/status', { action: 'reinstate', profile_id: a.id }, 'Admin reinstated.')}>Reinstate</button>}
-                      {canBlacklist(a) && <button type="button" className="ops-btn ops-btn-stop" onClick={() => setDialog({ kind: 'blacklist', admin: a })}>Blacklist</button>}
-                    </div>
-                  )}
+                  <Badge tone={statusTone(st)}>{st}</Badge>
+                </div>
+                <div className="flex gap-8">
+                  <div><p className="ops-num text-4xl text-brand-red">{c.pending}</p><p className="text-sm font-bold">pending</p></div>
+                  <div><p className="ops-num text-4xl text-brand-green">{c.approved}</p><p className="text-sm font-bold">approved</p></div>
+                </div>
+                {link && (
+                  <div className="flex items-center gap-2 rounded-xl bg-[#EBE5D6] p-2 pl-3">
+                    <p className="min-w-0 flex-1 truncate text-sm font-bold">{link}</p>
+                    <button type="button" className="ops-btn !min-h-10 !px-3" onClick={() => copyLink(a.id, link)} aria-label={`Copy ${a.full_name || 'admin'}’s referral link`}>
+                      {copiedId === a.id ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}{copiedId === a.id ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                )}
+                <p className="ops-mute text-xs font-semibold">Last change {new Date(a.updated_at).toLocaleDateString('en-NG')}</p>
+                {a.status_reason && <p className="ops-card2 p-3 text-sm font-semibold">Reason: {a.status_reason}</p>}
+                {(canRevoke(a) || canReinstate(a) || canBlacklist(a)) && (
+                  <div className="mt-auto grid grid-cols-2 gap-2">
+                    {canRevoke(a) && <button type="button" className="ops-btn" onClick={() => setDialog({ kind: 'revoke', admin: a })}>Revoke</button>}
+                    {canReinstate(a) && <button type="button" className="ops-btn ops-btn-go" onClick={() => run('/api/admin/status', { action: 'reinstate', profile_id: a.id }, 'Admin reinstated.')}>Reinstate</button>}
+                    {canBlacklist(a) && <button type="button" className="ops-btn ops-btn-stop" onClick={() => setDialog({ kind: 'blacklist', admin: a })}>Blacklist</button>}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+          {admins.length === 0 && <li className="ops-mute col-span-full py-12 text-lg font-semibold">No admins yet. Add the first one.</li>}
+        </ul>
+      </section>
+
+      <section id="g-listings" className="flex scroll-mt-24 flex-col gap-5" aria-label="Listings">
+        <h2 className="font-display border-t-2 border-[#16140F] pt-6 text-3xl font-extrabold tracking-tight">Every listing <span className="ops-mute">{shown.length}</span></h2>
+        {orphans.length > 0 && (
+          <div className="rounded-2xl border-2 border-brand-red bg-[#FBE4E2] p-5">
+            <h3 className="font-display flex items-center gap-2 text-xl font-extrabold text-[#9A1C1C]"><ShieldAlert size={22} aria-hidden="true" />Needs a new admin in charge ({orphans.length})</h3>
+            <ul className="mt-3 flex flex-col gap-2">
+              {orphans.map((l) => (
+                <li key={l.id} className="flex items-center justify-between gap-3 rounded-xl bg-[#FFFCF5] p-3">
+                  <span className="min-w-0 truncate text-sm font-bold">{l.title} · {regionLabel(l.region)}</span>
+                  <button type="button" className="ops-btn ops-btn-red !min-h-10" onClick={() => setDialog({ kind: 'reassign', listing: l })}>Reassign</button>
                 </li>
-              );
-            })}
-            {admins.length === 0 && <li className="ops-card col-span-full py-12 text-center ops-mute">No admins yet. Add the first one.</li>}
-          </ul>
-        </section>
-      )}
-
-      {tab === 'listings' && (
-        <section className="flex flex-col gap-4" aria-label="Listings">
-          {orphans.length > 0 && (
-            <div className="ops-card border-[#D32F2F]/60 p-4">
-              <h2 className="font-display flex items-center gap-2 text-lg font-extrabold text-[#FF8A80]"><ShieldAlert size={20} aria-hidden="true" />Needs a new admin in charge ({orphans.length})</h2>
-              <ul className="mt-3 flex flex-col gap-2">
-                {orphans.map((l) => (
-                  <li key={l.id} className="ops-card2 flex items-center justify-between gap-3 p-3">
-                    <span className="min-w-0 truncate text-sm">{l.title} · {regionLabel(l.region)}</span>
-                    <button type="button" className="ops-btn" onClick={() => setDialog({ kind: 'reassign', listing: l })}>Reassign</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="grid gap-2 md:grid-cols-3">
-            <label className="sr-only" htmlFor="f-region">Region</label>
-            <select id="f-region" className="ops-input" value={filters.region} onChange={(e) => setFilters({ ...filters, region: e.target.value })}>
-              <option value="">All regions</option>{REGIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-            </select>
-            <label className="sr-only" htmlFor="f-status">Status</label>
-            <select id="f-status" className="ops-input" value={filters.status} onChange={(e) => setFilters({ ...filters, status: e.target.value })}>
-              <option value="">Any status</option><option value="pending_review">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
-            </select>
-            <label className="sr-only" htmlFor="f-admin">Admin in charge</label>
-            <select id="f-admin" className="ops-input" value={filters.admin} onChange={(e) => setFilters({ ...filters, admin: e.target.value })}>
-              <option value="">Any admin</option><option value="none">Unassigned</option>{admins.map((a) => <option key={a.id} value={a.id}>{a.full_name || a.phone}</option>)}
-            </select>
+              ))}
+            </ul>
           </div>
-          {shown.length === 0 && <p className="ops-card py-10 text-center ops-mute">No listings match.</p>}
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {shown.map((l) => (
-              <li key={l.id} className="ops-card flex flex-col gap-2 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-display text-lg font-extrabold leading-tight tracking-tight">{l.title}</p>
-                  <Badge tone={l.status === 'approved' ? 'green' : l.status === 'rejected' ? 'red' : 'amber'}>{l.status.replace('_', ' ')}</Badge>
-                </div>
-                <p className="text-sm"><span className="font-semibold text-[#66BB6A]">{naira(l.price_ngn)}</span> · {regionLabel(l.region)}</p>
-                <p className="ops-mute text-sm">Seller: {l.seller_name} · {l.seller_phone}</p>
-                <p className="ops-mute text-sm">In charge: {l.assigned_admin_id ? nameOf.get(l.assigned_admin_id) ?? l.admin_in_charge_name ?? 'Unknown' : 'Nobody yet'}</p>
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button type="button" className="ops-btn" onClick={() => setDialog({ kind: 'reassign', listing: l })}>Reassign</button>
-                  {l.status === 'pending_review' && <a className="ops-btn" href="/admin/dashboard">Review</a>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+        )}
+        <div className="grid gap-2 md:grid-cols-3">
+          <label className="sr-only" htmlFor="f-region">Region</label>
+          <select id="f-region" className="ops-input" value={filters.region} onChange={(e) => { setFilters({ ...filters, region: e.target.value }); setListCount(LISTING_STEP); }}>
+            <option value="">All regions</option>{REGIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+          </select>
+          <label className="sr-only" htmlFor="f-status">Status</label>
+          <select id="f-status" className="ops-input" value={filters.status} onChange={(e) => { setFilters({ ...filters, status: e.target.value }); setListCount(LISTING_STEP); }}>
+            <option value="">Any status</option><option value="pending_review">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+          </select>
+          <label className="sr-only" htmlFor="f-admin">Admin in charge</label>
+          <select id="f-admin" className="ops-input" value={filters.admin} onChange={(e) => { setFilters({ ...filters, admin: e.target.value }); setListCount(LISTING_STEP); }}>
+            <option value="">Any admin</option><option value="none">Unassigned</option>{admins.map((a) => <option key={a.id} value={a.id}>{a.full_name || a.phone}</option>)}
+          </select>
+        </div>
+        {shown.length === 0 && <p className="ops-mute py-8 text-lg font-semibold">No listings match.</p>}
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {shown.slice(0, listCount).map((l) => (
+            <li key={l.id} className="ops-card ops-lift flex flex-col gap-2 overflow-hidden p-5" style={{ borderTop: `6px solid ${statusColor(l.status)}` }}>
+              <div className="flex items-start justify-between gap-3">
+                <p className="ops-num text-4xl">{naira(l.price_ngn)}</p>
+                <Badge tone={l.status === 'approved' ? 'green' : l.status === 'rejected' ? 'amber' : 'red'}>{l.status.replace('_', ' ')}</Badge>
+              </div>
+              <p className="font-display text-lg font-extrabold leading-tight tracking-tight">{l.title}</p>
+              <p className="ops-mute text-sm font-semibold">{regionLabel(l.region)} · Seller {l.seller_name} · {l.seller_phone}</p>
+              <p className="text-sm font-bold">In charge: {l.assigned_admin_id ? nameOf.get(l.assigned_admin_id) ?? l.admin_in_charge_name ?? 'Unknown' : 'Nobody yet'}</p>
+              <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
+                <button type="button" className="ops-btn" onClick={() => setDialog({ kind: 'reassign', listing: l })}>Reassign</button>
+                {l.status === 'pending_review' && <a className="ops-btn ops-btn-blue" href="/admin/dashboard">Review</a>}
+              </div>
+            </li>
+          ))}
+        </ul>
+        {shown.length > listCount && <button type="button" className="ops-btn mx-auto min-w-48" onClick={() => setListCount((n) => n + LISTING_STEP)}>Show more ({shown.length - listCount} left)</button>}
+      </section>
 
-      {tab === 'audit' && (
-        <section aria-label="Audit log" className="ops-card p-5">
-          <ol className="relative flex flex-col gap-4 border-l border-[#232C3D] pl-6">
-            {audit.map((a) => (
-              <li key={a.id} className="relative text-sm">
-                <span className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-[#0A0D13] bg-brand-blue" aria-hidden="true" />
-                <p><span className="font-semibold">{a.actor_id ? nameOf.get(a.actor_id) ?? 'An admin' : 'A seller'}</span> {actionText(a.action)}</p>
-                {auditReason(a.detail) && <p className="ops-mute">Reason: {auditReason(a.detail)}</p>}
-                <p className="ops-mute text-xs">{new Date(a.created_at).toLocaleString('en-NG')}</p>
+      <section id="g-audit" aria-label="Audit log" className="scroll-mt-24">
+        <h2 className="font-display border-t-2 border-[#16140F] pt-6 text-3xl font-extrabold tracking-tight">Audit trail <span className="ops-mute">{audit.length}</span></h2>
+        <ol className="mt-6 flex max-w-3xl flex-col">
+          {audit.slice(0, auditCount).map((a, i) => {
+            const d = new Date(a.created_at);
+            const day = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' });
+            const prev = i > 0 ? new Date(audit[i - 1].created_at).toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short' }) : null;
+            return (
+              <li key={a.id}>
+                {day !== prev && <p className="ops-eyebrow mb-2 mt-6 first:mt-0">{day}</p>}
+                <div className="grid grid-cols-[64px_20px_1fr] gap-x-3 border-b border-[#D6CDB9] py-3">
+                  <p className="ops-mute pt-0.5 text-sm font-bold tabular-nums">{d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit' })}</p>
+                  <span className="mt-1.5 h-3 w-3 rounded-full" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true" />
+                  <div className="text-[15px]">
+                    <p><span className="font-extrabold">{a.actor_id ? nameOf.get(a.actor_id) ?? 'An admin' : 'A seller'}</span> {actionText(a.action)}</p>
+                    {auditReason(a.detail) && <p className="ops-mute">Reason: {auditReason(a.detail)}</p>}
+                  </div>
+                </div>
               </li>
-            ))}
-            {audit.length === 0 && <li className="ops-mute py-6 text-sm">Nothing yet.</li>}
-          </ol>
-        </section>
-      )}
+            );
+          })}
+          {audit.length === 0 && <li className="ops-mute py-6 text-lg font-semibold">Nothing yet.</li>}
+        </ol>
+        {audit.length > auditCount && <button type="button" className="ops-btn mt-6" onClick={() => setAuditCount((n) => n + AUDIT_STEP)}>Show older ({audit.length - auditCount} more)</button>}
+      </section>
 
       {dialog?.kind === 'add' && <AddAdmin onCancel={() => setDialog(null)} onDone={(b) => run('/api/admin/create', b, 'Admin added. They can sign in with a WhatsApp code now.')} />}
       {dialog?.kind === 'revoke' && (
@@ -234,7 +285,7 @@ function ReasonDialog({ title, help, action, confirmName, danger, onCancel, onDo
           <input id="g-confirm" className="ops-input" value={typed} autoComplete="off" onChange={(e) => { setTyped(e.target.value); setError(null); }} />
         </>
       )}
-      {error && <p role="alert" className="text-sm text-[#FF8A80]">{error}</p>}
+      {error && <p role="alert" className="text-sm text-brand-red">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
         <button type="button" className={`ops-btn ${danger ? 'ops-btn-red' : 'ops-btn-go'}`} onClick={go} disabled={busy}>{busy ? 'Working…' : action}</button>
@@ -259,7 +310,7 @@ function ReassignDialog({ listing, targets, onCancel, onDone }: {
   }
   return (
     <Shell title={`Reassign “${listing.title}”`} onCancel={onCancel}>
-      {targets.length === 0 ? <p className="text-[#FF8A80]">No other active admin in this region.</p> : (
+      {targets.length === 0 ? <p className="text-brand-red">No other active admin in this region.</p> : (
         <>
           <label htmlFor="g-to" className="text-[15px] font-semibold">New admin in charge</label>
           <select id="g-to" className="ops-input" value={to} onChange={(e) => { setTo(e.target.value); setError(null); }}>
@@ -270,7 +321,7 @@ function ReassignDialog({ listing, targets, onCancel, onDone }: {
           <textarea id="g-why" className="ops-input min-h-24" rows={3} maxLength={500} value={reason} onChange={(e) => { setReason(e.target.value); setError(null); }} />
         </>
       )}
-      {error && <p role="alert" className="text-sm text-[#FF8A80]">{error}</p>}
+      {error && <p role="alert" className="text-sm text-brand-red">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
         <button type="button" className="ops-btn ops-btn-go" onClick={go} disabled={busy || targets.length === 0}>{busy ? 'Working…' : 'Reassign'}</button>
@@ -307,7 +358,7 @@ function AddAdmin({ onCancel, onDone }: { onCancel: () => void; onDone: (b: unkn
           </select>
         </>
       )}
-      {error && <p role="alert" className="text-sm text-[#FF8A80]">{error}</p>}
+      {error && <p role="alert" className="text-sm text-brand-red">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
         <button type="button" className="ops-btn ops-btn-red" onClick={go} disabled={busy}>{busy ? 'Adding…' : 'Add admin'}</button>

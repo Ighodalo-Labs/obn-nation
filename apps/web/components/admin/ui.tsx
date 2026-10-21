@@ -16,24 +16,30 @@ export function Badge({ tone, children }: { tone: Tone; children: ReactNode }) {
   return <span className={`ops-badge ops-b-${tone}`}>{children}</span>;
 }
 
-const COLOR: Record<Exclude<Tone, 'mute'>, string> = { green: '#2E7D32', blue: '#1565C0', red: '#D32F2F', amber: '#F5B942' };
-
-export function StatCard({ label, value, hint, tone = 'blue' }: { label: string; value: ReactNode; hint?: string; tone?: Exclude<Tone, 'mute'> }) {
+/** A big editorial number with a small label. No box around it. */
+export function BigStat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: Exclude<Tone, 'mute'> }) {
+  const bar = tone ? { red: 'bg-brand-red', green: 'bg-brand-green', blue: 'bg-brand-blue', amber: 'bg-[#F2B233]' }[tone] : 'bg-[#16140F]';
   return (
-    <div className="ops-card ops-stat" style={{ ['--c' as string]: COLOR[tone] }}>
-      <p className="ops-mute text-xs font-semibold uppercase tracking-[0.14em]">{label}</p>
-      <p className="font-display mt-1 text-3xl font-extrabold leading-none tracking-tight">{value}</p>
-      {hint && <p className="ops-mute mt-2 text-xs">{hint}</p>}
+    <div className="min-w-0">
+      <span className={`mb-3 block h-1.5 w-10 rounded-full ${bar}`} aria-hidden="true" />
+      <p className="ops-num text-[44px] sm:text-[56px]">{value}</p>
+      <p className="mt-2 text-[15px] font-extrabold">{label}</p>
+      {hint && <p className="ops-mute mt-0.5 text-sm">{hint}</p>}
     </div>
   );
 }
 
+/** Solid colour tab on a photo, e.g. "Waiting 5h". */
+export function Ribbon({ tone, children }: { tone: Tone; children: ReactNode }) {
+  return <span className={`ops-ribbon ops-b-${tone}`}>{children}</span>;
+}
+
 export function PageTitle({ title, sub, children }: { title: string; sub?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight">{title}</h1>
-        {sub && <p className="ops-mute mt-1 text-sm" aria-live="polite">{sub}</p>}
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="min-w-0">
+        <h1 className="font-display text-[44px] font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-6xl">{title}</h1>
+        {sub && <p className="ops-mute mt-3 max-w-xl text-base" aria-live="polite">{sub}</p>}
       </div>
       {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
@@ -61,10 +67,10 @@ export function Dialog({ title, children, onClose, busy = false, z = 60 }: { tit
     return () => { window.removeEventListener('keydown', onKey, true); before?.focus?.(); };
   }, [busy, onClose]);
   return (
-    <div className="fixed inset-0 flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm sm:items-center sm:p-4" style={{ zIndex: z }}
+    <div className="fixed inset-0 flex items-end justify-center bg-[#16140F]/65 p-0 sm:items-center sm:p-4" style={{ zIndex: z }}
       onMouseDown={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
-      <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className="ops-card ops-pop ops-scroll flex max-h-[92vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-b-none p-5 sm:rounded-2xl">
-        <h2 className="font-display text-xl font-extrabold tracking-tight">{title}</h2>
+      <div ref={ref} role="dialog" aria-modal="true" aria-label={title} className="ops-card ops-pop ops-scroll flex max-h-[92vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-b-none border-2 !border-[#16140F] p-6 sm:rounded-2xl">
+        <h2 className="font-display text-2xl font-extrabold tracking-tight">{title}</h2>
         {children}
       </div>
     </div>
@@ -77,7 +83,7 @@ export function ConfirmDialog({ title, body, confirmLabel, tone = 'go', busy, on
 }) {
   return (
     <Dialog title={title} onClose={onCancel} busy={busy} z={70}>
-      <div className="text-[15px] leading-relaxed text-[#C7CEDB]">{body}</div>
+      <div className="text-[15px] leading-relaxed">{body}</div>
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
         <button type="button" data-autofocus className={`ops-btn ${tone === 'red' ? 'ops-btn-red' : 'ops-btn-go'}`} onClick={onConfirm} disabled={busy}>{busy ? 'Working…' : confirmLabel}</button>
@@ -90,11 +96,11 @@ export function Thumb({ src, size = 'h-24 w-24' }: { src?: string; size?: string
   return src ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={src} alt="" className={`${size} flex-none rounded-xl object-cover`} />
-  ) : <div className={`${size} flex-none rounded-xl bg-[#1B2436]`} aria-hidden="true" />;
+  ) : <div className={`${size} flex-none rounded-xl bg-[#EBE5D6]`} aria-hidden="true" />;
 }
 
 export function Notice({ kind, children }: { kind: 'ok' | 'error'; children: ReactNode }) {
   return (
-    <p role={kind === 'ok' ? 'status' : 'alert'} className={`rounded-xl border px-4 py-3 text-[15px] ${kind === 'ok' ? 'border-[#2E7D32]/50 bg-[#2E7D32]/15 text-[#81C784]' : 'border-[#D32F2F]/50 bg-[#D32F2F]/15 text-[#FF8A80]'}`}>{children}</p>
+    <p role={kind === 'ok' ? 'status' : 'alert'} className={`rounded-xl border-2 px-4 py-3 text-[15px] font-semibold ${kind === 'ok' ? 'border-[#2E7D32] bg-[#E3F1E4] text-[#1B5E20]' : 'border-[#D32F2F] bg-[#FBE4E2] text-[#9A1C1C]'}`}>{children}</p>
   );
 }
