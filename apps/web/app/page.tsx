@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { ListingCard } from '@/components/landing/ListingCard';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Check } from 'lucide-react';
 
 
 const ABOUT = [
@@ -27,12 +27,6 @@ const TILES = [
 ];
 const MORE = ['Generators', 'Other'];
 
-const PROOF = [
-  { title: 'Checked by an admin', text: 'A real person reviews every listing first.', bg: 'bg-brand-red' },
-  { title: 'Your number stays private', text: 'Buyers never see your name or phone.', bg: 'bg-brand-green' },
-  { title: 'Sold close to home', text: 'Port Harcourt, Delta and Ekiti first.', bg: 'bg-brand-blue' },
-];
-
 const TRUST = [
   { n: '01', title: 'Checked before it shows', text: 'An admin in your region reviews every listing before any buyer sees it.', bg: 'bg-brand-red' },
   { n: '02', title: 'Clear reasons, easy fixes', text: 'If a listing is turned down, you get the reason and a link to fix it and send it again.', bg: 'bg-brand-green' },
@@ -55,9 +49,9 @@ const FAQ = [
 
 // LP-4: title, description from the first sentence of the About copy, and Open Graph.
 export const metadata: Metadata = {
-  title: 'OBN NATION — Connecting People',
+  title: 'OBN NATION | Connecting People',
   description: ABOUT[0].split('. ')[0] + '.',
-  openGraph: { title: 'OBN NATION — Connecting People', description: ABOUT[0].split('. ')[0] + '.', type: 'website' },
+  openGraph: { title: 'OBN NATION | Connecting People', description: ABOUT[0].split('. ')[0] + '.', type: 'website' },
 };
 
 const FULL = 'ml-[calc(50%-50vw)] w-screen';
@@ -125,7 +119,7 @@ export default function Home() {
         </div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/80 via-[#0A0A0A]/40 to-transparent" aria-hidden="true" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/50 via-transparent to-transparent" aria-hidden="true" />
-        <div className={`${INNER} flex min-h-[620px] flex-col justify-center pb-28 pt-16 lg:min-h-[700px]`}>
+        <div className={`${INNER} flex min-h-[calc(100svh-4.5rem)] flex-col justify-center pb-24 pt-16`}>
           <p className="hero-fade mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/80" style={{ ['--d' as string]: '.1s' }}>
             <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
             One Beta Nation
@@ -147,27 +141,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Proof strip: three colour blocks, no icons */}
-      <section className={`${INNER} relative z-10 -mt-16`}>
-        <ul className="grid overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(0,0,0,.5)] sm:grid-cols-3" data-reveal>
-          {PROOF.map(({ title, text, bg }) => (
-            <li key={title} className={`${bg} p-7 text-white`}>
-              <b className="font-display block text-2xl font-extrabold leading-tight tracking-tight">{title}</b>
-              <span className="mt-2 block text-base text-white/85">{text}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {/* What you can list: photo grid */}
       <section className={`${BLEED} bg-[#E3ECE2]`} aria-labelledby="list-h"><div className={`${INNER} py-14 sm:py-20`}>
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end" data-reveal>
-          <div className="max-w-2xl">
-            <h2 id="list-h" className={H2}>What you can list</h2>
-            <p className="mt-4 text-lg text-[#5C5C58]">Everyday items that still have life in them.</p>
-          </div>
-          <Link href="/list" className="flex min-h-11 w-fit items-center gap-2 rounded-full border border-black/20 px-5 text-sm font-semibold transition-colors hover:border-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white">Start listing <ArrowUpRight size={18} aria-hidden="true" /></Link>
-        </div>
+        <h2 id="list-h" className={H2} data-reveal>What you can list</h2>
         <ul className="mt-10 grid auto-rows-[200px] grid-cols-2 gap-3 sm:auto-rows-[220px] sm:grid-cols-4 sm:gap-4">
           {TILES.map((t) => (
             <li key={t.label} className={`${t.span} col-span-1`} data-reveal>
@@ -219,53 +195,81 @@ export default function Home() {
 
       {/* Safety */}
       <section id="safety" className={`${BLEED} bg-[#0A0A0A] text-white`} aria-labelledby="safe-h">
-        <div className={`${INNER} py-14 sm:py-20`}>
-          <h2 id="safe-h" className={`${H2} max-w-3xl`} data-reveal>A real person checks every listing.</h2>
-          <ul className="mt-9 grid gap-4 md:grid-cols-3">
-            {TRUST.map(({ n, title, text, bg }) => (
-              <li key={title} className={`${bg} flex min-h-[260px] flex-col justify-between rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1`} data-reveal>
-                <span className="font-display text-5xl font-extrabold text-white/40">{n}</span>
-                <span>
-                  <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-white">{title}</h3>
-                  <p className="mt-2 text-base text-white/85">{text}</p>
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className={`${INNER} grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1fr_1fr] lg:gap-16`}>
+          <div>
+            <h2 id="safe-h" className={H2} data-reveal>A real person checks every listing.</h2>
+            <ol className="mt-10 flex flex-col">
+              {TRUST.map(({ n, title, text, bg }) => (
+                <li key={title} className="group flex gap-5 border-t border-white/10 py-6 transition-colors hover:border-white/40" data-reveal>
+                  <span className={`${bg} flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-display text-base font-extrabold text-white transition-transform duration-300 group-hover:scale-110`}>{n}</span>
+                  <span>
+                    <h3 className="font-display text-xl font-extrabold tracking-tight">{title}</h3>
+                    <p className="mt-1 max-w-md text-base text-white/70">{text}</p>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="relative mx-auto w-full max-w-md" data-reveal aria-hidden="true">
+            <div className="overflow-hidden rounded-3xl bg-white text-[#0A0A0A] shadow-[0_40px_90px_-30px_rgba(0,0,0,.8)]">
+              <div className="flex items-center justify-between bg-[#F3F1EC] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#5C5C58]">
+                <span>Admin review</span><span className="rounded-full bg-brand-red px-3 py-1 text-white">Waiting</span>
+              </div>
+              <div className="relative aspect-[16/9]"><Image src="/photos/kitchen.webp" alt="" fill sizes="400px" className="object-cover" /></div>
+              <div className="px-5 pb-5 pt-4">
+                <b className="font-display text-xl font-extrabold">Washing machine, 7 kg</b>
+                <p className="text-sm text-[#5C5C58]">Port Harcourt · Neatly used</p>
+                <ul className="mt-4 grid gap-2 text-sm font-medium">
+                  {['Photos are clear', 'Video plays', 'Price looks fair', 'Item is allowed'].map((c) => (
+                    <li key={c} className="flex items-center gap-3"><span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-green text-white"><Check size={13} strokeWidth={3} /></span>{c}</li>
+                  ))}
+                </ul>
+                <div className="mt-5 grid grid-cols-2 gap-3 text-center text-sm font-semibold">
+                  <span className="rounded-full border border-black/20 py-3">Reject</span>
+                  <span className="rounded-full bg-brand-green py-3 text-white">Approve</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className={`${BLEED} bg-[#F3E2DF]`} aria-labelledby="faq-h"><div className={`${INNER} grid gap-10 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
-        <h2 id="faq-h" className={H2} data-reveal>Questions, answered.</h2>
-        <div className="divide-y divide-black/10 border-y border-black/10" data-reveal>
-          {FAQ.map((f) => (
-            <details key={f.q} className="group py-5">
-              <summary className="flex min-h-12 items-center justify-between gap-6 text-lg font-semibold">
-                {f.q}
-                <span className="plus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-xl transition-transform" aria-hidden="true">+</span>
-              </summary>
-              <p className="mt-3 max-w-xl text-base text-[#5C5C58]">{f.a}</p>
-            </details>
-          ))}
-        </div>
+      <section id="faq" className={`${BLEED} bg-[#F3E2DF]`} aria-labelledby="faq-h">
+        <div className={`${INNER} grid gap-10 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr] lg:gap-16`}>
+          <div className="lg:sticky lg:top-28 lg:self-start" data-reveal>
+            <h2 id="faq-h" className={H2}>Questions, answered.</h2>
+            <p className="mt-5 max-w-sm text-lg text-[#4A3F3C]">Short answers about listing, checking and fixing.</p>
+            <Link href="/list" className={`${BTN} mt-8 w-fit bg-[#0A0A0A] text-white hover:bg-brand-red focus-visible:outline-[#0A0A0A]`}>Start a listing</Link>
+          </div>
+          <div className="flex flex-col gap-3">
+            {FAQ.map((f, i) => (
+              <details key={f.q} className="group overflow-hidden rounded-2xl bg-white/70 transition-colors open:bg-white hover:bg-white" data-reveal>
+                <summary className="flex min-h-16 items-center gap-4 px-5 py-4 text-lg font-semibold">
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-sm font-extrabold text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i % 3]}`}>{i + 1}</span>
+                  <span className="flex-1">{f.q}</span>
+                  <span className="plus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-xl transition-transform" aria-hidden="true">+</span>
+                </summary>
+                <p className="px-5 pb-5 pl-[4.25rem] text-base text-[#5C5C58]">{f.a}</p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* About (PRD 3, client copy word for word) */}
       <section id="about" className={`${BLEED} bg-[#E2EAF4]`} aria-labelledby="about-h">
-        <div className={`${INNER} grid gap-12 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
-          <div data-reveal>
-            <h2 id="about-h" className={H2}>About OBN NATION</h2>
-            <ul className="mt-8 flex flex-col gap-3">
-              {VALUES.map((v) => (
-                <li key={v.title} className="flex items-center gap-3 text-lg font-semibold">
-                  <span className={`h-6 w-1.5 rounded-full ${v.bar}`} aria-hidden="true" />{v.title}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex flex-col gap-5 text-lg leading-relaxed text-[#2B2B28]" data-reveal>
+        <div className={`${INNER} py-14 sm:py-20`}>
+          <h2 id="about-h" className={`${H2} max-w-4xl`} data-reveal>About OBN NATION</h2>
+          <ul className="mt-10 grid gap-3 md:grid-cols-3">
+            {VALUES.map((v, i) => (
+              <li key={v.title} className={`${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i]} rounded-2xl p-6 text-white transition-transform duration-300 hover:-translate-y-1`} data-reveal>
+                <span className="font-display text-sm font-extrabold text-white/60">0{i + 1}</span>
+                <b className="font-display mt-6 block text-2xl font-extrabold leading-tight tracking-tight">{v.title}</b>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-10 grid gap-8 text-lg leading-relaxed text-[#2B2B28] lg:grid-cols-3" data-reveal>
             {ABOUT.map((p) => <p key={p}>{p}</p>)}
           </div>
         </div>
@@ -273,11 +277,25 @@ export default function Home() {
 
       {/* Closing call to action */}
       <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
-        <Image src="/photos/kitchen.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-center" />
-        <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/65" aria-hidden="true" />
-        <div className={`${INNER} flex flex-col items-center py-16 text-center sm:py-24`}>
-          <h2 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-6xl" data-reveal>Got something to sell?</h2>
-          <Link href="/list" className={`${BTN} mt-9 bg-brand-red text-white hover:bg-brand-green focus-visible:outline-white`}>List an item</Link>
+        <Image src="/photos/living-room.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-[70%_50%]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/90 via-[#0A0A0A]/65 to-[#0A0A0A]/30" aria-hidden="true" />
+        <div className={`${INNER} grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.2fr_.8fr]`}>
+          <div>
+            <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] font-extrabold leading-[1.02] tracking-[-0.04em] text-white" data-reveal>Got something to sell?</h2>
+            <p className="mt-5 max-w-lg text-lg text-white/80" data-reveal>Take photos, record a short video, set a price. An admin does the rest.</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row" data-reveal>
+              <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white hover:bg-white hover:text-[#0A0A0A] focus-visible:outline-white`}>List an item <ArrowUpRight size={18} aria-hidden="true" /></Link>
+              <a href="#how" className={`${BTN} border border-white/40 text-white hover:border-white hover:bg-white/10 focus-visible:outline-white`}>See how it works</a>
+            </div>
+          </div>
+          <ul className="grid gap-3" data-reveal>
+            {[['1', 'bg-brand-red', 'Add photos and a video'], ['2', 'bg-brand-blue', 'An admin checks it'], ['3', 'bg-brand-green', 'It goes live']].map(([n, c, t]) => (
+              <li key={n} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 text-white backdrop-blur">
+                <span className={`${c} flex h-10 w-10 items-center justify-center rounded-full font-display font-extrabold`}>{n}</span>
+                <span className="text-lg font-semibold">{t}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -290,14 +308,14 @@ export default function Home() {
               <span className="font-display text-xl font-extrabold tracking-tight text-white">OBN NATION</span>
             </div>
             <p className="max-w-xs text-base">One Beta Nation. A community marketplace that turns things you don’t use into value.</p>
-            <Link href="/list" className={`${BTN} bg-brand-red text-white hover:bg-brand-green focus-visible:outline-white`}>List an item</Link>
+            <Link href="/list" className={`${BTN} bg-brand-red text-white transition-all hover:bg-white hover:text-[#0A0A0A] active:scale-95 focus-visible:outline-white`}>List an item</Link>
           </div>
           <nav aria-label="Footer" className="flex flex-col">
             <b className="mb-2 text-sm uppercase tracking-[0.2em] text-white">Explore</b>
-            <a href="#how" className="flex min-h-11 items-center hover:text-white">How it works</a>
-            <a href="#safety" className="flex min-h-11 items-center hover:text-white">Safety</a>
-            <a href="#faq" className="flex min-h-11 items-center hover:text-white">FAQ</a>
-            <a href="#about" className="flex min-h-11 items-center hover:text-white">About</a>
+            <a href="#how" className="-mx-3 flex min-h-11 items-center rounded-full px-3 transition-all hover:bg-white/10 hover:pl-5 hover:text-white active:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">How it works</a>
+            <a href="#safety" className="-mx-3 flex min-h-11 items-center rounded-full px-3 transition-all hover:bg-white/10 hover:pl-5 hover:text-white active:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">Safety</a>
+            <a href="#faq" className="-mx-3 flex min-h-11 items-center rounded-full px-3 transition-all hover:bg-white/10 hover:pl-5 hover:text-white active:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">FAQ</a>
+            <a href="#about" className="-mx-3 flex min-h-11 items-center rounded-full px-3 transition-all hover:bg-white/10 hover:pl-5 hover:text-white active:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">About</a>
           </nav>
           <div className="flex flex-col">
             <b className="mb-2 text-sm uppercase tracking-[0.2em] text-white">Where we are</b>

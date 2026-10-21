@@ -94,13 +94,13 @@ export function SignInFlow({ next }: { next: string | null }) {
   return (
     <section className="flex flex-col gap-5" aria-live="polite">
       {step === 'phone' && (
-        <form className="flex flex-col gap-4" onSubmit={onSubmit(sendCode)} noValidate>
+        <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(sendCode)} noValidate>
           {eyebrow('Sell on OBN NATION')}
           <h1 className={heading}>Let’s get you in.</h1>
           <p className="-mt-2 text-lg text-[#6B655A]">We send a 6-digit code on WhatsApp. No password to remember.</p>
           <label htmlFor="phone" className="text-base font-bold">Your WhatsApp number</label>
           <div className="flex gap-2">
-            <span className="flex min-h-14 items-center rounded-2xl bg-[#16140F] px-4 text-lg font-bold text-white">+234</span>
+            <span className="sell-chip flex min-h-14 items-center rounded-2xl bg-[#16140F] px-4 text-lg font-bold text-white">+234</span>
             <input
               id="phone" ref={firstField} className={input} type="tel" inputMode="tel" autoComplete="tel-national"
               placeholder="803 123 4567" value={digits} onChange={(e) => setDigits(e.target.value)} aria-describedby="phone-help"
@@ -114,16 +114,28 @@ export function SignInFlow({ next }: { next: string | null }) {
       )}
 
       {step === 'code' && (
-        <form className="flex flex-col gap-4" onSubmit={onSubmit(verify)} noValidate>
+        <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(verify)} noValidate>
           {eyebrow('Check WhatsApp')}
           <h1 className={heading}>Enter your code.</h1>
           <p className="text-lg text-[#6B655A]">Sent to WhatsApp {formatSentTo(phone)}</p>
           <label htmlFor="code" className="sr-only">6-digit code</label>
-          <input
-            id="code" ref={firstField} className={`${input} text-center text-3xl font-extrabold tracking-[0.5em]`} type="text" inputMode="numeric"
-            autoComplete="one-time-code" maxLength={6} placeholder="••••••" value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-          />
+          <div className="relative">
+            <div className="grid grid-cols-6 gap-2 sm:gap-3" aria-hidden="true">
+              {Array.from({ length: 6 }, (_, i) => (
+                <span
+                  key={i}
+                  className={`sell-box flex h-16 items-center justify-center rounded-2xl border-2 bg-white font-display text-3xl font-extrabold text-[#16140F] transition-all duration-200 ${code[i] ? 'sell-pop border-[#16140F]' : i === code.length ? 'border-[#1565C0] ring-4 ring-[#1565C0]/15' : 'border-[#E2D9CA]'}`}
+                >
+                  {code[i] ?? (i === code.length ? <i className="sell-caret h-7 w-0.5 bg-[#1565C0]" /> : '')}
+                </span>
+              ))}
+            </div>
+            <input
+              id="code" ref={firstField} className="absolute inset-0 h-full w-full cursor-text bg-transparent text-transparent caret-transparent opacity-0" type="text" inputMode="numeric"
+              autoComplete="one-time-code" maxLength={6} value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            />
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <button type="button" className={pillButton} disabled={wait > 0 || busy} onClick={sendCode}>
               {wait > 0 ? `Resend in ${clock(wait)}` : 'Resend code'}
@@ -139,7 +151,7 @@ export function SignInFlow({ next }: { next: string | null }) {
       )}
 
       {step === 'name' && (
-        <form className="flex flex-col gap-4" onSubmit={onSubmit(saveName)} noValidate>
+        <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(saveName)} noValidate>
           {eyebrow('Almost there')}
           <h1 className={heading}>One last thing.</h1>
           <label htmlFor="name" className="text-base font-bold">What should we call you?</label>
@@ -155,7 +167,7 @@ export function SignInFlow({ next }: { next: string | null }) {
       )}
 
       {error && (
-        <p role="alert" className="rounded-2xl border-2 border-[#C62828]/30 bg-[#FDECEA] p-4 text-base font-semibold text-[#7A1B16]">
+        <p key={error} role="alert" className="sell-shake rounded-2xl border-2 border-[#C62828]/30 bg-[#FDECEA] p-4 text-base font-semibold text-[#7A1B16]">
           {error}
         </p>
       )}

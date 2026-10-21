@@ -3,7 +3,7 @@ import '@fontsource-variable/manrope';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'OBN NATION — Connecting People',
+  title: 'OBN NATION | Connecting People',
   description: 'OBN NATION is a Nigerian community-driven decluttering and asset-liquidation marketplace.',
 };
 

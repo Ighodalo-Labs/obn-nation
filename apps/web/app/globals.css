@@ -113,3 +113,19 @@ textarea.ops-input { padding: 10px 12px; }
 /* Seller screens (sell-): light, warm paper look. */
 .sell-root ::selection { background: #f4d9a8; color: #16140f; }
 .sell-root input, .sell-root textarea { font-family: inherit; }
+
+/* Sign-in motion (sell-) */
+@keyframes sell-rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes sell-slide { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+@keyframes sell-pop { 0% { transform: scale(.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes sell-shake { 0%, 100% { transform: none; } 20% { transform: translateX(-8px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+@keyframes sell-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.sell-stagger > * { animation: sell-rise .6s cubic-bezier(.2,.8,.2,1) both; }
+.sell-stagger > *:nth-child(2) { animation-delay: .07s; } .sell-stagger > *:nth-child(3) { animation-delay: .14s; }
+.sell-stagger > *:nth-child(4) { animation-delay: .21s; } .sell-stagger > *:nth-child(5) { animation-delay: .28s; }
+.sell-stagger > *:nth-child(6) { animation-delay: .35s; } .sell-stagger > *:nth-child(7) { animation-delay: .42s; }
+.sell-chip { animation: sell-slide .6s cubic-bezier(.2,.8,.2,1) .25s both; }
+.sell-pop { animation: sell-pop .28s ease-out both; }
+.sell-shake { animation: sell-shake .45s ease both; }
+.sell-caret { animation: sell-blink 1s steps(1) infinite; }
+@media (prefers-reduced-motion: reduce) { .sell-stagger > *, .sell-chip, .sell-pop, .sell-shake, .sell-caret { animation: none !important; } }
