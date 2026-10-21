@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { Header } from '@/components/Header';
+import { AppShell } from '@/components/AppShell';
 import { EditForm } from '@/components/listing/EditForm';
 import { ApiError } from '@/lib/api/errors';
 import { buildEditDeps, signMedia } from '@/lib/edit/deps';
@@ -28,18 +28,16 @@ export default async function EditPage({ searchParams }: { searchParams: { token
     const listing = await loadForEdit(deps, token);
     const signed = await signMedia({ photos: listing.photo_urls, video: listing.video_url });
     return (
-      <main>
-        <Header />
+      <AppShell>
         <EditForm token={token} listing={listing} signed={signed} />
-      </main>
+      </AppShell>
     );
   } catch (e) {
     const message = e instanceof ApiError && e.code !== 'internal_error' ? e.message : 'Something went wrong on our side. Please try again.';
     return (
-      <main>
-        <Header />
+      <AppShell>
         <Problem message={e instanceof ApiError && e.code === 'invalid_state' ? 'This listing is not waiting for changes any more.' : message} />
-      </main>
+      </AppShell>
     );
   }
 }

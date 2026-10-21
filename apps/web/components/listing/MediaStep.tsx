@@ -7,7 +7,7 @@ import { IMAGE_MAX_COUNT } from '@/lib/compression/images';
 import type { MediaApi } from './useMedia';
 import { secondaryButton } from './ui';
 
-const tile = 'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-white';
+const tile = 'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-bg px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-white';
 
 export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }: {
   media: MediaApi;
@@ -55,7 +55,7 @@ export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }
         {photos.length > 0 && (
           <ul className="grid grid-cols-3 gap-2">
             {photos.map((p, i) => (
-              <li key={p.id} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-surface">
+              <li key={p.id} className="relative aspect-square overflow-hidden rounded-xl border border-border bg-bg">
                 {p.status === 'done' && p.url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={p.url} alt={`Photo ${i + 1}`} className="h-full w-full object-cover" />
@@ -98,7 +98,7 @@ export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }
         {video.status === 'error' && <p role="alert" className="text-sm text-tint-red">{video.error}</p>}
 
         {videoBusy && (
-          <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3" aria-live="polite">
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-bg p-3" aria-live="polite">
             <p className="flex justify-between text-sm">
               <span>{video.status === 'checking' ? 'Checking video…' : 'Shrinking video…'}</span>
               <span>{video.status === 'compressing' ? `${video.percent}%` : ''}</span>
@@ -111,7 +111,7 @@ export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }
         )}
 
         {video.status === 'done' && video.url && (
-          <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3">
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-bg p-3">
             <video src={video.url} controls playsInline className="max-h-56 w-full rounded" />
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted">MP4, {humanSize(video.bytes ?? 0)}</span>

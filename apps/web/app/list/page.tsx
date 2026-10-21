@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Header } from '@/components/Header';
+import { AppShell } from '@/components/AppShell';
 import { SignInFlow } from '@/components/sign-in/SignInFlow';
 import { safeNext } from '@/lib/middleware/rules';
 import { createServerSupabase } from '@/lib/supabase/server';
@@ -24,14 +24,13 @@ export default async function ListPage({ searchParams }: { searchParams: { next?
   const next = safeNext(searchParams.next);
   const admin = await isSignedInAdmin();
   return (
-    <main>
-      <Header />
+    <AppShell>
       {admin && (
         <Link href="/admin/dashboard" className="mb-2 flex min-h-12 items-center text-base text-tint-blue underline">
           Go to admin
         </Link>
       )}
       <SignInFlow next={next} />
-    </main>
+    </AppShell>
   );
 }

@@ -37,7 +37,7 @@ export function DetailsFields({ draft, errors, set }: {
         onChange={(v) => set('condition_work', v)} error={errors.condition_work} columns={3} />
       <Field id="price" label="Price" error={errors.price}>
         <div className="flex gap-2">
-          <span className="flex min-h-12 items-center rounded-lg border border-border bg-surface px-3 text-base text-muted">₦</span>
+          <span className="flex min-h-12 items-center rounded-xl border border-border bg-bg px-3 text-base text-muted">₦</span>
           <input id="price" className={inputClass} type="text" inputMode="numeric" autoComplete="off" placeholder="150,000"
             value={formatPrice(draft.price)} aria-invalid={Boolean(errors.price)} aria-describedby={errors.price ? 'price-error' : undefined}
             onChange={(e) => set('price', priceDigits(e.target.value))} />

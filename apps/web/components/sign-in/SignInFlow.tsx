@@ -9,8 +9,8 @@ type Step = 'phone' | 'code' | 'name';
 interface SendOk { sent: true; phone: string; resend_after_seconds: number }
 interface VerifyOk { user: { needs_name: boolean }; next: string }
 
-const input = 'h-12 w-full rounded-lg border border-border bg-surface px-3 text-base text-white placeholder:text-muted focus:border-tint-blue focus:outline-none focus:ring-2 focus:ring-tint-blue';
-const primary = 'h-12 w-full rounded-lg bg-brand-red text-base font-semibold text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+const input = 'h-12 w-full rounded-xl border border-border bg-bg px-3 text-base text-white placeholder:text-muted focus:border-tint-blue focus:outline-none focus:ring-2 focus:ring-tint-blue';
+const primary = 'h-12 w-full rounded-full bg-brand-red text-base font-semibold text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 export function SignInFlow({ next }: { next: string | null }) {
   const router = useRouter();
@@ -87,16 +87,17 @@ export function SignInFlow({ next }: { next: string | null }) {
     <section className="flex flex-col gap-4 pb-8" aria-live="polite">
       {step === 'phone' && (
         <form className="flex flex-col gap-4" onSubmit={onSubmit(sendCode)} noValidate>
-          <h1 className="text-[26px] font-semibold leading-tight">Sign in with WhatsApp</h1>
+          <h1 className="text-[28px] font-semibold leading-tight tracking-tight">Sign in with WhatsApp</h1>
+          <p className="-mt-2 text-base text-muted">We send a 6-digit code. No password needed.</p>
           <label htmlFor="phone" className="text-sm text-muted">Phone number</label>
           <div className="flex gap-2">
-            <span className="flex h-12 items-center rounded-lg border border-border bg-surface px-3 text-base text-muted">+234</span>
+            <span className="flex h-12 items-center rounded-xl border border-border bg-bg px-3 text-base text-muted">+234</span>
             <input
               id="phone" ref={firstField} className={input} type="tel" inputMode="tel" autoComplete="tel-national"
               placeholder="803 123 4567" value={digits} onChange={(e) => setDigits(e.target.value)} aria-describedby="phone-help"
             />
           </div>
-          <p id="phone-help" className="text-sm text-muted">Use a number that has WhatsApp.</p>
+          <p id="phone-help" className="text-sm text-muted">Use a number that has WhatsApp. Buyers never see it.</p>
           <button className={primary} type="submit" disabled={busy || digits.replace(/\D/g, '').length < 10}>
             {busy ? 'Sending…' : 'Send code'}
           </button>
@@ -143,7 +144,7 @@ export function SignInFlow({ next }: { next: string | null }) {
       )}
 
       {error && (
-        <p role="alert" className="rounded-lg border border-tint-red bg-surface p-3 text-base text-tint-red">
+        <p role="alert" className="rounded-xl border border-tint-red bg-bg p-3 text-base text-tint-red">
           {error}
         </p>
       )}

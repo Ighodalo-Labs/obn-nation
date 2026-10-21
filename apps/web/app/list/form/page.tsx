@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { Header } from '@/components/Header';
+import { AppShell } from '@/components/AppShell';
 import { ListingForm } from '@/components/listing/ListingForm';
 import { REF_COOKIE, validRef } from '@/lib/middleware/rules';
 import { createServerSupabase } from '@/lib/supabase/server';
@@ -40,9 +40,8 @@ export default async function ListFormPage() {
   await requireNamedSeller();
   const lockedRegion = await regionFromRef();
   return (
-    <main>
-      <Header />
+    <AppShell>
       <ListingForm lockedRegion={lockedRegion} />
-    </main>
+    </AppShell>
   );
 }

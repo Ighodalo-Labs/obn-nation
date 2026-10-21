@@ -73,7 +73,7 @@ export function EditForm({ token, listing, signed }: { token: string; listing: E
     <form className="flex flex-col gap-5 pb-10" noValidate onSubmit={(e) => { e.preventDefault(); void send(); }}>
       <h1 className="text-2xl">Fix your listing</h1>
       {listing.rejection_reason && (
-        <div role="note" className="rounded-lg border border-tint-red bg-surface p-3">
+        <div role="note" className="rounded-xl border border-tint-red bg-bg p-3">
           <p className="text-sm text-muted">The admin said</p>
           <p className="text-base text-tint-red">{listing.rejection_reason}</p>
         </div>
@@ -88,7 +88,7 @@ export function EditForm({ token, listing, signed }: { token: string; listing: E
         existingPhotos={keptPhotos.length > 0 && (
           <ul className="grid grid-cols-3 gap-2" aria-label="Current photos">
             {keptPhotos.map((p, i) => (
-              <li key={p} className="relative aspect-square overflow-hidden rounded-lg border border-border bg-surface">
+              <li key={p} className="relative aspect-square overflow-hidden rounded-xl border border-border bg-bg">
                 {signed.photos[p] ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={signed.photos[p]} alt={`Current photo ${i + 1}`} className="h-full w-full object-cover" />
@@ -102,7 +102,7 @@ export function EditForm({ token, listing, signed }: { token: string; listing: E
           </ul>
         )}
         existingVideo={keptVideo ? (
-          <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-3">
+          <div className="flex flex-col gap-2 rounded-xl border border-border bg-bg p-3">
             {signed.video ? <video src={signed.video} controls playsInline className="max-h-56 w-full rounded" /> : <p className="text-sm text-muted">Current video</p>}
             <button type="button" className="min-h-12 self-end text-tint-blue underline" onClick={() => setKeptVideo(null)}>Remove video</button>
           </div>
