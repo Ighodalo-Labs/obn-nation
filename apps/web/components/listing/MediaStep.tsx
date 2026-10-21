@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Camera, Film, ImagePlus, Loader2, X } from 'lucide-react';
 import { humanSize } from '@/lib/media/plan';
 import { IMAGE_MAX_COUNT } from '@/lib/compression/images';
@@ -17,6 +17,12 @@ export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }
   /** When set, the video picker is hidden and this is shown instead. */
   existingVideo?: React.ReactNode;
 }) {
+  // Fetch the video tool in the background while the seller takes photos.
+  useEffect(() => {
+    if (existingVideo) return;
+    const t = window.setTimeout(() => { void import('@/lib/compression/video').then((m) => m.preloadVideoEngine()); }, 800);
+    return () => window.clearTimeout(t);
+  }, [existingVideo]);
   const gallery = useRef<HTMLInputElement>(null);
   const camera = useRef<HTMLInputElement>(null);
   const videoGallery = useRef<HTMLInputElement>(null);

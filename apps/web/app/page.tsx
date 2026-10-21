@@ -65,7 +65,7 @@ const BLEED = '';
 const INNER = 'mx-auto w-full max-w-6xl px-5';
 const BTN = 'flex min-h-12 items-center justify-center rounded-full px-7 text-base font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
 const H2 = 'font-display text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-5xl';
-const NAVLINK = 'flex min-h-12 items-center rounded-full px-4 text-sm font-medium text-[#0A0A0A]/75 transition-colors hover:bg-black/5 hover:text-[#0A0A0A]';
+const NAVLINK = 'flex min-h-12 items-center rounded-full px-4 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white';
 
 /** Gateway page (PRD 6.1). Server-rendered and complete without scripts. Motion is added on top. */
 export default function Home() {
@@ -87,7 +87,7 @@ export default function Home() {
       </div>
 
       {/* Top bar */}
-      <header className={`${BLEED} sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur-md`}>
+      <header className={`${BLEED} sticky top-0 z-40 border-b border-white/10 bg-[#0A0A0A]/90 text-white backdrop-blur-md`}>
         <div className="flex h-1" aria-hidden="true">
           <span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" />
         </div>
@@ -96,7 +96,7 @@ export default function Home() {
             <Image id="nav-logo" src="/brand/obn-logo-clear.webp" alt="" width={48} height={48} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
             <span className="flex flex-col leading-tight">
               <span className="text-base font-semibold tracking-wide">OBN NATION</span>
-              <span className="hidden text-xs text-[#5C5C58] sm:block">Connecting People</span>
+              <span className="hidden text-xs text-white/60 sm:block">Connecting People</span>
             </span>
           </Link>
           <nav aria-label="Site" className="ml-auto hidden items-center md:flex">
@@ -105,7 +105,7 @@ export default function Home() {
             <a href="#faq" className={NAVLINK}>FAQ</a>
             <a href="#about" className={NAVLINK}>About</a>
           </nav>
-          <Link href="/list" className={`${BTN} ml-auto bg-brand-red px-5 text-sm text-white hover:bg-brand-green focus-visible:outline-[#0A0A0A] md:ml-3 md:px-6 md:text-base`}>
+          <Link href="/list" className={`${BTN} ml-auto bg-brand-red px-5 text-sm text-white hover:bg-brand-green focus-visible:outline-white md:ml-3 md:px-6 md:text-base`}>
             List an item
           </Link>
         </div>
@@ -236,7 +236,7 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className={`${BLEED} bg-[#F6F6F4]`} aria-labelledby="faq-h"><div className={`${INNER} grid gap-10 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
+      <section id="faq" className={`${BLEED} bg-[#F3E2DF]`} aria-labelledby="faq-h"><div className={`${INNER} grid gap-10 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
         <h2 id="faq-h" className={H2} data-reveal>Questions, answered.</h2>
         <div className="divide-y divide-black/10 border-y border-black/10" data-reveal>
           {FAQ.map((f) => (
@@ -282,21 +282,37 @@ export default function Home() {
       </section>
 
       <footer className={`${BLEED} bg-[#0A0A0A] text-white/70`}>
-        <div className={`${INNER} flex flex-col items-center gap-4 py-10 text-center text-sm sm:flex-row sm:justify-between sm:text-left`}>
-          <div className="flex items-center gap-4">
-            <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION" width={80} height={80} className="h-16 w-16" />
-            <p>OBN NATION Online. Connecting People.</p>
+        <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
+        <div className={`${INNER} grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]`}>
+          <div className="flex flex-col items-start gap-4">
+            <div className="flex items-center gap-4">
+              <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION" width={80} height={80} className="h-16 w-16" />
+              <span className="font-display text-xl font-extrabold tracking-tight text-white">OBN NATION</span>
+            </div>
+            <p className="max-w-xs text-base">One Beta Nation. A community marketplace that turns things you don’t use into value.</p>
+            <Link href="/list" className={`${BTN} bg-brand-red text-white hover:bg-brand-green focus-visible:outline-white`}>List an item</Link>
           </div>
-          <nav aria-label="Footer" className="flex flex-wrap justify-center">
-            <a href="#how" className="flex min-h-12 items-center px-3 hover:text-white">How it works</a>
-            <a href="#faq" className="flex min-h-12 items-center px-3 hover:text-white">FAQ</a>
-            <a href="#about" className="flex min-h-12 items-center px-3 hover:text-white">About</a>
+          <nav aria-label="Footer" className="flex flex-col">
+            <b className="mb-2 text-sm uppercase tracking-[0.2em] text-white">Explore</b>
+            <a href="#how" className="flex min-h-11 items-center hover:text-white">How it works</a>
+            <a href="#safety" className="flex min-h-11 items-center hover:text-white">Safety</a>
+            <a href="#faq" className="flex min-h-11 items-center hover:text-white">FAQ</a>
+            <a href="#about" className="flex min-h-11 items-center hover:text-white">About</a>
           </nav>
+          <div className="flex flex-col">
+            <b className="mb-2 text-sm uppercase tracking-[0.2em] text-white">Where we are</b>
+            <span className="flex min-h-11 items-center">Port Harcourt</span>
+            <span className="flex min-h-11 items-center">Delta</span>
+            <span className="flex min-h-11 items-center">Ekiti</span>
+          </div>
+        </div>
+        <div className="border-t border-white/10">
+          <p className={`${INNER} py-5 text-sm text-white/50`}>OBN NATION Online. Connecting People.</p>
         </div>
       </footer>
 
       {/* Phone only: the top bar already carries the button on larger screens (LP-1) */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/95 p-3 backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0A0A0A]/95 p-3 backdrop-blur md:hidden">
         <Link href="/list" className={`${BTN} w-full bg-brand-red text-white focus-visible:outline-[#0A0A0A]`}>List an item</Link>
       </div>
     </main>

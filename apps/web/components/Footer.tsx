@@ -4,7 +4,8 @@ import { BLEED } from './Header';
 
 export function Footer() {
   return (
-    <footer className={`${BLEED} mt-12 border-t border-white/10 bg-[#0A0A0A]`}>
+    <footer className={`${BLEED} mt-12 bg-[#0A0A0A]`}>
+      <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-8 text-center text-sm text-muted sm:flex-row sm:justify-between sm:text-left">
         <div className="flex items-center gap-3">
           <Image src="/brand/obn-logo-clear.webp" alt="" width={40} height={40} className="h-10 w-10" />

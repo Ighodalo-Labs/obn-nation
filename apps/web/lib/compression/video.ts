@@ -57,6 +57,11 @@ function loadEngine(): Promise<FFmpeg> {
   return enginePromise;
 }
 
+/** Start downloading the encoder in the background, so it is ready by the time a seller picks a video. */
+export function preloadVideoEngine(): void {
+  void loadEngine().catch(() => undefined);
+}
+
 /** Read the length of a video in seconds without decoding it. */
 export function readVideoDuration(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -108,9 +113,11 @@ interface Pass {
 function planPasses(seconds: number): Pass[] {
   const totalBits = VIDEO_TARGET_BYTES * 8;
   const first = Math.max(150_000, Math.floor(totalBits / seconds) - AUDIO_BITRATE);
+  // 480p is plenty for a listing video on a phone, and it encodes about twice as fast as 720p.
+  const fast = Math.min(first, 1_000_000);
   return [
-    { height: 720, videoBitrate: first },
-    { height: 480, videoBitrate: Math.max(120_000, Math.floor(first * 0.7)) },
+    { height: 480, videoBitrate: fast },
+    { height: 360, videoBitrate: Math.max(120_000, Math.floor(fast * 0.7)) },
   ];
 }
 
@@ -120,6 +127,11 @@ function planPasses(seconds: number): Pass[] {
  */
 export async function compressVideo(file: File, options: CompressVideoOptions = {}): Promise<File> {
   const seconds = await validateVideo(file);
+  // A small MP4 is uploaded as it is. No waiting.
+  if (file.type === 'video/mp4' && file.size <= VIDEO_TARGET_BYTES) {
+    options.onProgress?.(100);
+    return new File([file], 'video.mp4', { type: 'video/mp4', lastModified: Date.now() });
+  }
   const ffmpeg = await loadEngine();
 
   const onProgress = ({ progress }: { progress: number }) => {
