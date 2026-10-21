@@ -11,7 +11,7 @@ import {
 } from '@/lib/admin/overview';
 import { validateReason } from '@/lib/admin/reasons';
 import { REGIONS } from '@/lib/listing/schema';
-import { BigStat, Badge, Dialog, Notice, PageTitle, regionLabelOf, type Tone } from './ui';
+import { Band, BigStat, Badge, Dialog, Hero, Notice, regionLabelOf, type Tone } from './ui';
 
 const regionLabel = regionLabelOf;
 const LISTING_STEP = 24;
@@ -66,51 +66,55 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
   const sections = [['numbers', 'Numbers'], ['regions', 'Regions'], ['admins', 'Admins'], ['listings', 'Listings'], ['audit', 'Audit']] as const;
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="ops-rise flex flex-col gap-6">
-        <PageTitle title="Global" sub="Admins, every listing, and the audit trail across all regions.">
-          <button type="button" className="ops-btn ops-btn-go" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={14} aria-hidden="true" />Add admin</button>
-        </PageTitle>
-        <nav aria-label="Sections" className="ops-seg self-start">
-          {sections.map(([id, label]) => (
-            <button key={id} type="button" onClick={() => document.getElementById(`g-${id}`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })}>{label}</button>
-          ))}
-        </nav>
-      </header>
+    <>
+      <Hero
+        photo="/photos/devices.webp" pos="object-[40%_55%]"
+        eyebrow={<>All regions · every admin</>}
+        title={<>{pendingAll > 0 ? <><span className="text-[#FF8A80]">{pendingAll}</span> {pendingAll === 1 ? 'listing needs' : 'listings need'} a review.</> : <>Everything is reviewed.</>}</>}
+        sub="Admins, every listing and the audit trail across all regions."
+        actions={<>
+          <button type="button" className="ops-btn ops-btn-cta ops-btn-lg" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={16} aria-hidden="true" />Add admin</button>
+          <nav aria-label="Sections" className="ops-seg">
+            {sections.map(([id, label]) => (
+              <button key={id} type="button" onClick={() => document.getElementById(`g-${id}`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })}>{label}</button>
+            ))}
+          </nav>
+        </>}
+      >
+        <section id="g-numbers" aria-label="Platform at a glance" className="scroll-mt-24">
+          <div className="ops-kpis ops-kpis-5">
+            <BigStat label="Active admins" value={active} tone="green" hint={`${admins.length} in total`} />
+            <BigStat label="Waiting review" value={pendingAll} tone="red" />
+            <BigStat label="Live in the pool" value={approvedAll} tone="blue" />
+            <BigStat label="Listings loaded" value={listings.length} tone="amber" hint="Latest 300" />
+            <BigStat label="Need an admin" value={orphans.length} tone={orphans.length ? 'red' : 'green'} hint={orphans.length ? 'Reassign below' : 'All covered'} />
+          </div>
+        </section>
+      </Hero>
 
-      {message && <Notice kind={message.ok ? 'ok' : 'error'}>{message.text}</Notice>}
+      {message && <div className="ops-inner pt-6"><Notice kind={message.ok ? 'ok' : 'error'}>{message.text}</Notice></div>}
 
-      <section id="g-numbers" aria-label="Platform at a glance" className="scroll-mt-24">
-        <div className="ops-kpis !grid-cols-2 min-[900px]:!grid-cols-5">
-          <BigStat label="Active admins" value={active} tone="green" hint={`${admins.length} in total`} />
-          <BigStat label="Waiting review" value={pendingAll} tone="red" />
-          <BigStat label="Live in the pool" value={approvedAll} tone="blue" />
-          <BigStat label="Listings loaded" value={listings.length} tone="amber" hint="Latest 300" />
-          <BigStat label="Need an admin" value={orphans.length} tone={orphans.length ? 'red' : 'green'} hint={orphans.length ? 'Reassign below' : 'All covered'} />
-        </div>
-      </section>
-
-      <section id="g-regions" aria-label="Pending and approved by region" className="scroll-mt-24">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-[13.5px] font-semibold">Region by region</h2>
+      <Band tone="blue" id="g-regions" label="Pending and approved by region">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="ops-h2">Region by region</h2>
           <p className="flex items-center gap-4 text-[13px] font-medium"><span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-brand-red" />Pending</span><span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#16A34A]" />Approved</span></p>
         </div>
-        <ul className="ops-card mt-3 flex flex-col gap-3.5 p-4">
+        <ul className="ops-card mt-6 flex flex-col gap-5 p-5 sm:p-6">
           {byRegion.map((r) => (
             <li key={r.value} className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[160px_1fr_130px]">
               <p className="text-[13.5px] font-semibold">{r.label}</p>
               <div className="ops-bar !h-2" role="img" aria-label={`${r.label}: ${r.pending} pending, ${r.approved} approved`} style={{ width: `${Math.max(6, ((r.pending + r.approved) / maxRegion) * 100)}%` }}>
                 <i className="bg-brand-red" style={{ flexGrow: r.pending }} /><i className="bg-brand-green" style={{ flexGrow: r.approved }} />
               </div>
-              <p className="text-[13px] font-medium sm:text-right"><span className="text-brand-red">{r.pending}</span> pending · <span className="text-brand-green">{r.approved}</span> live</p>
+              <p className="text-[13px] font-medium sm:text-right"><span className="text-[var(--o-red-t)]">{r.pending}</span> pending · <span className="text-[var(--o-green-t)]">{r.approved}</span> live</p>
             </li>
           ))}
         </ul>
-      </section>
+      </Band>
 
-      <section id="g-admins" aria-label="Admins" className="scroll-mt-24">
-        <h2 className="text-[13.5px] font-semibold">The team <span className="ops-mute">{admins.length}</span></h2>
-        <ul className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <Band tone="cream" id="g-admins" label="Admins">
+        <h2 className="ops-h2">The team <span className="ops-mute">{admins.length}</span></h2>
+        <ul className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {admins.map((a, i) => {
             const c = countsFor(a.id, listings);
             const st = statusOf(a);
@@ -120,19 +124,19 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
                 <div className="flex items-start gap-3">
                   <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-[13px] font-semibold text-white" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true">{initials(a.full_name || a.phone)}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{a.full_name || 'No name yet'}</p>
+                    <p className="truncate text-base font-bold">{a.full_name || 'No name yet'}</p>
                     <p className="ops-mute text-[13px]">{a.role === 'global_admin' ? 'Global Admin' : regionLabel(a.region)} · {a.phone}</p>
                   </div>
                   <Badge tone={statusTone(st)}>{st}</Badge>
                 </div>
                 <div className="flex gap-8">
-                  <div><p className="ops-num text-2xl text-brand-red">{c.pending}</p><p className="ops-mute text-xs">pending</p></div>
-                  <div><p className="ops-num text-2xl text-[#16A34A]">{c.approved}</p><p className="ops-mute text-xs">approved</p></div>
+                  <div><p className="ops-num text-3xl text-[var(--o-red-t)]">{c.pending}</p><p className="ops-mute text-xs">pending</p></div>
+                  <div><p className="ops-num text-3xl text-[var(--o-green-t)]">{c.approved}</p><p className="ops-mute text-xs">approved</p></div>
                 </div>
                 {link && (
-                  <div className="flex items-center gap-2 rounded-lg bg-[#F4F4F5] p-1.5 pl-3">
+                  <div className="flex items-center gap-2 rounded-full bg-[var(--o-card2)] p-1.5 pl-4">
                     <p className="min-w-0 flex-1 truncate text-[13px] font-medium">{link}</p>
-                    <button type="button" className="ops-btn !min-h-8 !px-2.5" onClick={() => copyLink(a.id, link)} aria-label={`Copy ${a.full_name || 'admin'}’s referral link`}>
+                    <button type="button" className="ops-btn ops-btn-sm" onClick={() => copyLink(a.id, link)} aria-label={`Copy ${a.full_name || 'admin'}’s referral link`}>
                       {copiedId === a.id ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}{copiedId === a.id ? 'Copied' : 'Copy'}
                     </button>
                   </div>
@@ -151,18 +155,18 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
           })}
           {admins.length === 0 && <li className="ops-mute col-span-full py-12 text-lg font-semibold">No admins yet. Add the first one.</li>}
         </ul>
-      </section>
+      </Band>
 
-      <section id="g-listings" className="flex scroll-mt-24 flex-col gap-5" aria-label="Listings">
-        <h2 className="text-[13.5px] font-semibold">Every listing <span className="ops-mute">{shown.length}</span></h2>
+      <Band tone="pink" id="g-listings" label="Listings" className="flex flex-col gap-6">
+        <h2 className="ops-h2">Every listing <span className="ops-mute">{shown.length}</span></h2>
         {orphans.length > 0 && (
-          <div className="rounded-xl border border-[#FECACA] bg-[#FEF2F2] p-4">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-[#B42318]"><ShieldAlert size={16} aria-hidden="true" />Needs a new admin in charge ({orphans.length})</h3>
+          <div className="rounded-3xl border border-[var(--b-red-ln)] bg-[var(--b-red-bg)] p-5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--b-red-fg)]"><ShieldAlert size={16} aria-hidden="true" />Needs a new admin in charge ({orphans.length})</h3>
             <ul className="mt-3 flex flex-col gap-2">
               {orphans.map((l) => (
-                <li key={l.id} className="flex items-center justify-between gap-3 rounded-lg bg-white p-2.5 pl-3">
+                <li key={l.id} className="flex items-center justify-between gap-3 rounded-full bg-[var(--o-card)] p-2 pl-4">
                   <span className="min-w-0 truncate text-sm font-bold">{l.title} · {regionLabel(l.region)}</span>
-                  <button type="button" className="ops-btn ops-btn-red !min-h-8" onClick={() => setDialog({ kind: 'reassign', listing: l })}>Reassign</button>
+                  <button type="button" className="ops-btn ops-btn-red ops-btn-sm" onClick={() => setDialog({ kind: 'reassign', listing: l })}>Reassign</button>
                 </li>
               ))}
             </ul>
@@ -201,11 +205,11 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
           ))}
         </ul>
         {shown.length > listCount && <button type="button" className="ops-btn mx-auto min-w-48" onClick={() => setListCount((n) => n + LISTING_STEP)}>Show more ({shown.length - listCount} left)</button>}
-      </section>
+      </Band>
 
-      <section id="g-audit" aria-label="Audit log" className="scroll-mt-24">
-        <h2 className="text-[13.5px] font-semibold">Audit trail <span className="ops-mute">{audit.length}</span></h2>
-        <ol className="ops-card mt-3 flex max-w-3xl flex-col p-4">
+      <Band tone="green" id="g-audit" label="Audit log">
+        <h2 className="ops-h2">Audit trail <span className="ops-mute">{audit.length}</span></h2>
+        <ol className="ops-card mt-6 flex max-w-3xl flex-col p-5 sm:p-6">
           {audit.slice(0, auditCount).map((a, i) => {
             const d = new Date(a.created_at);
             const day = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' });
@@ -213,7 +217,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
             return (
               <li key={a.id}>
                 {day !== prev && <p className="ops-eyebrow mb-2 mt-6 first:mt-0">{day}</p>}
-                <div className="grid grid-cols-[64px_20px_1fr] gap-x-3 border-b border-[#E4E4E7] py-3">
+                <div className="grid grid-cols-[64px_20px_1fr] gap-x-3 border-b border-[var(--o-line)] py-3">
                   <p className="ops-mute pt-0.5 text-sm font-bold tabular-nums">{d.toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })}</p>
                   <span className="mt-1.5 h-2 w-2 rounded-full" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true" />
                   <div className="text-[13.5px]">
@@ -226,8 +230,8 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
           })}
           {audit.length === 0 && <li className="ops-mute py-6 text-[13px]">Nothing yet.</li>}
         </ol>
-        {audit.length > auditCount && <button type="button" className="ops-btn mt-4" onClick={() => setAuditCount((n) => n + AUDIT_STEP)}>Show older ({audit.length - auditCount} more)</button>}
-      </section>
+        {audit.length > auditCount && <button type="button" className="ops-btn mt-6" onClick={() => setAuditCount((n) => n + AUDIT_STEP)}>Show older ({audit.length - auditCount} more)</button>}
+      </Band>
 
       {dialog?.kind === 'add' && <AddAdmin onCancel={() => setDialog(null)} onDone={(b) => run('/api/admin/create', b, 'Admin added. They can sign in with a WhatsApp code now.')} />}
       {dialog?.kind === 'revoke' && (
@@ -245,7 +249,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         <ReassignDialog listing={dialog.listing} targets={eligibleTargets(dialog.listing, admins)} onCancel={() => setDialog(null)}
           onDone={(to, reason) => run('/api/listings/reassign', { listing_id: dialog.listing.id, new_admin_id: to, reason }, 'Admin in charge changed.')} />
       )}
-    </div>
+    </>
   );
 }
 
@@ -280,7 +284,7 @@ function ReasonDialog({ title, help, action, confirmName, danger, onCancel, onDo
           <input id="g-confirm" className="ops-input" value={typed} autoComplete="off" onChange={(e) => { setTyped(e.target.value); setError(null); }} />
         </>
       )}
-      {error && <p role="alert" className="text-sm text-brand-red">{error}</p>}
+      {error && <p role="alert" className="text-sm text-[var(--o-red-t)]">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
         <button type="button" className={`ops-btn ${danger ? 'ops-btn-red' : 'ops-btn-go'}`} onClick={go} disabled={busy}>{busy ? 'Working…' : action}</button>
@@ -305,7 +309,7 @@ function ReassignDialog({ listing, targets, onCancel, onDone }: {
   }
   return (
     <Shell title={`Reassign “${listing.title}”`} onCancel={onCancel}>
-      {targets.length === 0 ? <p className="text-brand-red">No other active admin in this region.</p> : (
+      {targets.length === 0 ? <p className="text-[var(--o-red-t)]">No other active admin in this region.</p> : (
         <>
           <label htmlFor="g-to" className="text-[13.5px] font-semibold">New admin in charge</label>
           <select id="g-to" className="ops-input" value={to} onChange={(e) => { setTo(e.target.value); setError(null); }}>
@@ -316,7 +320,7 @@ function ReassignDialog({ listing, targets, onCancel, onDone }: {
           <textarea id="g-why" className="ops-input min-h-24" rows={3} maxLength={500} value={reason} onChange={(e) => { setReason(e.target.value); setError(null); }} />
         </>
       )}
-      {error && <p role="alert" className="text-sm text-brand-red">{error}</p>}
+      {error && <p role="alert" className="text-sm text-[var(--o-red-t)]">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
         <button type="button" className="ops-btn ops-btn-go" onClick={go} disabled={busy || targets.length === 0}>{busy ? 'Working…' : 'Reassign'}</button>
@@ -353,10 +357,10 @@ function AddAdmin({ onCancel, onDone }: { onCancel: () => void; onDone: (b: unkn
           </select>
         </>
       )}
-      {error && <p role="alert" className="text-sm text-brand-red">{error}</p>}
+      {error && <p role="alert" className="text-sm text-[var(--o-red-t)]">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>
-        <button type="button" className="ops-btn ops-btn-red" onClick={go} disabled={busy}>{busy ? 'Adding…' : 'Add admin'}</button>
+        <button type="button" className="ops-btn ops-btn-cta" onClick={go} disabled={busy}>{busy ? 'Adding…' : 'Add admin'}</button>
       </div>
     </Shell>
   );

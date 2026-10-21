@@ -3,14 +3,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronsUpDown, ClipboardCheck, Globe2, Home, LogOut, Package, Store } from 'lucide-react';
+import { ChevronDown, ClipboardCheck, Globe2, Home, LogOut, Package, Store } from 'lucide-react';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
+import { ThemeToggle } from './ThemeToggle';
 import { regionLabelOf } from './ui';
 
 type Current = 'review' | 'pool' | 'global';
 export interface ShellMe { name: string | null; role: 'regional_admin' | 'global_admin'; region: string | null }
 
-/** Frame for every admin screen: a slim top bar on desktop, a bottom bar on phones. */
+/** Frame for every admin screen: the landing page's dark header on top, a dark tab bar on phones, a tri-colour footer. */
 export function AdminShell({ current, me, reviewCount, children }: { current: Current; me: ShellMe; reviewCount?: number; children: ReactNode }) {
   const isGlobal = me.role === 'global_admin';
   const [leaving, setLeaving] = useState(false);
@@ -23,6 +24,7 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
   ];
   const scope = isGlobal ? 'All regions' : regionLabelOf(me.region) || 'No region';
   const initials = (me.name ?? 'A').split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+  const firstName = (me.name ?? '').trim().split(/\s+/)[0] || 'Admin';
 
   useEffect(() => {
     if (!menu) return;
@@ -38,74 +40,69 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
     try { await createBrowserSupabase().auth.signOut(); } finally { window.location.href = '/list'; }
   }
 
-  const accountMenu = (up: boolean) => menu && (
-    <div role="menu" className={`ops-menu ${up ? 'bottom-[calc(100%+6px)] left-0' : 'right-0 top-[calc(100%+6px)]'}`}>
-      <div className="px-2.5 pb-2 pt-2">
-        <p className="truncate text-sm font-semibold">{me.name || 'Admin'}</p>
-        <p className="ops-mute text-xs">{isGlobal ? 'Global Admin' : 'Regional Admin'} · {scope}</p>
-      </div>
-      <hr className="ops-rule mb-1" />
-      <Link role="menuitem" href="/list" className="ops-menuitem"><Store size={16} aria-hidden="true" />Seller view</Link>
-      <Link role="menuitem" href="/" className="ops-menuitem"><Home size={16} aria-hidden="true" />Home page</Link>
-      <button role="menuitem" type="button" className="ops-menuitem" onClick={signOut} disabled={leaving}><LogOut size={16} aria-hidden="true" />{leaving ? 'Signing out…' : 'Sign out'}</button>
-    </div>
-  );
-
   return (
     <div className="ops-root">
-      <aside className="ops-side" aria-label="Sidebar">
-        <Link href="/" className="flex h-14 items-center gap-2.5 border-b border-[var(--o-line)] px-4" aria-label="OBN NATION home">
-          <Image src="/brand/obn-logo-clear.webp" alt="" width={28} height={28} priority className="h-7 w-7" />
-          <span className="font-display text-[13.5px] font-semibold tracking-tight">OBN NATION</span>
-          <span className="ops-chip ml-auto !text-[11px]">Admin</span>
-        </Link>
-        <nav aria-label="Admin" className="flex flex-1 flex-col gap-0.5 p-2.5">
-          <p className="ops-eyebrow px-2.5 pb-1.5 pt-3">Workspace</p>
-          {items.map(({ id, href, label, Icon }) => (
-            <Link key={id} href={href} className="ops-navlink" aria-current={current === id ? 'page' : undefined}>
-              <Icon size={16} aria-hidden="true" />{label}
-              {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="ml-auto rounded-md bg-brand-red px-1.5 text-[11px] font-bold leading-5 text-white tabular-nums">{reviewCount}</span>}
-            </Link>
-          ))}
-        </nav>
-        <div ref={menuRef} className="relative border-t border-[var(--o-line)] p-2.5">
-          <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
-            className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-[var(--o-card2)]">
-            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[var(--o-ink)] text-xs font-bold text-white">{initials || 'A'}</span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-[13px] font-semibold leading-tight">{me.name || 'Admin'}</span>
-              <span className="ops-mute block truncate text-xs">{isGlobal ? 'Global' : 'Regional'} · {scope}</span>
+      <header className="ops-head sticky top-0 z-40">
+        <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
+        <div className="ops-inner flex items-center gap-2 py-2">
+          <Link href="/" className="flex min-h-12 items-center gap-3" aria-label="OBN NATION home">
+            <Image src="/brand/obn-logo-clear.webp" alt="" width={44} height={44} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
+            <span className="flex flex-col leading-tight">
+              <span className="whitespace-nowrap text-base font-bold tracking-wide">OBN NATION</span>
+              <span className="hidden text-xs text-white/60 min-[400px]:block">Admin desk · {scope}</span>
             </span>
-            <ChevronsUpDown size={14} className="ops-mute flex-none" aria-hidden="true" />
-          </button>
-          <div className="hidden lg:block">{accountMenu(true)}</div>
-        </div>
-      </aside>
-
-      <div className="ops-main">
-        <header className="ops-topm sticky top-0 z-30 lg:hidden">
-          <div className="flex h-14 items-center gap-3 px-4">
-            <Link href="/" className="flex items-center gap-2" aria-label="OBN NATION home">
-              <Image src="/brand/obn-logo-clear.webp" alt="" width={28} height={28} priority className="h-7 w-7" />
-              <span className="font-display text-[13.5px] font-semibold tracking-tight">OBN NATION</span>
-            </Link>
-            <span className="ml-auto ops-chip hidden min-[380px]:inline-flex">{isGlobal ? 'Global' : 'Regional'} · {scope}</span>
-            <div className="relative max-lg:ml-auto min-[380px]:ml-0">
+          </Link>
+          <nav aria-label="Admin" className="ml-6 hidden items-center gap-1 lg:flex">
+            {items.map(({ id, href, label }) => (
+              <Link key={id} href={href} className="ops-pill" aria-current={current === id ? 'page' : undefined}>
+                {label}
+                {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="ops-pill-count">{reviewCount}</span>}
+              </Link>
+            ))}
+          </nav>
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
+            <Link href="/list" className="ops-pill border border-white/25 bg-white/10 max-lg:!hidden"><Store size={16} aria-hidden="true" />Seller view</Link>
+            <div ref={menuRef} className="relative">
               <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--o-ink)] text-xs font-bold text-white">{initials || 'A'}</button>
-              <div className="lg:hidden">{accountMenu(false)}</div>
+                className="flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-white/10 py-1 pl-1 pr-1 text-left transition-colors hover:bg-white hover:text-[#0A0A0A] sm:pr-3">
+                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-red text-xs font-extrabold text-white">{initials || 'A'}</span>
+                <span className="hidden text-sm font-semibold sm:inline">{firstName}</span>
+                <ChevronDown size={14} className="hidden sm:inline" aria-hidden="true" />
+              </button>
+              {menu && (
+                <div role="menu" className="ops-menu right-0 top-[calc(100%+8px)]">
+                  <div className="px-3.5 pb-2 pt-2.5">
+                    <p className="truncate text-sm font-bold">{me.name || 'Admin'}</p>
+                    <p className="ops-mute text-xs font-medium">{isGlobal ? 'Global Admin' : 'Regional Admin'} · {scope}</p>
+                  </div>
+                  <hr className="ops-rule mb-1.5" />
+                  <ThemeToggle variant="menu" />
+                  <Link role="menuitem" href="/list" className="ops-menuitem"><Store size={16} aria-hidden="true" />Seller view</Link>
+                  <Link role="menuitem" href="/" className="ops-menuitem"><Home size={16} aria-hidden="true" />Home page</Link>
+                  <button role="menuitem" type="button" className="ops-menuitem" onClick={signOut} disabled={leaving}><LogOut size={16} aria-hidden="true" />{leaving ? 'Signing out…' : 'Sign out'}</button>
+                </div>
+              )}
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <main className="mx-auto w-full max-w-[1320px] px-4 pb-28 pt-5 lg:px-8 lg:pb-12 lg:pt-8">{children}</main>
-      </div>
+      <main>{children}</main>
+
+      <footer className="ops-foot pb-[calc(60px+env(safe-area-inset-bottom))] lg:pb-0">
+        <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
+        <div className="ops-inner flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-6 text-[13px] font-medium">
+          <p>OBN NATION admin desk · One Beta Nation</p>
+          <p>Every action here is logged.</p>
+        </div>
+      </footer>
 
       <nav aria-label="Admin tabs" className="ops-tabbar fixed inset-x-0 bottom-0 z-30 flex lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {items.map(({ id, href, label, Icon }) => (
           <Link key={id} href={href} className="ops-tab relative" aria-current={current === id ? 'page' : undefined}>
-            <Icon size={20} aria-hidden="true" />{label}
-            {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="absolute left-1/2 top-1.5 ml-2 rounded-full bg-brand-red px-1.5 text-[10px] font-bold leading-4 text-white">{reviewCount}</span>}
+            <Icon size={21} aria-hidden="true" />{label}
+            {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="absolute left-1/2 top-2 ml-2 rounded-full bg-brand-red px-1.5 text-[10px] font-extrabold leading-4 text-white">{reviewCount}</span>}
           </Link>
         ))}
       </nav>

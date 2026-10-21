@@ -34,7 +34,7 @@ export function RejectModal({ title, busy, onCancel, onSubmit }: {
         <textarea id="reason" ref={box} className="ops-input min-h-28" rows={4} maxLength={500} value={reason}
           aria-invalid={Boolean(error)} aria-describedby={error ? 'reason-error' : undefined}
           onChange={(e) => { setReason(e.target.value); setError(null); }} />
-        {error && <p id="reason-error" role="alert" className="text-sm text-brand-red">{error}</p>}
+        {error && <p id="reason-error" role="alert" className="text-sm text-[var(--o-red-t)]">{error}</p>}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <button type="button" className="ops-btn" onClick={onCancel} disabled={busy}>Cancel</button>

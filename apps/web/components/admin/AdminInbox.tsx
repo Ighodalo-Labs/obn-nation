@@ -8,7 +8,7 @@ import { CATEGORIES, REGIONS } from '@/lib/listing/schema';
 import { postJson } from '@/lib/auth/client';
 import { ListingDetail } from './ListingDetail';
 import { RejectModal } from './RejectModal';
-import { ageLabel, Badge, BigStat, categoryLabel, ConfirmDialog, Notice, PageTitle, regionLabelOf, Ribbon, workingLabel, type Tone } from './ui';
+import { Band, Hero, ageLabel, Badge, BigStat, categoryLabel, ConfirmDialog, Notice, regionLabelOf, Ribbon, workingLabel, type Tone } from './ui';
 
 export interface Me { id: string; role: 'regional_admin' | 'global_admin'; region: string | null; name: string | null }
 
@@ -221,7 +221,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     return (
       <button type="button" className={`ops-photo ${ratio}`} onClick={() => openRow(r)} aria-label={`Open ${r.title}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {src ? <img src={src} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-end p-3 text-[13px] font-medium text-[#6B6B76]">No photo</span>}
+        {src ? <img src={src} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-end p-3 text-[13px] font-medium text-[var(--o-mute)]">No photo</span>}
         {pending && <Ribbon tone={ageTone(r.submitted_at, now)}>Waiting {waitingFor(r.submitted_at, now)}</Ribbon>}
         {r.status === 'rejected' && <Ribbon tone="blue">With seller</Ribbon>}
         {r.status === 'approved' && <Ribbon tone="green">Live</Ribbon>}
@@ -229,9 +229,9 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     );
   }
 
-  function Actions({ r, big = false, compact = false }: { r: FeedRow; big?: boolean; compact?: boolean }) {
+  function Actions({ r, big = false, compact = false, small = false }: { r: FeedRow; big?: boolean; compact?: boolean; small?: boolean }) {
     const b = busy === r.id;
-    const size = big ? 'ops-btn-lg' : compact ? '!min-h-8 !px-2.5 !text-[13px]' : '';
+    const size = big ? 'ops-btn-lg' : compact ? '!min-h-9 !px-3.5 !text-[13px]' : small ? 'ops-btn-sm !px-2.5 min-w-0' : '';
     const stop = (fn: () => void) => (e: { stopPropagation: () => void }) => { e.stopPropagation(); fn(); };
     if (r.status === 'pending_review') {
       return (
@@ -245,7 +245,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (r.status === 'rejected') {
       return (
         <div className={`flex items-center gap-2 ${compact ? 'justify-end' : 'flex-col items-stretch'}`}>
-          {failedIds.has(r.id) && <p className="text-xs font-semibold text-brand-red">Message not sent</p>}
+          {failedIds.has(r.id) && <p className="text-xs font-semibold text-[var(--o-red-t)]">Message not sent</p>}
           <button type="button" className={`ops-btn ${size}`} disabled={b} onClick={stop(() => resend(r))}>Send new link</button>
         </div>
       );
@@ -258,15 +258,15 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     return (
       <li key={r.id} className={`ops-card ops-lift overflow-hidden ${selected?.id === r.id ? 'ops-sel' : ''}`}>
         {Photo({ r, ratio: 'aspect-[16/10]' })}
-        <div className="flex flex-col gap-1.5 p-3">
-          <p className="ops-num text-xl">{naira(r.price_ngn)}</p>
-          <p className="truncate text-sm font-semibold">{r.title}</p>
+        <div className="flex flex-col gap-1.5 p-4">
+          <p className="ops-num text-[26px]">{naira(r.price_ngn)}</p>
+          <p className="truncate text-[15px] font-bold">{r.title}</p>
           {Meta({ r })}
           <p className="flex flex-wrap items-center gap-2 text-[13px]">
             <Badge tone={badgeTone(badge)}>{badge}</Badge>
             <span className="ops-mute truncate">{r.seller_name}{r.contact_visible ? ` · ${r.seller_phone}` : ''}</span>
           </p>
-          <div className="pt-1.5">{Actions({ r })}</div>
+          <div className="pt-1.5">{Actions({ r, small: true })}</div>
         </div>
       </li>
     );
@@ -281,7 +281,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
 
   const empty = (
     <div className="ops-card flex flex-col items-center gap-1.5 px-6 py-14 text-center">
-      <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F4F5]" aria-hidden="true"><Inbox size={16} className="text-[#6B6B76]" /></span>
+      <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--o-card2)]" aria-hidden="true"><Inbox size={16} className="text-[var(--o-mute)]" /></span>
       <p className="text-[13.5px] font-semibold">{filtered ? 'Nothing matches those filters' : 'Queue clear'}</p>
       <p className="ops-mute max-w-sm text-[13.5px]">{filtered ? 'Try clearing a filter.' : 'Nobody is waiting on you. Share your link and more listings will come.'}</p>
     </div>
@@ -296,25 +296,35 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      <header className="ops-rise flex flex-col gap-5">
-        <PageTitle title="Review" sub={<span suppressHydrationWarning>{greeting}, {firstName}{dateText ? ` · ${dateText}` : ''} · {scopeText}</span>}>
-          <span className="ops-mute hidden text-xs sm:inline" aria-live="off" suppressHydrationWarning>{now ? `Updated ${ago(now - updatedAt)}` : ''}</span>
-          <button type="button" onClick={refresh} className="ops-btn" aria-label="Refresh the list"><RefreshCw size={14} aria-hidden="true" />Refresh</button>
-        </PageTitle>
-
+    <>
+      <Hero
+        photo="/photos/living-room.webp" pos="object-[70%_50%]"
+        eyebrow={<span suppressHydrationWarning>{dateText ? `${dateText} · ` : ''}{scopeText}</span>}
+        title={stats.pending > 0 ? <><span className="text-[#FF8A80]">{stats.pending}</span> {stats.pending === 1 ? 'listing is' : 'listings are'} waiting.</> : <>The desk is clear.</>}
+        sub={<span suppressHydrationWarning>{greeting}, {firstName}. {stats.pending > 0 ? `The oldest has waited ${waitingFor(stats.oldest, now)}.` : 'Nobody is waiting on you. Share your link and more listings will come.'}</span>}
+        actions={<>
+          {stats.pending > 0 && <button type="button" className="ops-btn ops-btn-cta ops-btn-lg" onClick={() => setView('review')}>Start reviewing</button>}
+          <button type="button" onClick={refresh} className="ops-btn ops-btn-ghost ops-btn-lg" aria-label="Refresh the list"><RefreshCw size={16} aria-hidden="true" />Refresh</button>
+          <span className="text-sm font-medium text-white/70" aria-live="off" suppressHydrationWarning>{now ? `Updated ${ago(now - updatedAt)}` : ''}</span>
+        </>}
+      >
         <div className="ops-kpis" aria-label="Today at the desk">
           <BigStat label="To review" tone="red" value={stats.pending} hint={stats.overdue ? `${stats.overdue} over 24 hours` : stats.pending ? `Oldest ${waitingFor(stats.oldest, now)}` : 'All clear'} />
-          <BigStat label="On my plate" value={stats.mine} hint={`${stats.unclaimed} unclaimed`} />
+          <BigStat label="On my plate" tone="blue" value={stats.mine} hint={`${stats.unclaimed} unclaimed`} />
           <BigStat label="With sellers" tone="amber" value={stats.waiting} hint="Rejected, waiting on a fix" />
           <BigStat label="Approved today" tone="green" value={approvedToday} hint={`${tabs.done.length} live in total`} />
         </div>
-      </header>
+      </Hero>
 
+      <Band tone="cream" label="Review" className="flex flex-col gap-6">
+        <div>
+          <p className="ops-eyebrow">The queue</p>
+          <h2 className="ops-h2 mt-2">Check it. Approve it. Move on.</h2>
+        </div>
       {notice && <Notice kind="ok">{notice}</Notice>}
       {message && <Notice kind="error">{message}</Notice>}
 
-      <section className="flex flex-col gap-3" aria-label="Review">
+      <section className="flex flex-col gap-4" aria-label="Review">
         <div className="flex flex-wrap items-center gap-2">
           <div className="ops-seg" role="group" aria-label="View">
             {(['list', 'board', 'review'] as const).map((v) => (
@@ -335,9 +345,9 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         <div className={`${showFilters ? 'grid' : 'hidden'} gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_1fr_1fr_1fr]`}>
           <div className="relative sm:col-span-2 lg:col-span-1">
             <label htmlFor="q" className="sr-only">Search title, brand, model or seller</label>
-            <Search size={15} className="pointer-events-none absolute left-3 top-[10px] text-[#6B6B76]" aria-hidden="true" />
-            <input id="q" ref={search} className="ops-input !pl-9 !pr-9" type="search" placeholder="Search listings" value={q} maxLength={60} onChange={(e) => setQ(e.target.value)} />
-            <span className="ops-kbd pointer-events-none absolute right-2.5 top-[7px] hidden lg:inline-flex" aria-hidden="true">/</span>
+            <Search size={15} className="pointer-events-none absolute left-4 top-[15px] text-[var(--o-mute)]" aria-hidden="true" />
+            <input id="q" ref={search} className="ops-input !pl-11 !pr-10" type="search" placeholder="Search listings" value={q} maxLength={60} onChange={(e) => setQ(e.target.value)} />
+            <span className="ops-kbd pointer-events-none absolute right-3.5 top-[12px] hidden lg:inline-flex" aria-hidden="true">/</span>
           </div>
           <label className="sr-only" htmlFor="f-cat">Category</label>
           <select id="f-cat" className="ops-input" value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -361,24 +371,24 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
 
         {view === null && (
           <div className="ops-card overflow-hidden" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => <div key={i} className="flex items-center gap-3 border-b border-[#E4E4E7] p-3 last:border-0"><span className="ops-skel h-12 w-12" /><span className="flex-1 space-y-2"><span className="ops-skel block h-3 w-1/3" /><span className="ops-skel block h-3 w-1/2" /></span></div>)}
+            {[0, 1, 2, 3, 4].map((i) => <div key={i} className="flex items-center gap-3 border-b border-[var(--o-line)] p-3 last:border-0"><span className="ops-skel h-12 w-12" /><span className="flex-1 space-y-2"><span className="ops-skel block h-3 w-1/3" /><span className="ops-skel block h-3 w-1/2" /></span></div>)}
           </div>
         )}
 
         {view === 'board' && (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Pipeline board">
-            {COLS.map((c) => (
-              <section key={c.id} className="ops-col flex min-w-0 flex-col rounded-xl bg-[#F4F4F5] p-2" aria-label={c.title}>
-                <header className="flex items-center justify-between gap-2 px-2 pb-2 pt-1.5">
+            {COLS.map((c, ci) => (
+              <section key={c.id} className="ops-glass flex min-w-0 flex-col p-3" aria-label={c.title}>
+                <header className="flex items-center justify-between gap-2 px-2 pb-3 pt-1.5">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="h-2 w-2 flex-none rounded-full" style={{ background: c.color }} aria-hidden="true" />
-                    <h2 className="truncate text-[13.5px] font-semibold">{c.title}</h2>
+                    <span className="ops-stepno" style={{ background: c.color }} aria-hidden="true">{ci + 1}</span>
+                    <h3 className="truncate text-[15px] font-bold">{c.title}</h3>
                   </div>
-                  <span className="ops-num text-[13px] text-[#6B6B76]">{c.id === 'live' ? cols.live.length : c.rows.length}</span>
+                  <span className="ops-num text-2xl">{c.id === 'live' ? cols.live.length : c.rows.length}</span>
                 </header>
                 <ul className="ops-colbody flex flex-col gap-2">
                   {c.rows.map((r) => BoardCard({ r }))}
-                  {c.rows.length === 0 && <li className="ops-mute rounded-lg border border-dashed border-[#D4D4D8] px-4 py-8 text-center text-[13px]">{c.note}</li>}
+                  {c.rows.length === 0 && <li className="ops-mute rounded-2xl border border-dashed border-[var(--o-line2)] px-4 py-8 text-center text-[13px]">{c.note}</li>}
                 </ul>
               </section>
             ))}
@@ -412,7 +422,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                           <td className="max-w-[340px]">
                             <button type="button" className="flex w-full min-w-0 items-center gap-3 text-left" onClick={(e) => { e.stopPropagation(); openRow(r); }} aria-label={`Open ${r.title}`}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              {src ? <img src={src} alt="" className="h-11 w-11 flex-none rounded-lg object-cover" /> : <span className="h-11 w-11 flex-none rounded-lg bg-[#F1F1F3]" aria-hidden="true" />}
+                              {src ? <img src={src} alt="" className="h-11 w-11 flex-none rounded-lg object-cover" /> : <span className="h-11 w-11 flex-none rounded-lg bg-[var(--o-card2)]" aria-hidden="true" />}
                               <span className="min-w-0"><span className="block truncate font-semibold">{r.title}</span>{Meta({ r })}</span>
                             </button>
                           </td>
@@ -423,7 +433,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                               : r.status === 'rejected' ? <Badge tone="blue">With seller</Badge> : <Badge tone="green">Live</Badge>}
                           </td>
                           <td><Badge tone={badgeTone(badge)}>{badge}</Badge></td>
-                          <td className="whitespace-nowrap">{r.status !== 'approved' ? Actions({ r, compact: true }) : <span className="flex justify-end"><ArrowRight size={16} className="text-[#A1A1AA]" aria-hidden="true" /></span>}</td>
+                          <td className="whitespace-nowrap">{r.status !== 'approved' ? Actions({ r, compact: true }) : <span className="flex justify-end"><ArrowRight size={16} className="text-[var(--o-faint)]" aria-hidden="true" /></span>}</td>
                         </tr>
                       );
                     })}
@@ -440,7 +450,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                   <li key={r.id} className={`ops-card overflow-hidden ${selected?.id === r.id ? 'ops-sel' : ''}`}>
                     <button type="button" className="flex w-full min-w-0 gap-3 p-3 text-left" onClick={() => openRow(r)} aria-label={`Open ${r.title}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      {src ? <img src={src} alt="" className="h-[72px] w-[72px] flex-none rounded-lg object-cover" /> : <span className="h-[72px] w-[72px] flex-none rounded-lg bg-[#F1F1F3]" aria-hidden="true" />}
+                      {src ? <img src={src} alt="" className="h-[72px] w-[72px] flex-none rounded-lg object-cover" /> : <span className="h-[72px] w-[72px] flex-none rounded-lg bg-[var(--o-card2)]" aria-hidden="true" />}
                       <span className="flex min-w-0 flex-1 flex-col gap-1">
                         <span className="flex items-start justify-between gap-2"><span className="truncate text-sm font-semibold">{r.title}</span><span className="ops-num flex-none text-[13.5px]">{naira(r.price_ngn)}</span></span>
                         {Meta({ r })}
@@ -450,7 +460,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                         </span>
                       </span>
                     </button>
-                    {r.status !== 'approved' && <div className="border-t border-[#E4E4E7] p-2.5">{Actions({ r })}</div>}
+                    {r.status !== 'approved' && <div className="border-t border-[var(--o-line)] p-2.5">{Actions({ r })}</div>}
                   </li>
                 );
               })}
@@ -466,20 +476,20 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <p className="text-[13px] font-medium"><span className="ops-num text-xl">{selIdx + 1}</span> <span className="ops-mute">of {list.length}</span></p>
-                    <div className="ops-bar flex-1" aria-hidden="true"><i className="bg-[#111114]" style={{ flexGrow: selIdx + 1 }} /><i style={{ flexGrow: Math.max(0, list.length - selIdx - 1) }} /></div>
+                    <div className="ops-bar flex-1" aria-hidden="true"><i className="bg-[var(--o-ink)]" style={{ flexGrow: selIdx + 1 }} /><i style={{ flexGrow: Math.max(0, list.length - selIdx - 1) }} /></div>
                   </div>
-                  <div className="overflow-hidden rounded-xl border border-[#E4E4E7]">{Photo({ r: item, ratio: 'aspect-[4/5] max-h-[52vh] lg:max-h-[600px] sm:aspect-[4/3]' })}</div>
+                  <div className="overflow-hidden rounded-3xl border border-[var(--o-line)]">{Photo({ r: item, ratio: 'aspect-[4/5] max-h-[52vh] lg:max-h-[600px] sm:aspect-[4/3]' })}</div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <p className="ops-num text-[40px]">{naira(item.price_ngn)}</p>
-                  <h2 className="font-display text-xl font-semibold leading-tight tracking-tight">{item.title}</h2>
+                  <p className="ops-num text-[48px]">{naira(item.price_ngn)}</p>
+                  <h2 className="font-display text-2xl font-extrabold leading-tight tracking-tight">{item.title}</h2>
                   {Meta({ r: item })}
                   <p className="line-clamp-3 text-sm leading-relaxed">{item.description}</p>
                   <p className="flex flex-wrap items-center gap-2 text-[13px]">
                     <Badge tone={badgeTone(badgeOf(item, me.id))}>{badgeOf(item, me.id)}</Badge>
                     <span className="ops-mute">{item.seller_name}{item.contact_visible ? ` · ${item.seller_phone}` : ''}</span>
                   </p>
-                  <div className="fixed inset-x-0 z-20 flex flex-col gap-2 border-t border-[#E4E4E7] bg-white/95 p-3 backdrop-blur max-lg:bottom-[calc(56px+env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0">
+                  <div className="fixed inset-x-0 z-20 flex flex-col gap-2 border-t border-[var(--o-line)] bg-[var(--o-card)] p-3 backdrop-blur max-lg:bottom-[calc(60px+env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0">
                     {Actions({ r: item, big: true })}
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" className="ops-btn" onClick={() => step(1)} disabled={list.length < 2}><SkipForward size={14} aria-hidden="true" />Skip</button>
@@ -504,15 +514,25 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         <span>Refreshes every minute</span>
       </p>
 
+      </Band>
+
       {link && (
-        <section className="ops-card flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3" aria-label="Your referral link">
-          <p className="ops-eyebrow">Your link for sellers</p>
-          <p className="min-w-0 flex-1 truncate text-[13px] font-medium">{link}</p>
-          <div className="flex gap-2">
-            <button type="button" className="ops-btn" onClick={copy}>{copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copied ? 'Copied' : 'Copy'}</button>
-            <a className="ops-btn ops-btn-go" href={whatsappShareUrl(link)} target="_blank" rel="noopener noreferrer"><Share2 size={14} aria-hidden="true" />WhatsApp</a>
+        <Band tone="blue" label="Your referral link">
+          <div className="grid items-center gap-6 lg:grid-cols-[1fr_auto]">
+            <div className="min-w-0">
+              <p className="ops-eyebrow">Your link for sellers</p>
+              <h2 className="ops-h2 mt-2">Send sellers to you.</h2>
+              <p className="ops-mute mt-3 max-w-xl">Anyone who lists through this link lands in your region and on your desk.</p>
+            </div>
+            <div className="ops-card flex min-w-0 flex-col gap-3 p-4 lg:w-[460px]">
+              <p className="truncate rounded-full bg-[var(--o-card2)] px-4 py-3 text-[13.5px] font-semibold">{link}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" className="ops-btn" onClick={copy}>{copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}{copied ? 'Copied' : 'Copy link'}</button>
+                <a className="ops-btn ops-btn-cta" href={whatsappShareUrl(link)} target="_blank" rel="noopener noreferrer"><Share2 size={16} aria-hidden="true" />WhatsApp</a>
+              </div>
+            </div>
           </div>
-        </section>
+        </Band>
       )}
 
       {open && (
@@ -537,6 +557,6 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
       {rejecting && (
         <RejectModal title={rejecting.title} busy={busy === rejecting.id} onCancel={() => setRejecting(null)} onSubmit={(reason) => reject(rejecting, reason)} />
       )}
-    </div>
+    </>
   );
 }
