@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { ListingCard } from '@/components/landing/ListingCard';
-import { ArrowUpRight, BadgeCheck, Camera, Lock, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 
 const ABOUT = [
@@ -28,15 +28,15 @@ const TILES = [
 const MORE = ['Generators', 'Other'];
 
 const PROOF = [
-  { Icon: ShieldCheck, title: 'Every listing is checked', text: 'A real admin reviews it before it goes live.' },
-  { Icon: Lock, title: 'Your number stays private', text: 'Buyers never see your name or phone.' },
-  { Icon: MapPin, title: 'Sold close to home', text: 'Port Harcourt, Delta and Ekiti first.' },
+  { title: 'Checked by an admin', text: 'A real person reviews every listing first.', bg: 'bg-brand-red' },
+  { title: 'Your number stays private', text: 'Buyers never see your name or phone.', bg: 'bg-brand-green' },
+  { title: 'Sold close to home', text: 'Port Harcourt, Delta and Ekiti first.', bg: 'bg-brand-blue' },
 ];
 
 const TRUST = [
-  { Icon: BadgeCheck, title: 'Checked before it shows', text: 'An admin in your region reviews every listing before any buyer sees it.', bar: 'bg-brand-red' },
-  { Icon: Camera, title: 'Clear reasons, easy fixes', text: 'If a listing is turned down, you get the reason and a link to fix it and send it again.', bar: 'bg-brand-green' },
-  { Icon: ShieldCheck, title: 'Bad sellers are blocked', text: 'Admins can block a seller for good. Honest sellers keep the marketplace worth using.', bar: 'bg-brand-blue' },
+  { n: '01', title: 'Checked before it shows', text: 'An admin in your region reviews every listing before any buyer sees it.', bg: 'bg-brand-red' },
+  { n: '02', title: 'Clear reasons, easy fixes', text: 'If a listing is turned down, you get the reason and a link to fix it and send it again.', bg: 'bg-brand-green' },
+  { n: '03', title: 'Bad sellers are blocked', text: 'Admins can block a seller for good. Honest sellers keep the marketplace worth using.', bg: 'bg-brand-blue' },
 ];
 
 const VALUES = [
@@ -105,7 +105,7 @@ export default function Home() {
             <a href="#faq" className={NAVLINK}>FAQ</a>
             <a href="#about" className={NAVLINK}>About</a>
           </nav>
-          <Link href="/list" className={`${BTN} ml-auto bg-brand-red px-5 text-sm text-white hover:bg-[#B71C1C] focus-visible:outline-[#0A0A0A] md:ml-3 md:px-6 md:text-base`}>
+          <Link href="/list" className={`${BTN} ml-auto bg-brand-red px-5 text-sm text-white hover:bg-brand-green focus-visible:outline-[#0A0A0A] md:ml-3 md:px-6 md:text-base`}>
             List an item
           </Link>
         </div>
@@ -113,12 +113,22 @@ export default function Home() {
 
       {/* Hero: full photo, one clear message, one clear action */}
       <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
-        <Image src="/photos/living-room.webp" alt="" fill priority sizes="100vw" className="settle -z-20 object-cover object-[70%_50%]" />
+        <div className="absolute inset-0 -z-20" aria-hidden="true">
+          {[
+            ['/photos/living-room.webp', 'object-[70%_50%]'],
+            ['/photos/tv-wall.webp', 'object-[50%_45%]'],
+            ['/photos/kitchen.webp', 'object-center'],
+            ['/photos/devices.webp', 'object-[40%_55%]'],
+          ].map(([src, pos], i) => (
+            <Image key={src} src={src} alt="" fill priority={i === 0} sizes="100vw" className={`slide object-cover ${pos}`} style={{ animationDelay: `calc(var(--intro) + ${i * 6}s - 0.5s)` }} />
+          ))}
+        </div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/80 via-[#0A0A0A]/40 to-transparent" aria-hidden="true" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/50 via-transparent to-transparent" aria-hidden="true" />
         <div className={`${INNER} flex min-h-[620px] flex-col justify-center pb-28 pt-16 lg:min-h-[700px]`}>
-          <p className="hero-fade mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur" style={{ ['--d' as string]: '.1s' }}>
-            <MapPin size={16} aria-hidden="true" /> Now in Port Harcourt, Delta and Ekiti
+          <p className="hero-fade mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/80" style={{ ['--d' as string]: '.1s' }}>
+            <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
+            One Beta Nation
           </p>
           <h1 className="font-display max-w-4xl text-[clamp(2.6rem,6vw,5.2rem)] font-extrabold leading-[1.0] tracking-[-0.04em] text-white">
             <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
@@ -128,26 +138,29 @@ export default function Home() {
             List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
           </p>
           <div className="hero-fade mt-9 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.65s' }}>
-            <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item <ArrowUpRight size={18} aria-hidden="true" /></Link>
-            <a href="#how" className={`${BTN} border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-white`}>See how it works</a>
+            <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white hover:bg-brand-green focus-visible:outline-white`}>List an item <ArrowUpRight size={18} aria-hidden="true" /></Link>
+            <a href="#how" className={`${BTN} border border-white/40 bg-white/10 text-white backdrop-blur hover:border-white hover:bg-white hover:text-[#0A0A0A] focus-visible:outline-white`}>See how it works</a>
+          </div>
+          <div className="mt-10 flex gap-2" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => <span key={i} className="dot h-1 w-10 overflow-hidden rounded-full bg-white/25"><i className="block h-full w-full origin-left bg-white" style={{ animationDelay: `calc(var(--intro) + ${i * 6}s - 0.5s)` }} /></span>)}
           </div>
         </div>
       </section>
 
-      {/* Proof strip overlapping the hero */}
+      {/* Proof strip: three colour blocks, no icons */}
       <section className={`${INNER} relative z-10 -mt-16`}>
-        <ul className="grid gap-px overflow-hidden rounded-2xl bg-black/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,.35)] sm:grid-cols-3" data-reveal>
-          {PROOF.map(({ Icon, title, text }) => (
-            <li key={title} className="flex items-start gap-4 bg-white p-6">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0A0A0A] text-white"><Icon size={22} aria-hidden="true" /></span>
-              <span><b className="block text-base font-semibold">{title}</b><span className="text-sm text-[#5C5C58]">{text}</span></span>
+        <ul className="grid overflow-hidden rounded-2xl shadow-[0_24px_60px_-20px_rgba(0,0,0,.5)] sm:grid-cols-3" data-reveal>
+          {PROOF.map(({ title, text, bg }) => (
+            <li key={title} className={`${bg} p-7 text-white`}>
+              <b className="font-display block text-2xl font-extrabold leading-tight tracking-tight">{title}</b>
+              <span className="mt-2 block text-base text-white/85">{text}</span>
             </li>
           ))}
         </ul>
       </section>
 
       {/* What you can list: photo grid */}
-      <section className={`${INNER} py-14 sm:py-20`} aria-labelledby="list-h">
+      <section className={`${BLEED} bg-[#E3ECE2]`} aria-labelledby="list-h"><div className={`${INNER} py-14 sm:py-20`}>
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end" data-reveal>
           <div className="max-w-2xl">
             <h2 id="list-h" className={H2}>What you can list</h2>
@@ -161,7 +174,7 @@ export default function Home() {
               <Link href="/list" className="photo-card group relative block cursor-pointer h-full w-full overflow-hidden rounded-3xl bg-[#0A0A0A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0A0A0A]">
                 <Image src={t.src} alt={t.alt} fill sizes="(min-width:640px) 25vw, 50vw" className={`object-cover ${t.pos}`} />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" aria-hidden="true" />
-                <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-[#0A0A0A]"><ShieldCheck size={14} className="text-brand-green" aria-hidden="true" />Admin checked</span>
+                <span className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur">Admin checked</span>
                 <span className="absolute inset-x-5 bottom-4 flex items-center justify-between text-white">
                   <b className="text-lg font-semibold sm:text-xl">{t.label}</b>
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-colors group-hover:bg-brand-red"><ArrowUpRight size={18} aria-hidden="true" /></span>
@@ -177,6 +190,7 @@ export default function Home() {
             </li>
           ))}
         </ul>
+        </div>
       </section>
 
       {/* How it works */}
@@ -192,7 +206,7 @@ export default function Home() {
                 </li>
               ))}
             </ol>
-            <Link href="/list" className={`${BTN} mt-10 w-fit bg-[#0A0A0A] text-white hover:bg-black/80 focus-visible:outline-[#0A0A0A]`}>Start your listing</Link>
+            <Link href="/list" className={`${BTN} mt-10 w-fit bg-[#0A0A0A] text-white hover:bg-brand-red focus-visible:outline-[#0A0A0A]`}>Start your listing</Link>
           </div>
           <div className="relative mx-auto w-full max-w-md pb-16" data-reveal>
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl">
@@ -208,14 +222,13 @@ export default function Home() {
         <div className={`${INNER} py-14 sm:py-20`}>
           <h2 id="safe-h" className={`${H2} max-w-3xl`} data-reveal>A real person checks every listing.</h2>
           <ul className="mt-9 grid gap-4 md:grid-cols-3">
-            {TRUST.map(({ Icon, title, text, bar }) => (
-              <li key={title} className="overflow-hidden rounded-2xl border border-white/10 bg-[#171717]" data-reveal>
-                <span className={`block h-1 ${bar}`} aria-hidden="true" />
-                <div className="p-6">
-                  <Icon size={28} className="text-white" aria-hidden="true" />
-                  <h3 className="mt-5 text-xl font-semibold">{title}</h3>
-                  <p className="mt-2 text-base text-white/70">{text}</p>
-                </div>
+            {TRUST.map(({ n, title, text, bg }) => (
+              <li key={title} className={`${bg} flex min-h-[260px] flex-col justify-between rounded-3xl p-7 transition-transform duration-300 hover:-translate-y-1`} data-reveal>
+                <span className="font-display text-5xl font-extrabold text-white/40">{n}</span>
+                <span>
+                  <h3 className="font-display text-2xl font-extrabold leading-tight tracking-tight text-white">{title}</h3>
+                  <p className="mt-2 text-base text-white/85">{text}</p>
+                </span>
               </li>
             ))}
           </ul>
@@ -240,7 +253,7 @@ export default function Home() {
       </section>
 
       {/* About (PRD 3, client copy word for word) */}
-      <section id="about" className={`${BLEED} bg-[#ECE6DC]`} aria-labelledby="about-h">
+      <section id="about" className={`${BLEED} bg-[#E2EAF4]`} aria-labelledby="about-h">
         <div className={`${INNER} grid gap-12 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
           <div data-reveal>
             <h2 id="about-h" className={H2}>About OBN NATION</h2>
@@ -264,7 +277,7 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/65" aria-hidden="true" />
         <div className={`${INNER} flex flex-col items-center py-16 text-center sm:py-24`}>
           <h2 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-6xl" data-reveal>Got something to sell?</h2>
-          <Link href="/list" className={`${BTN} mt-9 bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item</Link>
+          <Link href="/list" className={`${BTN} mt-9 bg-brand-red text-white hover:bg-brand-green focus-visible:outline-white`}>List an item</Link>
         </div>
       </section>
 
