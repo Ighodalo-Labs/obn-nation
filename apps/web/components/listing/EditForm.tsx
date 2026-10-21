@@ -104,7 +104,7 @@ export function EditForm({ token, listing, signed }: { token: string; listing: E
         existingVideo={keptVideo ? (
           <div className="flex flex-col gap-2 rounded-xl border border-border bg-bg p-3">
             {signed.video ? <video src={signed.video} controls playsInline className="max-h-56 w-full rounded" /> : <p className="text-sm text-muted">Current video</p>}
-            <button type="button" className="min-h-12 self-end text-tint-blue underline" onClick={() => setKeptVideo(null)}>Remove video</button>
+            <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent self-end" onClick={() => setKeptVideo(null)}>Remove video</button>
           </div>
         ) : undefined}
       />

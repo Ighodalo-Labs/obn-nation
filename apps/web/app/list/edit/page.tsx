@@ -15,7 +15,7 @@ function Problem({ message }: { message: string }) {
     <div className="flex flex-col items-start gap-4 py-8">
       <h1 className="text-2xl">We cannot open this link</h1>
       <p role="alert" className="text-base">{message}</p>
-      <Link href="/" className="flex min-h-12 items-center text-tint-blue underline">Go to the home page</Link>
+      <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent">Go to the home page</Link>
     </div>
   );
 }

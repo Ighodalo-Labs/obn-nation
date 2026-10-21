@@ -26,7 +26,7 @@ export default async function ListPage({ searchParams }: { searchParams: { next?
   return (
     <AppShell>
       {admin && (
-        <Link href="/admin/dashboard" className="mb-2 flex min-h-12 items-center text-base text-tint-blue underline">
+        <Link href="/admin/dashboard" className="mb-3 inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent">
           Go to admin
         </Link>
       )}

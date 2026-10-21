@@ -77,7 +77,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
         <p className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-white/10 bg-bg px-4 py-2 text-sm">
           <span className="font-semibold">{regionOptions.find((r) => r.value === draft.region)?.label}</span>
           <span className="text-muted">{categoryOptions.find((c) => c.value === draft.category)?.label}</span>
-          <button type="button" className="min-h-8 font-semibold text-tint-blue underline" onClick={() => go(1)}>Change</button>
+          <button type="button" className="inline-flex min-h-8 items-center rounded-full border border-white/25 px-3 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10" onClick={() => go(1)}>Change</button>
         </p>
       )}
 

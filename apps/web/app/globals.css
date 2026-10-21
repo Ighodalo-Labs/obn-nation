@@ -8,7 +8,7 @@ body { font-size: 16px; line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 /* ---- Landing page motion (CSS only, so the page reads and moves without scripts) ---- */
-:root { --intro: 2s; }
+:root { --intro: 2.3s; }
 html.no-intro { --intro: 0s; }
 @keyframes rise { from { transform: translateY(105%); } to { transform: none; } }
 @keyframes fade { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
@@ -28,19 +28,19 @@ html.no-intro { --intro: 0s; }
 .phone[data-mode='auto'] .chip:nth-child(3) { animation-delay: 6s; }
 .phone[data-mode='auto'] .live { animation: pulse-ring 1.8s ease-out infinite; animation-delay: 6s; }
 
-/* Opening: dark screen, the logo rises in, a red, green and blue line draws, then the screen lifts away. CSS only. */
-@keyframes intro-out { to { transform: translateY(-100%); } }
+/* Opening: colour circles wipe across, the logo pops in with photos around it, then the logo flies to the top bar.
+   GSAP drives it (LandingMotion). Without scripts, this screen simply hides itself after a moment. */
 @keyframes intro-gone { to { visibility: hidden; } }
-@keyframes logo-in { from { opacity: 0; transform: translateY(14px) scale(.94); } to { opacity: 1; transform: none; } }
-@keyframes bar-in { to { transform: scaleX(1); } }
-.intro { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; background: #F6F6F4; pointer-events: none;
-  animation: intro-out .85s cubic-bezier(.76,0,.24,1) 1.75s forwards, intro-gone 0s linear 2.7s forwards; }
-.intro .logo { width: min(68vw, 360px) !important; height: min(68vw, 360px) !important; animation: logo-in .9s cubic-bezier(.2,.8,.2,1) both .1s; }
-.intro .bar { display: flex; width: min(60vw, 300px); height: 4px; border-radius: 4px; overflow: hidden; }
-.intro .bar span { flex: 1; transform: scaleX(0); transform-origin: left; animation: bar-in .45s ease forwards; }
-.intro .bar span:nth-child(1) { background: #d32f2f; animation-delay: .8s; }
-.intro .bar span:nth-child(2) { background: #2e7d32; animation-delay: 1.05s; }
-.intro .bar span:nth-child(3) { background: #1565c0; animation-delay: 1.3s; }
+.intro { position: fixed; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; animation: intro-gone 0s linear 6s forwards; }
+.intro-bg { position: absolute; inset: 0; background: #0a0a0a; }
+.intro .rev { position: absolute; inset: 0; clip-path: circle(0% at 50% 50%); will-change: clip-path; }
+.intro .rev-1 { background: #d32f2f; } .intro .rev-2 { background: #2e7d32; } .intro .rev-3 { background: #1565c0; } .intro .rev-4 { background: #0a0a0a; }
+.intro-items { position: absolute; inset: 0; }
+.intro-item { position: absolute; top: 50%; left: 50%; width: 150px; height: 150px; overflow: hidden; border-radius: 22px; transform: translate(-50%, -50%) scale(0); box-shadow: 0 20px 50px -15px rgba(0,0,0,.6); will-change: transform; }
+.intro-item img { width: 100%; height: 100%; object-fit: cover; }
+.intro-logo { position: absolute; top: 50%; left: 50%; width: min(52vw, 260px); transform: translate(-50%, -50%) scale(0); opacity: 0; }
+.intro-logo img { width: 100%; height: auto; filter: brightness(1.5) saturate(1.2); }
+@media (max-width: 767px) { .intro-item { width: 100px; height: 100px; border-radius: 16px; } }
 html.no-intro .intro { display: none; }
 
 details > summary { list-style: none; cursor: pointer; }

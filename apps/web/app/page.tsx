@@ -76,8 +76,14 @@ export default function Home() {
 
       {/* Opening: logo, a red, green and blue line, then the screen lifts away. Once per visit. */}
       <div className="intro" aria-hidden="true">
-        <Image src="/brand/obn-logo-clear.webp" alt="" width={720} height={720} priority className="logo h-[min(50vw,240px)] w-[min(50vw,240px)]" />
-        <div className="bar"><span /><span /><span /></div>
+        <div className="intro-bg" />
+        <div className="rev rev-1" /><div className="rev rev-2" /><div className="rev rev-3" /><div className="rev rev-4" />
+        <div className="intro-items">
+          {['/photos/devices.webp', '/photos/living-room.webp', '/photos/tv-wall.webp', '/photos/kitchen.webp', '/photos/fan.webp'].map((src) => (
+            <div key={src} className="intro-item"><Image src={src} alt="" width={300} height={300} priority /></div>
+          ))}
+        </div>
+        <div className="intro-logo"><Image src="/brand/obn-logo-clear.webp" alt="" width={520} height={520} priority /></div>
       </div>
 
       {/* Top bar */}
@@ -87,7 +93,7 @@ export default function Home() {
         </div>
         <div className={`${INNER} flex items-center gap-2 py-2`}>
           <Link href="/" className="flex min-h-12 items-center gap-3" aria-label="OBN NATION home">
-            <Image src="/brand/obn-logo-clear.webp" alt="" width={48} height={48} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
+            <Image id="nav-logo" src="/brand/obn-logo-clear.webp" alt="" width={48} height={48} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
             <span className="flex flex-col leading-tight">
               <span className="text-base font-semibold tracking-wide">OBN NATION</span>
               <span className="hidden text-xs text-[#5C5C58] sm:block">Connecting People</span>
@@ -147,7 +153,7 @@ export default function Home() {
             <h2 id="list-h" className={H2}>What you can list</h2>
             <p className="mt-4 text-lg text-[#5C5C58]">Everyday items that still have life in them.</p>
           </div>
-          <Link href="/list" className="flex min-h-12 w-fit items-center gap-2 text-base font-semibold underline underline-offset-4">Start listing <ArrowUpRight size={18} aria-hidden="true" /></Link>
+          <Link href="/list" className="flex min-h-11 w-fit items-center gap-2 rounded-full border border-black/20 px-5 text-sm font-semibold transition-colors hover:border-[#0A0A0A] hover:bg-[#0A0A0A] hover:text-white">Start listing <ArrowUpRight size={18} aria-hidden="true" /></Link>
         </div>
         <ul className="mt-10 grid auto-rows-[200px] grid-cols-2 gap-3 sm:auto-rows-[220px] sm:grid-cols-4 sm:gap-4">
           {TILES.map((t) => (

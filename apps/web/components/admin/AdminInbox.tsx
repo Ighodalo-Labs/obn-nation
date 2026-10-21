@@ -90,7 +90,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     <div className="flex flex-col gap-4 pb-10">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl">Review</h1>
-        <button type="button" onClick={refresh} className="flex min-h-12 items-center gap-2 text-tint-blue" aria-label="Refresh the list">
+        <button type="button" onClick={refresh} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10" aria-label="Refresh the list">
           <RefreshCw size={18} aria-hidden="true" /> Refresh
         </button>
       </div>

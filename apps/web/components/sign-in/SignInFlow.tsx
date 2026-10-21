@@ -115,10 +115,10 @@ export function SignInFlow({ next }: { next: string | null }) {
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           />
           <div className="flex items-center justify-between text-sm">
-            <button type="button" className="min-h-12 text-tint-blue underline disabled:text-muted disabled:no-underline" disabled={wait > 0 || busy} onClick={sendCode}>
+            <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent" disabled={wait > 0 || busy} onClick={sendCode}>
               {wait > 0 ? `Resend in ${clock(wait)}` : 'Resend code'}
             </button>
-            <button type="button" className="min-h-12 text-tint-blue underline" onClick={() => { setStep('phone'); setError(null); }}>
+            <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent" onClick={() => { setStep('phone'); setError(null); }}>
               Change number
             </button>
           </div>
