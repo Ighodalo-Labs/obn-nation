@@ -74,7 +74,7 @@ Dark theme. Background `#0A0A0A`. The three brand colours are fills for buttons 
 | `--color-blue-tint` | `#42A5F5` | Blue text and outlines on dark | n/a | 7.5:1 |
 | `--color-border` | `#2A2A2A` | Dividers, input outlines | n/a | n/a |
 
-**Landing page exception (owner decision 20 Oct 2026).** The landing page `/` uses a light theme (paper `#F7F6F3`, ink `#141414`) with real product photos (Unsplash licence, credits in `apps/web/public/photos/CREDITS.md`) and scroll motion. Working screens stay dark. The brand colours still appear as fills and in the top strip. Replace the stock photos with the client's own when available.
+**Landing page exception (owner decision 20 Oct 2026).** The landing page `/` uses a light theme (light `#F2F2F0`, dark `#0A0A0A`) with real product photos (Unsplash licence, credits in `apps/web/public/photos/CREDITS.md`) and scroll motion. Working screens stay dark. The brand colours still appear as fills and in the top strip. Replace the stock photos with the client's own when available.
 
 Usage rules:
 

@@ -5,3 +5,4 @@
 
 The logo is a flat JPG. Ask the client for a transparent PNG or an SVG before launch (sharper, smaller, no black box on other backgrounds).
 The logo colours are darker than the screen tokens in PRD section 2.2. That is intended: the tokens are tuned for contrast on a dark screen.
+- `obn-logo-crop.webp`: the same logo cropped tight to the artwork (720 x 720), so it reads at small sizes on the dark theme. Derived from `obn-logo-on-black.jpg`.
