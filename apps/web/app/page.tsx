@@ -3,6 +3,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { ListingCard } from '@/components/landing/ListingCard';
+import { BadgeCheck, Camera, CookingPot, Laptop, Lock, MapPin, Package, Refrigerator, ShieldCheck, Smartphone, Sofa, Tv, Zap } from 'lucide-react';
+
 
 const ABOUT = [
   'OBN NATION (One Beta Nation) is a Nigerian community-driven decluttering and asset-liquidation marketplace and advertising company. We connect people with products, services, opportunities and trusted transactions by helping individuals and businesses turn unused assets into value.',
@@ -11,28 +13,42 @@ const ABOUT = [
 ];
 
 const STEPS = [
-  { title: 'Add your item', text: 'Take clear photos, record a short video and set your price. It all happens on your phone.' },
-  { title: 'An admin checks it', text: 'Someone in your region reviews it. If it is not right, you get the reason and a link to fix it.' },
-  { title: 'It goes live', text: 'Approved items show to buyers in your region. Your listing is ready to sell.' },
+  { n: '1', color: 'bg-brand-red', title: 'Add your item', text: 'Take clear photos, record a short video and set your price. It all happens on your phone.' },
+  { n: '2', color: 'bg-brand-blue', title: 'An admin checks it', text: 'Someone in your region reviews it. If it is not right, you get the reason and a link to fix it.' },
+  { n: '3', color: 'bg-brand-green', title: 'It goes live', text: 'Approved items join the regional pool, ready for buyers in your community.' },
 ];
 
-const CATEGORIES = ['Phones', 'Computers', 'TVs', 'Fridges', 'Generators', 'Kitchen', 'Furniture', 'Other'];
+const CATEGORIES = [
+  { label: 'Phones', hint: 'Phones and tablets', Icon: Smartphone },
+  { label: 'Computers', hint: 'Laptops and desktops', Icon: Laptop },
+  { label: 'TVs', hint: 'Any size', Icon: Tv },
+  { label: 'Fridges', hint: 'Fridges and freezers', Icon: Refrigerator },
+  { label: 'Generators', hint: 'Power at home or work', Icon: Zap },
+  { label: 'Kitchen', hint: 'Cookers and appliances', Icon: CookingPot },
+  { label: 'Furniture', hint: 'Beds, sofas, tables', Icon: Sofa },
+  { label: 'Other', hint: 'Anything in good order', Icon: Package },
+];
 
-const SHOTS = [
-  { src: '/photos/tv-wall.webp', label: 'TVs', offset: 'lg:mt-0' },
-  { src: '/photos/devices.webp', label: 'Phones and computers', offset: 'lg:mt-20' },
-  { src: '/photos/kitchen.webp', label: 'Fridges and kitchen', offset: 'lg:mt-8' },
-  { src: '/photos/living-room.webp', label: 'Furniture', offset: 'lg:mt-28' },
+const PROOF = [
+  { Icon: ShieldCheck, title: 'Every listing is checked', text: 'A real admin reviews it before it goes live.' },
+  { Icon: Lock, title: 'Your number stays private', text: 'Buyers never see your name or phone.' },
+  { Icon: MapPin, title: 'Sold close to home', text: 'Port Harcourt, Delta and Ekiti first.' },
 ];
 
 const TRUST = [
-  { title: 'Checked before it shows', text: 'An admin in your region reviews every listing before any buyer sees it.', bar: 'bg-brand-red' },
-  { title: 'Clear reasons, easy fixes', text: 'If a listing is turned down, you get the reason and a link to fix it and send it again.', bar: 'bg-brand-green' },
-  { title: 'Bad sellers are blocked', text: 'Admins can block a seller for good. Honest sellers keep the marketplace worth using.', bar: 'bg-brand-blue' },
+  { Icon: BadgeCheck, title: 'Checked before it shows', text: 'An admin in your region reviews every listing before any buyer sees it.', bar: 'bg-brand-red' },
+  { Icon: Camera, title: 'Clear reasons, easy fixes', text: 'If a listing is turned down, you get the reason and a link to fix it and send it again.', bar: 'bg-brand-green' },
+  { Icon: ShieldCheck, title: 'Bad sellers are blocked', text: 'Admins can block a seller for good. Honest sellers keep the marketplace worth using.', bar: 'bg-brand-blue' },
+];
+
+const VALUES = [
+  { title: 'Trust is an asset', bar: 'bg-brand-red' },
+  { title: 'Reputation is capital', bar: 'bg-brand-green' },
+  { title: 'Integrity is strategy', bar: 'bg-brand-blue' },
 ];
 
 const FAQ = [
-  { q: 'How do I sign in?', a: 'Enter your phone number. We send you a code. No password to remember.' },
+  { q: 'How do I sign in?', a: 'Enter your phone number. We send you a code on WhatsApp. No password to remember.' },
   { q: 'What do I need to list an item?', a: 'One to six clear photos, one short video of up to 60 seconds, a title, a price and your location. The app shrinks the files for you.' },
   { q: 'Who checks my listing?', a: 'An admin for your region. Your region comes from the link you joined with.' },
   { q: 'What if my listing is turned down?', a: 'You see the reason. Use the link we give you to fix it and send it again. The link works for 30 days.' },
@@ -46,156 +62,143 @@ export const metadata: Metadata = {
   openGraph: { title: 'OBN NATION — Connecting People', description: ABOUT[0].split('. ')[0] + '.', type: 'website' },
 };
 
-const BLEED = 'relative left-1/2 w-screen -translate-x-1/2';
+const FULL = 'relative left-1/2 w-screen -translate-x-1/2';
+const BLEED = '';
 const INNER = 'mx-auto w-full max-w-6xl px-5';
-const BUTTON =
-  'flex min-h-12 items-center justify-center rounded-full px-7 text-base font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
-const H2 = 'text-4xl font-semibold leading-[1.05] tracking-[-0.035em] sm:text-6xl';
-
-function Ribbon({ reverse = false }: { reverse?: boolean }) {
-  return (
-    <div className="overflow-hidden" aria-hidden={reverse ? 'true' : undefined}>
-      <div className={`marquee-track ${reverse ? 'reverse' : ''}`}>
-        {[0, 1].map((copy) => (
-          <ul key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1 ? 'true' : undefined}>
-            {[...CATEGORIES, ...CATEGORIES].map((c, i) => (
-              <li key={`${c}-${i}`} className={`px-8 text-[clamp(2.4rem,6vw,4.5rem)] font-semibold tracking-[-0.03em] ${reverse ? 'text-white/20' : 'text-white'}`}>
-                {c}
-              </li>
-            ))}
-          </ul>
-        ))}
-      </div>
-    </div>
-  );
-}
+const BTN = 'flex min-h-12 items-center justify-center rounded-full px-7 text-base font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
+const H2 = 'text-3xl font-semibold leading-[1.1] tracking-[-0.03em] sm:text-5xl';
+const NAVLINK = 'flex min-h-12 items-center rounded-full px-4 text-sm font-medium text-[#0A0A0A]/75 transition-colors hover:bg-black/5 hover:text-[#0A0A0A]';
 
 /** Gateway page (PRD 6.1). Server-rendered and complete without scripts. Motion is added on top. */
 export default function Home() {
   return (
-    <main className="bg-[#F2F2F0] pb-24 text-[#0A0A0A]">
-      <style>{`html,body{background:#F2F2F0 !important;color:#0A0A0A}`}</style>
+    <main className={`${FULL} bg-[#F6F6F4] pb-24 text-[#0A0A0A] md:pb-0`}>
+      <style>{`html,body{background:#F6F6F4 !important;color:#0A0A0A}`}</style>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: "try{if(sessionStorage.getItem('obn-intro')){document.documentElement.classList.add('no-intro')}else{sessionStorage.setItem('obn-intro','1')}}catch(e){}",
+        }}
+      />
       <LandingMotion />
 
-      {/* Opening: logo, then red, green and blue rings close like an iris */}
+      {/* Opening: logo, a red, green and blue line, then the screen lifts away. Once per visit. */}
       <div className="intro" aria-hidden="true">
-        <div className="l3" /><div className="l2" /><div className="l1" />
-        <div className="l0">
-          <Image src="/brand/obn-logo-clear.webp" alt="" width={720} height={720} priority className="logo h-[min(60vw,300px)] w-[min(60vw,300px)]" />
-        </div>
+        <Image src="/brand/obn-logo-clear.webp" alt="" width={720} height={720} priority className="logo h-[min(50vw,240px)] w-[min(50vw,240px)]" />
+        <div className="bar"><span /><span /><span /></div>
       </div>
 
-      {/* Hero: dark panel with the headline, a sharp undimmed photo beside it */}
-      <section className={`${BLEED} grain overflow-hidden bg-[#0A0A0A] text-white`}>
-        <div className="relative z-10 flex h-1.5 w-full" aria-hidden="true">
+      {/* Top bar */}
+      <header className={`${BLEED} sticky top-0 z-40 border-b border-black/5 bg-white/90 backdrop-blur-md`}>
+        <div className="flex h-1" aria-hidden="true">
           <span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" />
         </div>
-        <div className={`${INNER} relative z-10 flex items-center justify-between py-4`}>
-          <div className="flex items-center gap-3">
-            <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION" width={64} height={64} priority className="h-14 w-14 sm:h-16 sm:w-16" />
-            <span className="text-lg font-semibold tracking-tight">OBN NATION</span>
-          </div>
-          <nav aria-label="Main" className="flex items-center gap-1 rounded-full bg-white/10 p-1 ring-1 ring-white/15 backdrop-blur">
-            <a href="#story" className="hidden min-h-10 items-center rounded-full px-3 text-sm font-medium text-white/85 hover:text-white md:flex">How it works</a>
-            <a href="#trust" className="hidden min-h-10 items-center rounded-full px-3 text-sm font-medium text-white/85 hover:text-white md:flex">Safety</a>
-            <a href="#faq" className="hidden min-h-10 items-center rounded-full px-3 text-sm font-medium text-white/85 hover:text-white md:flex">FAQ</a>
-            <a href="#about" className="hidden min-h-10 items-center rounded-full px-3 text-sm font-medium text-white/85 hover:text-white md:flex">About</a>
-            <Link href="/list" className="flex min-h-10 items-center rounded-full bg-brand-red px-4 text-sm font-semibold text-white">List an item</Link>
+        <div className={`${INNER} flex items-center gap-2 py-2`}>
+          <Link href="/" className="flex min-h-12 items-center gap-3" aria-label="OBN NATION home">
+            <Image src="/brand/obn-logo-clear.webp" alt="" width={48} height={48} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
+            <span className="flex flex-col leading-tight">
+              <span className="text-base font-semibold tracking-wide">OBN NATION</span>
+              <span className="hidden text-xs text-[#5C5C58] sm:block">Connecting People</span>
+            </span>
+          </Link>
+          <nav aria-label="Site" className="ml-auto hidden items-center md:flex">
+            <a href="#how" className={NAVLINK}>How it works</a>
+            <a href="#safety" className={NAVLINK}>Safety</a>
+            <a href="#faq" className={NAVLINK}>FAQ</a>
+            <a href="#about" className={NAVLINK}>About</a>
           </nav>
+          <Link href="/list" className={`${BTN} ml-auto bg-brand-red px-5 text-sm text-white hover:bg-[#B71C1C] focus-visible:outline-[#0A0A0A] md:ml-3 md:px-6 md:text-base`}>
+            List an item
+          </Link>
         </div>
+      </header>
 
-        <div className={`${INNER} relative z-10 grid items-center gap-12 pb-20 pt-8 lg:grid-cols-[1fr_1fr] lg:gap-16 lg:pb-28 lg:pt-12`}>
-          <div>
-            <h1 className="text-[clamp(2.8rem,6.4vw,5.4rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
-              <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Sell what</span></span>
-              <span className="line-mask"><span style={{ ['--d' as string]: '.25s' }}>you don’t use.</span></span>
-            </h1>
-            <p className="hero-fade mt-6 max-w-md text-lg leading-relaxed text-white/75" style={{ ['--d' as string]: '.7s' }}>
-              Clear out and cash in. List in minutes, get checked, reach buyers near you.
-            </p>
-            <div className="hero-fade mt-8 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.9s' }}>
-              <Link href="/list" className={`${BUTTON} bg-brand-red text-white hover:bg-[#B71C1C] sm:min-w-44`}>List an item</Link>
-              <a href="#story" className={`${BUTTON} border border-white/35 text-white hover:bg-white/10 sm:min-w-44`}>See how it works</a>
-            </div>
-          </div>
-          <div className="hero-fade relative mx-auto aspect-square w-full max-w-[32rem]" style={{ ['--d' as string]: '.4s' }}>
-            <div className="absolute -left-6 top-4 h-64 w-64 rounded-full bg-brand-red/35 blur-[90px]" aria-hidden="true" />
-            <div className="absolute -right-6 top-24 h-64 w-64 rounded-full bg-brand-blue/40 blur-[90px]" aria-hidden="true" />
-            <div className="absolute bottom-0 left-1/3 h-56 w-56 rounded-full bg-brand-green/35 blur-[90px]" aria-hidden="true" />
-            <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION: people holding hands around the globe" fill priority sizes="(min-width:1024px) 512px, 90vw" className="settle object-contain" />
-          </div>
-        </div>
-      </section>
-
-      {/* Category ribbons */}
-      <section aria-label="What people sell" className={`${BLEED} grain flex flex-col gap-1 overflow-hidden border-t border-white/10 bg-[#0A0A0A] py-8`}>
-        <Ribbon />
-        <Ribbon reverse />
-      </section>
-
-      {/* Human story with photos */}
-      <section aria-labelledby="home-h" className={BLEED}>
-        <div className={`${INNER} py-16 lg:py-28`}>
-          <h2 id="home-h" data-lines className={`max-w-3xl ${H2}`}>
-            <span className="mask"><span data-line className="block">Someone near you</span></span>
-            <span className="mask"><span data-line className="block">needs what you don’t.</span></span>
-          </h2>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#4B4B47]">
-            The fridge you replaced. The sofa from the old flat. A neighbour is looking for them.
+      {/* Hero: full photo, one clear message, one clear action */}
+      <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
+        <Image src="/photos/living-room.webp" alt="" fill priority sizes="100vw" className="settle -z-20 object-cover object-[70%_50%]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/75 via-[#0A0A0A]/35 to-transparent" aria-hidden="true" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/40 via-transparent to-transparent" aria-hidden="true" />
+        <div className={`${INNER} flex min-h-[600px] flex-col justify-center pb-28 pt-20 lg:min-h-[680px]`}>
+          <p className="hero-fade mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur" style={{ ['--d' as string]: '.1s' }}>
+            <MapPin size={16} aria-hidden="true" /> Now in Port Harcourt, Delta and Ekiti
           </p>
-          <p className="mt-4 text-lg font-medium">We start in Port Harcourt, Delta and Ekiti.</p>
-          <div className="mt-12 grid gap-6 sm:grid-cols-3 lg:items-start">
-            {SHOTS.map((s) => (
-              <figure key={s.label} className={`photo-card ${s.offset}`}>
-                <div data-photo className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-[#DEDEDA]">
-                  <Image data-photo-img src={s.src} alt="" fill sizes="(min-width:1024px) 360px, 100vw" className="scale-[1.15] object-cover" />
-                </div>
-                <figcaption className="mt-3 border-b border-[#0A0A0A]/15 pb-3 text-lg font-medium">{s.label}</figcaption>
-              </figure>
-            ))}
+          <h1 className="max-w-4xl text-[clamp(2.5rem,5.8vw,4.9rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-white">
+            <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
+            <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
+          </h1>
+          <p className="hero-fade mt-6 max-w-xl text-lg leading-relaxed text-white/85 sm:text-xl" style={{ ['--d' as string]: '.5s' }}>
+            List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
+          </p>
+          <div className="hero-fade mt-9 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.65s' }}>
+            <Link href="/list" className={`${BTN} bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item</Link>
+            <a href="#how" className={`${BTN} border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-white`}>See how it works</a>
           </div>
         </div>
       </section>
 
-      {/* How it works: the card follows the step you are reading */}
-      <section id="story" aria-labelledby="story-h" className={`${BLEED} grain bg-[#171717] text-white`}>
-        <div className={`${INNER} relative z-10 py-16 lg:py-28`}>
-          <h2 id="story-h" data-lines className={`max-w-3xl ${H2}`}>
-            <span className="mask"><span data-line className="block">From your room</span></span>
-            <span className="mask"><span data-line className="block">to your region.</span></span>
-          </h2>
-          <div className="mt-8 grid gap-6 lg:mt-14 lg:grid-cols-2 lg:gap-16">
-            <div className="sticky top-0 z-10 -mx-5 bg-[#171717]/95 px-5 pb-3 pt-3 backdrop-blur lg:static lg:order-2 lg:mx-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
-              <div className="lg:sticky lg:top-24 lg:flex lg:justify-center">
-                <ListingCard mode="stage" stage={0} className="w-full max-w-[22rem] [&_figcaption]:text-white/60" />
-              </div>
-            </div>
-            <ol className="lg:order-1">
-              {STEPS.map((s, i) => (
-                <li key={s.title} data-step={i} className="flex min-h-[40vh] flex-col justify-center opacity-35 transition-opacity duration-500 data-[active]:opacity-100 lg:min-h-[64vh]">
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-semibold text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i]}`} aria-hidden="true">{i + 1}</span>
-                  <h3 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">{s.title}</h3>
-                  <p className="mt-3 max-w-md text-lg leading-relaxed text-white/70">{s.text}</p>
+      {/* Proof strip overlapping the hero */}
+      <section className={`${INNER} relative z-10 -mt-14`}>
+        <ul className="grid gap-px overflow-hidden rounded-2xl bg-black/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,.35)] sm:grid-cols-3" data-reveal>
+          {PROOF.map(({ Icon, title, text }) => (
+            <li key={title} className="flex items-start gap-4 bg-white p-6">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0A0A0A] text-white"><Icon size={22} aria-hidden="true" /></span>
+              <span><b className="block text-base font-semibold">{title}</b><span className="text-sm text-[#5C5C58]">{text}</span></span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* What you can list */}
+      <section className={`${INNER} py-20 sm:py-28`} aria-labelledby="list-h">
+        <div className="max-w-2xl" data-reveal>
+          <h2 id="list-h" className={H2}>What you can list</h2>
+          <p className="mt-4 text-lg text-[#5C5C58]">Everyday items that still have life in them.</p>
+        </div>
+        <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {CATEGORIES.map(({ label, hint, Icon }, i) => (
+            <li key={label} data-reveal>
+              <Link href="/list" className="group flex h-full flex-col gap-4 rounded-2xl border border-black/10 bg-white p-5 transition-all hover:-translate-y-1 hover:border-black/25 hover:shadow-[0_18px_40px_-18px_rgba(0,0,0,.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0A0A0A]">
+                <span className={`flex h-12 w-12 items-center justify-center rounded-xl text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i % 3]}`}><Icon size={24} aria-hidden="true" /></span>
+                <span><b className="block text-lg font-semibold">{label}</b><span className="text-sm text-[#5C5C58]">{hint}</span></span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* How it works */}
+      <section id="how" className={`${BLEED} bg-white`} aria-labelledby="how-h">
+        <div className={`${INNER} grid items-center gap-14 py-20 sm:py-28 lg:grid-cols-[1.1fr_.9fr]`}>
+          <div>
+            <h2 id="how-h" className={H2} data-reveal>Three steps. No shop to set up.</h2>
+            <ol className="mt-10 flex flex-col gap-8">
+              {STEPS.map((s) => (
+                <li key={s.n} className="flex gap-5" data-reveal>
+                  <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white ${s.color}`}>{s.n}</span>
+                  <span><b className="block text-xl font-semibold">{s.title}</b><span className="mt-1 block max-w-md text-base text-[#5C5C58]">{s.text}</span></span>
                 </li>
               ))}
             </ol>
+            <Link href="/list" className={`${BTN} mt-10 w-fit bg-[#0A0A0A] text-white hover:bg-black/80 focus-visible:outline-[#0A0A0A]`}>Start your listing</Link>
+          </div>
+          <div className="flex justify-center" data-reveal>
+            <ListingCard mode="auto" className="w-full max-w-[22rem]" />
           </div>
         </div>
       </section>
 
-      {/* Trust */}
-      <section id="trust" aria-labelledby="trust-h" className={BLEED}>
-        <div className={`${INNER} py-16 lg:py-28`}>
-          <h2 id="trust-h" data-lines className={`max-w-3xl ${H2}`}>
-            <span className="mask"><span data-line className="block">A real person checks</span></span>
-            <span className="mask"><span data-line className="block">every listing.</span></span>
-          </h2>
-          <ul className="mt-12 grid gap-px overflow-hidden rounded-2xl bg-[#0A0A0A]/15 sm:grid-cols-3">
-            {TRUST.map((t) => (
-              <li key={t.title} className="bg-[#F2F2F0] p-7">
-                <span className={`mb-5 block h-1 w-12 rounded-full ${t.bar}`} aria-hidden="true" />
-                <h3 className="text-xl font-semibold tracking-tight">{t.title}</h3>
-                <p className="mt-2 text-base leading-relaxed text-[#4B4B47]">{t.text}</p>
+      {/* Safety */}
+      <section id="safety" className={`${BLEED} bg-[#0A0A0A] text-white`} aria-labelledby="safe-h">
+        <div className={`${INNER} py-20 sm:py-28`}>
+          <h2 id="safe-h" className={`${H2} max-w-3xl`} data-reveal>A real person checks every listing.</h2>
+          <ul className="mt-12 grid gap-4 md:grid-cols-3">
+            {TRUST.map(({ Icon, title, text, bar }) => (
+              <li key={title} className="overflow-hidden rounded-2xl border border-white/10 bg-[#171717]" data-reveal>
+                <span className={`block h-1 ${bar}`} aria-hidden="true" />
+                <div className="p-6">
+                  <Icon size={28} className="text-white" aria-hidden="true" />
+                  <h3 className="mt-5 text-xl font-semibold">{title}</h3>
+                  <p className="mt-2 text-base text-white/70">{text}</p>
+                </div>
               </li>
             ))}
           </ul>
@@ -203,65 +206,67 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" aria-labelledby="faq-h" className={`${BLEED} bg-white/50`}>
-        <div className={`${INNER} grid gap-10 py-16 lg:grid-cols-[.8fr_1.2fr] lg:py-28`}>
-          <h2 id="faq-h" className="text-4xl font-semibold leading-[1.05] tracking-[-0.035em] sm:text-5xl">Questions, answered.</h2>
-          <div className="divide-y divide-[#0A0A0A]/15 border-y border-[#0A0A0A]/15">
-            {FAQ.map((f) => (
-              <details key={f.q} className="group py-5">
-                <summary className="flex min-h-12 items-center justify-between gap-6 text-lg font-medium">
-                  {f.q}
-                  <span className="plus flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#0A0A0A]/25 text-xl leading-none transition-transform" aria-hidden="true">+</span>
-                </summary>
-                <p className="mt-3 max-w-xl text-base leading-relaxed text-[#4B4B47]">{f.a}</p>
-              </details>
-            ))}
-          </div>
+      <section id="faq" className={`${INNER} grid gap-12 py-20 sm:py-28 lg:grid-cols-[.8fr_1.2fr]`} aria-labelledby="faq-h">
+        <h2 id="faq-h" className={H2} data-reveal>Questions, answered.</h2>
+        <div className="divide-y divide-black/10 border-y border-black/10" data-reveal>
+          {FAQ.map((f) => (
+            <details key={f.q} className="group py-5">
+              <summary className="flex min-h-12 items-center justify-between gap-6 text-lg font-semibold">
+                {f.q}
+                <span className="plus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-xl transition-transform" aria-hidden="true">+</span>
+              </summary>
+              <p className="mt-3 max-w-xl text-base text-[#5C5C58]">{f.a}</p>
+            </details>
+          ))}
         </div>
       </section>
 
-      {/* Values and About */}
-      <section aria-labelledby="values-h" className={BLEED}>
-        <div className={`${INNER} py-16 lg:py-28`}>
-          <h2 id="values-h" data-lines className="text-[clamp(2.3rem,6vw,4.8rem)] font-semibold leading-[1.05] tracking-[-0.04em]">
-            <span className="mask"><span data-line className="block">Trust is an asset.</span></span>
-            <span className="mask"><span data-line className="block text-[#0A0A0A]/55">Reputation is capital.</span></span>
-            <span className="mask"><span data-line className="block text-[#0A0A0A]/30">Integrity lasts.</span></span>
-          </h2>
-          <div id="about" className="mt-14 grid gap-8 border-t border-[#0A0A0A]/15 pt-10 lg:grid-cols-[.7fr_1.3fr]">
-            <h3 className="text-2xl font-semibold">About OBN NATION</h3>
-            <div className="flex flex-col gap-4">
-              {ABOUT.map((p) => (
-                <p key={p.slice(0, 20)} className="max-w-prose text-base leading-relaxed text-[#2A2A28]">{p}</p>
+      {/* About (PRD 3, client copy word for word) */}
+      <section id="about" className={`${BLEED} bg-white`} aria-labelledby="about-h">
+        <div className={`${INNER} grid gap-12 py-20 sm:py-28 lg:grid-cols-[.8fr_1.2fr]`}>
+          <div data-reveal>
+            <h2 id="about-h" className={H2}>About OBN NATION</h2>
+            <ul className="mt-8 flex flex-col gap-3">
+              {VALUES.map((v) => (
+                <li key={v.title} className="flex items-center gap-3 text-lg font-semibold">
+                  <span className={`h-6 w-1.5 rounded-full ${v.bar}`} aria-hidden="true" />{v.title}
+                </li>
               ))}
-            </div>
+            </ul>
+          </div>
+          <div className="flex flex-col gap-5 text-lg leading-relaxed text-[#2B2B28]" data-reveal>
+            {ABOUT.map((p) => <p key={p}>{p}</p>)}
           </div>
         </div>
       </section>
 
-      {/* Closing call to action over a real photo */}
-      <section className={`${BLEED} overflow-hidden`}>
-        <div data-photo className="relative">
-          <div className="absolute inset-0">
-            <Image data-photo-img src="/photos/tv-wall.webp" alt="" fill sizes="100vw" className="scale-[1.15] object-cover" />
-            <div className="absolute inset-0 bg-[#0A0A0A]/70" />
-          </div>
-          <div className={`${INNER} relative flex flex-col items-center py-24 text-center text-white lg:py-36`}>
-            <h2 className="text-[clamp(2.4rem,6.5vw,5rem)] font-semibold leading-[1.03] tracking-[-0.04em]">Got something to sell?</h2>
-            <Link href="/list" className={`${BUTTON} mt-8 min-w-56 bg-brand-red text-white hover:bg-[#B71C1C]`}>List an item</Link>
-          </div>
+      {/* Closing call to action */}
+      <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
+        <Image src="/photos/kitchen.webp" alt="" fill sizes="100vw" className="-z-20 object-cover" />
+        <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/70" aria-hidden="true" />
+        <div className={`${INNER} flex flex-col items-center py-24 text-center sm:py-32`}>
+          <h2 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-6xl" data-reveal>Got something to sell?</h2>
+          <Link href="/list" className={`${BTN} mt-9 bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item</Link>
         </div>
       </section>
 
-      <footer className={`${BLEED} flex flex-col items-center gap-3 bg-[#0A0A0A] px-5 py-12 text-center text-sm text-white/70`}>
-        <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION" width={120} height={120} className="h-28 w-28" />
-        <p>OBN NATION Online. Connecting People.</p>
+      <footer className={`${BLEED} bg-[#0A0A0A] text-white/70`}>
+        <div className={`${INNER} flex flex-col items-center gap-4 py-10 text-center text-sm sm:flex-row sm:justify-between sm:text-left`}>
+          <div className="flex items-center gap-4">
+            <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION" width={80} height={80} className="h-16 w-16" />
+            <p>OBN NATION Online. Connecting People.</p>
+          </div>
+          <nav aria-label="Footer" className="flex flex-wrap justify-center">
+            <a href="#how" className="flex min-h-12 items-center px-3 hover:text-white">How it works</a>
+            <a href="#faq" className="flex min-h-12 items-center px-3 hover:text-white">FAQ</a>
+            <a href="#about" className="flex min-h-12 items-center px-3 hover:text-white">About</a>
+          </nav>
+        </div>
       </footer>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[#0A0A0A]/10 bg-[#F2F2F0]/90 p-4 backdrop-blur">
-        <div className="mx-auto w-full max-w-screen480">
-          <Link href="/list" className={`${BUTTON} bg-brand-red text-white hover:bg-[#B71C1C]`}>List an item</Link>
-        </div>
+      {/* Phone only: the top bar already carries the button on larger screens (LP-1) */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-black/10 bg-white/95 p-3 backdrop-blur md:hidden">
+        <Link href="/list" className={`${BTN} w-full bg-brand-red text-white focus-visible:outline-[#0A0A0A]`}>List an item</Link>
       </div>
     </main>
   );
