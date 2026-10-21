@@ -10,6 +10,12 @@ export const runtime = 'nodejs';
 
 const COLS = 'id, status, submitted_at';
 
+/** The region is set once at insert. Sellers have no update right on that column, so it is left out of updates. */
+const withoutRegion = <T extends { region?: unknown }>(f: T): Omit<T, 'region'> => {
+  const { region: _region, ...rest } = f;
+  return rest;
+};
+
 function fail(error: { code?: string; message?: string }, blocked = false): never {
   if (blocked && error.code === '42501') throw new ApiError('account_blocked'); // row level security refuses revoked or blacklisted accounts
   throw mapDbError(error) ?? new ApiError('internal_error');
@@ -30,7 +36,7 @@ function buildDeps(): CreateDeps {
       return data as ListingRow;
     },
     updateDraft: async (id, f) => {
-      const { error } = await db.from('listings').update(f).eq('id', id).eq('status', 'draft');
+      const { error } = await db.from('listings').update(withoutRegion(f)).eq('id', id).eq('status', 'draft');
       if (error) fail(error);
     },
     listFiles: async (bucket, folder) => {
@@ -41,7 +47,7 @@ function buildDeps(): CreateDeps {
     submitDraft: async (id, f, photos, video) => {
       const { data, error } = await db
         .from('listings')
-        .update({ ...f, photo_urls: photos, video_url: video, status: 'pending_review' })
+        .update({ ...withoutRegion(f), photo_urls: photos, video_url: video, status: 'pending_review' })
         .eq('id', id)
         .eq('status', 'draft')
         .select(COLS)
