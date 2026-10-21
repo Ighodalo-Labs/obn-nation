@@ -1,5 +1,5 @@
 import {
-  CircleCheck, CircleX, CookingPot, Ellipsis, Laptop, Package, PackageOpen, Refrigerator, Smartphone, Sofa, Sparkles, ThumbsUp, TriangleAlert, Tv, Zap, Hand,
+  CircleCheck, CircleX, CookingPot, Ellipsis, Laptop, Package, PackageOpen, Refrigerator, Smartphone, Sofa, Sparkles, ThumbsUp, TriangleAlert, Tv, Zap, Hand, MapPin,
 } from 'lucide-react';
 import { AGES, CATEGORIES, REGIONS, WORKING } from '@/lib/listing/schema';
 
@@ -16,7 +16,7 @@ const workIcons = {
   working_perfectly: <CircleCheck size={size} />, minor_issues: <TriangleAlert size={size} />, not_working: <CircleX size={size} />,
 } as const;
 
-export const regionOptions = REGIONS.map((r) => ({ ...r, icon: null }));
+export const regionOptions = REGIONS.map((r) => ({ ...r, icon: <MapPin size={size} /> }));
 export const categoryOptions = CATEGORIES.map((c) => ({ ...c, icon: categoryIcons[c.value] }));
 export const ageOptions = AGES.map((a) => ({ ...a, icon: ageIcons[a.value] }));
 export const workOptions = WORKING.map((w) => ({ ...w, icon: workIcons[w.value] }));

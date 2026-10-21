@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { ListingCard } from '@/components/landing/ListingCard';
-import { BadgeCheck, Camera, CookingPot, Laptop, Lock, MapPin, Package, Refrigerator, ShieldCheck, Smartphone, Sofa, Tv, Zap } from 'lucide-react';
+import { ArrowUpRight, BadgeCheck, Camera, Check, Lock, MapPin, ShieldCheck } from 'lucide-react';
 
 
 const ABOUT = [
@@ -18,16 +18,14 @@ const STEPS = [
   { n: '3', color: 'bg-brand-green', title: 'It goes live', text: 'Approved items join the regional pool, ready for buyers in your community.' },
 ];
 
-const CATEGORIES = [
-  { label: 'Phones', hint: 'Phones and tablets', Icon: Smartphone },
-  { label: 'Computers', hint: 'Laptops and desktops', Icon: Laptop },
-  { label: 'TVs', hint: 'Any size', Icon: Tv },
-  { label: 'Fridges', hint: 'Fridges and freezers', Icon: Refrigerator },
-  { label: 'Generators', hint: 'Power at home or work', Icon: Zap },
-  { label: 'Kitchen', hint: 'Cookers and appliances', Icon: CookingPot },
-  { label: 'Furniture', hint: 'Beds, sofas, tables', Icon: Sofa },
-  { label: 'Other', hint: 'Anything in good order', Icon: Package },
+const TILES = [
+  { label: 'Phones', src: '/photos/people/man-smiling-phone.webp', alt: 'A young man smiling at his phone', span: 'sm:row-span-2', pos: 'object-[50%_30%]' },
+  { label: 'TVs', src: '/photos/people/old-tvs-electronics-stall.webp', alt: 'A woman beside a stack of used TVs at an electronics stall', span: 'sm:col-span-2', pos: 'object-[50%_55%]' },
+  { label: 'Computers', src: '/photos/people/man-laptop-agbada.webp', alt: 'A man in traditional wear holding a laptop', span: '', pos: 'object-[50%_25%]' },
+  { label: 'Fridges and kitchen', src: '/photos/kitchen.webp', alt: 'A kitchen with a washing machine and fridge', span: '', pos: 'object-center' },
+  { label: 'Furniture', src: '/photos/people/woman-sofa-phone.webp', alt: 'A woman relaxing on a sofa', span: 'sm:col-span-2', pos: 'object-[50%_60%]' },
 ];
+const MORE = ['Generators', 'Other'];
 
 const PROOF = [
   { Icon: ShieldCheck, title: 'Every listing is checked', text: 'A real admin reviews it before it goes live.' },
@@ -112,25 +110,31 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero: full photo, one clear message, one clear action */}
-      <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
-        <Image src="/photos/living-room.webp" alt="" fill priority sizes="100vw" className="settle -z-20 object-cover object-[70%_50%]" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/75 via-[#0A0A0A]/35 to-transparent" aria-hidden="true" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/40 via-transparent to-transparent" aria-hidden="true" />
-        <div className={`${INNER} flex min-h-[600px] flex-col justify-center pb-28 pt-20 lg:min-h-[680px]`}>
-          <p className="hero-fade mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur" style={{ ['--d' as string]: '.1s' }}>
-            <MapPin size={16} aria-hidden="true" /> Now in Port Harcourt, Delta and Ekiti
-          </p>
-          <h1 className="max-w-4xl text-[clamp(2.5rem,5.8vw,4.9rem)] font-semibold leading-[1.02] tracking-[-0.04em] text-white">
-            <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
-            <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
-          </h1>
-          <p className="hero-fade mt-6 max-w-xl text-lg leading-relaxed text-white/85 sm:text-xl" style={{ ['--d' as string]: '.5s' }}>
-            List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
-          </p>
-          <div className="hero-fade mt-9 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.65s' }}>
-            <Link href="/list" className={`${BTN} bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item</Link>
-            <a href="#how" className={`${BTN} border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-white`}>See how it works</a>
+      {/* Hero: warm photo on the right, one clear message and one clear action on the left */}
+      <section className={`${BLEED} relative isolate overflow-hidden bg-[#F6F6F4]`}>
+        <div className="relative mx-auto aspect-[4/3] w-full max-w-xl px-5 pt-4 lg:absolute lg:inset-y-0 lg:right-0 lg:mx-0 lg:aspect-auto lg:w-[60%] lg:max-w-none lg:p-0">
+          <Image src="/photos/people/woman-sofa-phone.webp" alt="A woman smiling at her phone on a sofa" fill priority sizes="(min-width:1024px) 60vw, 90vw" className="settle rounded-3xl object-cover object-[60%_40%] lg:rounded-none lg:[mask-image:linear-gradient(to_right,transparent,black_38%)]" />
+          <div className="hero-fade absolute bottom-6 left-9 flex items-center gap-3 rounded-2xl bg-white/95 p-3 pr-5 shadow-[0_20px_50px_-15px_rgba(0,0,0,.35)] backdrop-blur lg:bottom-16 lg:left-[22%]" style={{ ['--d' as string]: '.9s' }}>
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-green text-white"><Check size={20} aria-hidden="true" /></span>
+            <span className="leading-tight"><b className="block text-sm font-semibold">Approved</b><span className="text-xs text-[#5C5C58]">Live in Port Harcourt</span></span>
+          </div>
+        </div>
+        <div className={`${INNER} relative flex flex-col justify-center py-12 lg:min-h-[640px] lg:py-24`}>
+          <div className="max-w-xl lg:max-w-[54%]">
+            <p className="hero-fade mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium" style={{ ['--d' as string]: '.1s' }}>
+              <MapPin size={16} className="text-brand-red" aria-hidden="true" /> Now in Port Harcourt, Delta and Ekiti
+            </p>
+            <h1 className="text-[clamp(2.3rem,4.7vw,4.3rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+              <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
+              <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
+            </h1>
+            <p className="hero-fade mt-6 max-w-md text-lg leading-relaxed text-[#3A3A37]" style={{ ['--d' as string]: '.5s' }}>
+              List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
+            </p>
+            <div className="hero-fade mt-8 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.65s' }}>
+              <Link href="/list" className={`${BTN} bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-[#0A0A0A]`}>List an item</Link>
+              <a href="#how" className={`${BTN} border border-black/20 bg-white text-[#0A0A0A] hover:bg-black/5 focus-visible:outline-[#0A0A0A]`}>See how it works</a>
+            </div>
           </div>
         </div>
       </section>
@@ -147,19 +151,33 @@ export default function Home() {
         </ul>
       </section>
 
-      {/* What you can list */}
+      {/* What you can list: photo grid */}
       <section className={`${INNER} py-20 sm:py-28`} aria-labelledby="list-h">
-        <div className="max-w-2xl" data-reveal>
-          <h2 id="list-h" className={H2}>What you can list</h2>
-          <p className="mt-4 text-lg text-[#5C5C58]">Everyday items that still have life in them.</p>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end" data-reveal>
+          <div className="max-w-2xl">
+            <h2 id="list-h" className={H2}>What you can list</h2>
+            <p className="mt-4 text-lg text-[#5C5C58]">Everyday items that still have life in them.</p>
+          </div>
+          <Link href="/list" className="flex min-h-12 w-fit items-center gap-2 text-base font-semibold underline underline-offset-4">Start listing <ArrowUpRight size={18} aria-hidden="true" /></Link>
         </div>
-        <ul className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {CATEGORIES.map(({ label, hint, Icon }, i) => (
-            <li key={label} data-reveal>
-              <Link href="/list" className="group flex h-full flex-col gap-4 rounded-2xl border border-black/10 bg-white p-5 transition-all hover:-translate-y-1 hover:border-black/25 hover:shadow-[0_18px_40px_-18px_rgba(0,0,0,.3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0A0A0A]">
-                <span className={`flex h-12 w-12 items-center justify-center rounded-xl text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i % 3]}`}><Icon size={24} aria-hidden="true" /></span>
-                <span><b className="block text-lg font-semibold">{label}</b><span className="text-sm text-[#5C5C58]">{hint}</span></span>
+        <ul className="mt-10 grid auto-rows-[200px] grid-cols-2 gap-3 sm:auto-rows-[220px] sm:grid-cols-4 sm:gap-4">
+          {TILES.map((t) => (
+            <li key={t.label} className={`${t.span} col-span-1`} data-reveal>
+              <Link href="/list" className="photo-card group relative block h-full w-full overflow-hidden rounded-3xl bg-[#0A0A0A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0A0A0A]">
+                <Image src={t.src} alt={t.alt} fill sizes="(min-width:640px) 25vw, 50vw" className={`object-cover ${t.pos}`} />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" aria-hidden="true" />
+                <span className="absolute inset-x-5 bottom-4 flex items-center justify-between text-white">
+                  <b className="text-lg font-semibold sm:text-xl">{t.label}</b>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-colors group-hover:bg-brand-red"><ArrowUpRight size={18} aria-hidden="true" /></span>
+                </span>
               </Link>
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-4 flex flex-wrap gap-3" data-reveal>
+          {MORE.map((m, i) => (
+            <li key={m}>
+              <Link href="/list" className={`flex min-h-12 items-center rounded-full px-6 text-base font-semibold text-white ${i === 0 ? 'bg-brand-green' : 'bg-brand-blue'}`}>{m}</Link>
             </li>
           ))}
         </ul>
@@ -180,8 +198,11 @@ export default function Home() {
             </ol>
             <Link href="/list" className={`${BTN} mt-10 w-fit bg-[#0A0A0A] text-white hover:bg-black/80 focus-visible:outline-[#0A0A0A]`}>Start your listing</Link>
           </div>
-          <div className="flex justify-center" data-reveal>
-            <ListingCard mode="auto" className="w-full max-w-[22rem]" />
+          <div className="relative mx-auto w-full max-w-md pb-16" data-reveal>
+            <div className="relative aspect-[4/5] overflow-hidden rounded-3xl">
+              <Image src="/photos/people/friends-phones-street.webp" alt="Two friends checking a phone together on a Lagos street" fill sizes="(min-width:1024px) 420px, 90vw" className="object-cover object-[40%_50%]" />
+            </div>
+            <ListingCard mode="auto" className="absolute -bottom-0 -left-4 w-[78%] sm:-left-10" />
           </div>
         </div>
       </section>
@@ -242,8 +263,8 @@ export default function Home() {
 
       {/* Closing call to action */}
       <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
-        <Image src="/photos/kitchen.webp" alt="" fill sizes="100vw" className="-z-20 object-cover" />
-        <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/70" aria-hidden="true" />
+        <Image src="/photos/people/market-woman-phone.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-[50%_35%]" />
+        <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/65" aria-hidden="true" />
         <div className={`${INNER} flex flex-col items-center py-24 text-center sm:py-32`}>
           <h2 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-6xl" data-reveal>Got something to sell?</h2>
           <Link href="/list" className={`${BTN} mt-9 bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item</Link>

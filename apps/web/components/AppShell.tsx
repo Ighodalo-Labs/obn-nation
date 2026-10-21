@@ -21,7 +21,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mx-auto grid max-w-5xl gap-12 py-6 lg:grid-cols-[1fr_minmax(0,480px)] lg:py-12">
           <aside className="hidden flex-col gap-8 lg:flex" aria-hidden="true">
             <div className="relative aspect-[4/3] overflow-hidden rounded-3xl">
-              <Image src="/photos/kitchen.webp" alt="" fill sizes="520px" className="object-cover" />
+              <Image src="/photos/people/friends-phones-street.webp" alt="" fill sizes="520px" className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <p className="absolute bottom-6 left-6 right-6 text-3xl font-semibold leading-tight">Sell what you don’t use.</p>
             </div>

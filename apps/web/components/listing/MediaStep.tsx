@@ -7,7 +7,7 @@ import { IMAGE_MAX_COUNT } from '@/lib/compression/images';
 import type { MediaApi } from './useMedia';
 import { secondaryButton } from './ui';
 
-const tile = 'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-bg px-3 text-base focus-visible:outline focus-visible:outline-2 focus-visible:outline-white';
+const tile = 'flex min-h-20 flex-1 flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-white/25 bg-bg px-3 text-base font-medium transition-colors hover:border-white/60 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white';
 
 export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }: {
   media: MediaApi;
@@ -37,7 +37,7 @@ export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }
       <p className="text-sm text-muted">Photos and video are not saved if you reload this page. You would add them again.</p>
 
       <section className="flex flex-col gap-3" aria-labelledby="photos-h">
-        <h2 id="photos-h" className="text-base">Photos <span className="text-sm text-muted">(1 to {IMAGE_MAX_COUNT})</span></h2>
+        <h2 id="photos-h" className="text-sm font-semibold uppercase tracking-wide text-muted">Photos <span className="text-sm text-muted">(1 to {IMAGE_MAX_COUNT})</span></h2>
         <div className="flex gap-2">
           <button type="button" className={tile} disabled={full} onClick={() => camera.current?.click()}>
             <Camera size={20} aria-hidden="true" /> Camera
@@ -80,7 +80,7 @@ export function MediaStep({ media, reserved = 0, existingPhotos, existingVideo }
       </section>
 
       <section className="flex flex-col gap-3" aria-labelledby="video-h">
-        <h2 id="video-h" className="text-base">Video <span className="text-sm text-muted">(required, up to 60 seconds)</span></h2>
+        <h2 id="video-h" className="text-sm font-semibold uppercase tracking-wide text-muted">Video <span className="text-sm text-muted">(required, up to 60 seconds)</span></h2>
         {existingVideo}
         {!existingVideo && (video.status === 'idle' || video.status === 'error') ? (
           <div className="flex gap-2">

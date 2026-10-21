@@ -69,9 +69,17 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
 
   return (
     <form className="flex flex-col gap-5 pb-10" onSubmit={(e) => { e.preventDefault(); next(); }} noValidate>
-      <div ref={heading}>
+      <div ref={heading} className="scroll-mt-24">
         <StepHeader step={step} title={step === 1 ? 'What are you selling?' : step === 2 ? 'Tell buyers about it' : 'Add photos'} />
       </div>
+
+      {step > 1 && (
+        <p className="flex w-fit flex-wrap items-center gap-2 rounded-full border border-white/10 bg-bg px-4 py-2 text-sm">
+          <span className="font-semibold">{regionOptions.find((r) => r.value === draft.region)?.label}</span>
+          <span className="text-muted">{categoryOptions.find((c) => c.value === draft.category)?.label}</span>
+          <button type="button" className="min-h-8 font-semibold text-tint-blue underline" onClick={() => go(1)}>Change</button>
+        </p>
+      )}
 
       {step === 1 && (
         <>
@@ -91,7 +99,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
 
       {step === 3 && <MediaStep media={media} />}
 
-      <div className={`grid gap-3 ${step > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <div className={`sticky bottom-0 z-20 -mx-4 grid gap-3 border-t border-white/10 bg-surface/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0 ${step > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {step > 1 && (
           <button type="button" className={secondaryButton} onClick={() => go((step - 1) as 1 | 2)}>
             Back

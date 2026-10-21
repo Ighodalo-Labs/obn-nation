@@ -59,21 +59,29 @@ export function CardChoice({
   const grid = { 1: 'grid-cols-1', 2: 'grid-cols-2', 3: 'grid-cols-3', 4: 'grid-cols-4' }[columns];
   return (
     <fieldset className="flex flex-col gap-2" disabled={disabled}>
-      <legend className="mb-1 text-base">{legend}</legend>
+      <legend className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{legend}</legend>
       <div className={`grid gap-2 ${grid}`}>
         {options.map((o) => {
           const selected = value === o.value;
           const row = columns === 1;
+          const tint = ['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][
+            options.indexOf(o) % 3
+          ];
           return (
             <label
               key={o.value}
-              className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 text-base focus-within:outline focus-within:outline-2 focus-within:outline-white ${
+              className={`relative flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border p-3 text-base transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-white ${
                 row ? 'flex-row' : 'flex-col justify-center text-center text-sm'
-              } ${selected ? 'border-brand-blue bg-[#10233a]' : 'border-border bg-surface'} ${disabled && !selected ? 'opacity-40' : ''}`}
+              } ${selected ? 'border-brand-blue bg-brand-blue/15 ring-1 ring-brand-blue' : 'border-white/10 bg-bg hover:border-white/30'} ${disabled && !selected ? 'opacity-40' : ''}`}
             >
               <input type="radio" className="sr-only" name={name} value={o.value} checked={selected} onChange={() => onChange(o.value)} />
-              <span aria-hidden="true" className={selected ? 'text-tint-blue' : 'text-muted'}>{o.icon}</span>
-              <span>{o.label}</span>
+              {o.icon && (
+                <span aria-hidden="true" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white ${selected ? 'bg-brand-blue' : tint}`}>{o.icon}</span>
+              )}
+              <span className={row ? 'font-medium' : 'font-medium leading-tight'}>{o.label}</span>
+              {selected && (
+                <span aria-hidden="true" className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-blue text-[11px] font-bold text-white">✓</span>
+              )}
             </label>
           );
         })}
