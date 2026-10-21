@@ -11,7 +11,7 @@ import { regionLabelOf } from './ui';
 type Current = 'review' | 'pool' | 'global';
 export interface ShellMe { name: string | null; role: 'regional_admin' | 'global_admin'; region: string | null }
 
-/** Frame for every admin screen: the landing page's dark header on top, a dark tab bar on phones, a tri-colour footer. */
+/** Frame for every admin screen: a slim header, a tab bar on phones, a quiet footer. */
 export function AdminShell({ current, me, reviewCount, children }: { current: Current; me: ShellMe; reviewCount?: number; children: ReactNode }) {
   const isGlobal = me.role === 'global_admin';
   const [leaving, setLeaving] = useState(false);
@@ -43,16 +43,15 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
   return (
     <div className="ops-root">
       <header className="ops-head sticky top-0 z-40">
-        <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
-        <div className="ops-inner flex items-center gap-2 py-2">
-          <Link href="/" className="flex min-h-12 items-center gap-3" aria-label="OBN NATION home">
-            <Image src="/brand/obn-logo-clear.webp" alt="" width={44} height={44} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
-            <span className="flex flex-col leading-tight">
-              <span className="whitespace-nowrap text-base font-bold tracking-wide">OBN NATION</span>
-              <span className="hidden text-xs text-white/60 min-[400px]:block">Admin desk · {scope}</span>
+        <div className="ops-inner flex h-14 items-center gap-2">
+          <Link href="/" className="flex items-center gap-2.5" aria-label="OBN NATION home">
+            <Image src="/brand/obn-logo-clear.webp" alt="" width={36} height={36} priority className="h-9 w-9 rounded-full bg-[#0A0A0A] p-0.5" />
+            <span className="flex flex-col leading-none">
+              <span className="font-display whitespace-nowrap text-[17px] font-extrabold tracking-tight">OBN NATION</span>
+              <span className="mt-1 hidden text-[11px] font-semibold text-[var(--o-mute)] min-[400px]:block">Admin desk · {scope}</span>
             </span>
           </Link>
-          <nav aria-label="Admin" className="ml-6 hidden items-center gap-1 lg:flex">
+          <nav aria-label="Admin" className="ml-5 hidden items-center gap-1 lg:flex">
             {items.map(({ id, href, label }) => (
               <Link key={id} href={href} className="ops-pill" aria-current={current === id ? 'page' : undefined}>
                 {label}
@@ -62,11 +61,11 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <Link href="/list" className="ops-pill border border-white/25 bg-white/10 max-lg:!hidden"><Store size={16} aria-hidden="true" />Seller view</Link>
+            <Link href="/list" className="ops-pill border border-[var(--o-line)] bg-[var(--o-card)] max-lg:!hidden"><Store size={16} aria-hidden="true" />Seller view</Link>
             <div ref={menuRef} className="relative">
               <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
-                className="flex min-h-11 items-center gap-2 rounded-full border border-white/25 bg-white/10 py-1 pl-1 pr-1 text-left transition-colors hover:bg-white hover:text-[#0A0A0A] sm:pr-3">
-                <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-brand-red text-xs font-extrabold text-white">{initials || 'A'}</span>
+                className="flex min-h-10 items-center gap-2 rounded-full border border-[var(--o-line)] bg-[var(--o-card)] py-0.5 pl-0.5 pr-0.5 text-left transition-colors hover:bg-[var(--o-card2)] sm:pr-3">
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-brand-red text-xs font-extrabold text-white">{initials || 'A'}</span>
                 <span className="hidden text-sm font-semibold sm:inline">{firstName}</span>
                 <ChevronDown size={14} className="hidden sm:inline" aria-hidden="true" />
               </button>
@@ -91,8 +90,7 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
       <main>{children}</main>
 
       <footer className="ops-foot pb-[calc(60px+env(safe-area-inset-bottom))] lg:pb-0">
-        <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
-        <div className="ops-inner flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-6 text-[13px] font-medium">
+        <div className="ops-inner flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-8 text-[12.5px] font-medium">
           <p>OBN NATION admin desk · One Beta Nation</p>
           <p>Every action here is logged.</p>
         </div>

@@ -68,13 +68,12 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
   return (
     <>
       <Hero
-        photo="/photos/devices.webp" pos="object-[40%_55%]"
         eyebrow={<>All regions · every admin</>}
-        title={<>{pendingAll > 0 ? <><span className="text-[#FF8A80]">{pendingAll}</span> {pendingAll === 1 ? 'listing needs' : 'listings need'} a review.</> : <>Everything is reviewed.</>}</>}
+        title={<>{pendingAll > 0 ? <><span className="text-[var(--o-red-t)]">{pendingAll}</span> {pendingAll === 1 ? 'listing needs' : 'listings need'} a review.</> : <>Everything is reviewed.</>}</>}
         sub="Admins, every listing and the audit trail across all regions."
         actions={<>
-          <button type="button" className="ops-btn ops-btn-cta ops-btn-lg" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={16} aria-hidden="true" />Add admin</button>
-          <nav aria-label="Sections" className="ops-seg">
+          <button type="button" className="ops-btn ops-btn-cta" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={16} aria-hidden="true" />Add admin</button>
+          <nav aria-label="Sections" className="ops-seg max-w-[calc(100vw-28px)]">
             {sections.map(([id, label]) => (
               <button key={id} type="button" onClick={() => document.getElementById(`g-${id}`)?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })}>{label}</button>
             ))}
@@ -94,12 +93,12 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
 
       {message && <div className="ops-inner pt-6"><Notice kind={message.ok ? 'ok' : 'error'}>{message.text}</Notice></div>}
 
-      <Band tone="blue" id="g-regions" label="Pending and approved by region">
+      <Band id="g-regions" label="Pending and approved by region">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="ops-h2">Region by region</h2>
           <p className="flex items-center gap-4 text-[13px] font-medium"><span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-brand-red" />Pending</span><span className="flex items-center gap-2"><i className="h-2 w-2 rounded-full bg-[#16A34A]" />Approved</span></p>
         </div>
-        <ul className="ops-card mt-6 flex flex-col gap-5 p-5 sm:p-6">
+        <ul className="ops-tile mt-4 flex flex-col gap-5 p-5 sm:p-6">
           {byRegion.map((r) => (
             <li key={r.value} className="grid items-center gap-x-4 gap-y-1 sm:grid-cols-[160px_1fr_130px]">
               <p className="text-[13.5px] font-semibold">{r.label}</p>
@@ -112,20 +111,21 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         </ul>
       </Band>
 
-      <Band tone="cream" id="g-admins" label="Admins">
+      <Band id="g-admins" label="Admins">
         <h2 className="ops-h2">The team <span className="ops-mute">{admins.length}</span></h2>
-        <ul className="mt-6 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <ul className="mt-4 grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
           {admins.map((a, i) => {
             const c = countsFor(a.id, listings);
             const st = statusOf(a);
             const link = a.referral_code ? referralLink(siteUrl, a.referral_code) : null;
             return (
-              <li key={a.id} className="ops-card ops-lift flex min-w-0 flex-col gap-3.5 p-4">
+              <li key={a.id} className="ops-tile ops-lift flex min-w-0 flex-col gap-3.5 p-4">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full text-[13px] font-semibold text-white" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true">{initials(a.full_name || a.phone)}</span>
+                  <span className="flex h-12 w-12 flex-none items-center justify-center rounded-2xl text-[15px] font-extrabold text-white" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden="true">{initials(a.full_name || a.phone)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-bold">{a.full_name || 'No name yet'}</p>
-                    <p className="ops-mute text-[13px]">{a.role === 'global_admin' ? 'Global Admin' : regionLabel(a.region)} · {a.phone}</p>
+                    <p className="mt-1 flex flex-wrap gap-1.5"><span className="ops-chip">{a.role === 'global_admin' ? 'Global Admin' : 'Regional'}</span>{a.role !== 'global_admin' && <span className="ops-chip">{regionLabel(a.region)}</span>}</p>
+                    <p className="ops-mute mt-1 text-[12.5px]">{a.phone}</p>
                   </div>
                   <Badge tone={statusTone(st)}>{st}</Badge>
                 </div>
@@ -157,10 +157,10 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         </ul>
       </Band>
 
-      <Band tone="pink" id="g-listings" label="Listings" className="flex flex-col gap-6">
+      <Band id="g-listings" label="Listings" className="flex flex-col gap-4">
         <h2 className="ops-h2">Every listing <span className="ops-mute">{shown.length}</span></h2>
         {orphans.length > 0 && (
-          <div className="rounded-3xl border border-[var(--b-red-ln)] bg-[var(--b-red-bg)] p-5">
+          <div className="rounded-2xl border border-[var(--b-red-ln)] bg-[var(--b-red-bg)] p-5">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--b-red-fg)]"><ShieldAlert size={16} aria-hidden="true" />Needs a new admin in charge ({orphans.length})</h3>
             <ul className="mt-3 flex flex-col gap-2">
               {orphans.map((l) => (
@@ -189,7 +189,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         {shown.length === 0 && <p className="ops-mute py-6 text-[13px]">No listings match.</p>}
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {shown.slice(0, listCount).map((l) => (
-            <li key={l.id} className="ops-card ops-lift flex min-w-0 flex-col gap-2 overflow-hidden p-4" style={{ borderTop: `3px solid ${statusColor(l.status)}` }}>
+            <li key={l.id} className="ops-tile ops-lift flex min-w-0 flex-col gap-2 overflow-hidden p-4" style={{ borderTop: `3px solid ${statusColor(l.status)}` }}>
               <div className="flex items-start justify-between gap-3">
                 <p className="ops-num text-2xl">{naira(l.price_ngn)}</p>
                 <Badge tone={l.status === 'approved' ? 'green' : l.status === 'rejected' ? 'amber' : 'red'}>{l.status.replace('_', ' ')}</Badge>
@@ -207,9 +207,9 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         {shown.length > listCount && <button type="button" className="ops-btn mx-auto min-w-48" onClick={() => setListCount((n) => n + LISTING_STEP)}>Show more ({shown.length - listCount} left)</button>}
       </Band>
 
-      <Band tone="green" id="g-audit" label="Audit log">
+      <Band id="g-audit" label="Audit log" className="pb-6">
         <h2 className="ops-h2">Audit trail <span className="ops-mute">{audit.length}</span></h2>
-        <ol className="ops-card mt-6 flex max-w-3xl flex-col p-5 sm:p-6">
+        <ol className="ops-tile ops-timeline mt-4 flex max-w-3xl flex-col p-5 sm:p-6">
           {audit.slice(0, auditCount).map((a, i) => {
             const d = new Date(a.created_at);
             const day = d.toLocaleDateString('en-NG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Africa/Lagos' });

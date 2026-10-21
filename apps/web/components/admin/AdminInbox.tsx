@@ -8,7 +8,7 @@ import { CATEGORIES, REGIONS } from '@/lib/listing/schema';
 import { postJson } from '@/lib/auth/client';
 import { ListingDetail } from './ListingDetail';
 import { RejectModal } from './RejectModal';
-import { Band, Hero, ageLabel, Badge, BigStat, categoryLabel, ConfirmDialog, Notice, regionLabelOf, Ribbon, workingLabel, type Tone } from './ui';
+import { Hero, ageLabel, Badge, BigStat, categoryLabel, ConfirmDialog, Notice, regionLabelOf, Ribbon, workingLabel, type Tone } from './ui';
 
 export interface Me { id: string; role: 'regional_admin' | 'global_admin'; region: string | null; name: string | null }
 
@@ -55,6 +55,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   const [sort, setSort] = useState<Sort>('oldest');
   const [who, setWho] = useState<Who>('all');
   const [view, setView] = useState<View | null>(null);
+  const [nextIdx, setNextIdx] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const touchX = useRef<number | null>(null);
   const search = useRef<HTMLInputElement>(null);
@@ -280,7 +281,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   ];
 
   const empty = (
-    <div className="ops-card flex flex-col items-center gap-1.5 px-6 py-14 text-center">
+    <div className="ops-inset flex flex-col items-center gap-1.5 px-6 py-14 text-center">
       <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[var(--o-card2)]" aria-hidden="true"><Inbox size={16} className="text-[var(--o-mute)]" /></span>
       <p className="text-[13.5px] font-semibold">{filtered ? 'Nothing matches those filters' : 'Queue clear'}</p>
       <p className="ops-mute max-w-sm text-[13.5px]">{filtered ? 'Try clearing a filter.' : 'Nobody is waiting on you. Share your link and more listings will come.'}</p>
@@ -295,36 +296,110 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (dx < -70) step(1); else if (dx > 70) step(-1);
   };
 
+  const nextList = tabs.review;
+  const nextRow = nextList.length ? nextList[nextIdx % nextList.length] : null;
+  const nextSrc = nextRow ? thumbs[nextRow.photo_urls[0]] : undefined;
+  const regionMax = Math.max(1, ...stats.perRegion.map((x) => x.n));
+
   return (
     <>
       <Hero
-        photo="/photos/living-room.webp" pos="object-[70%_50%]"
         eyebrow={<span suppressHydrationWarning>{dateText ? `${dateText} · ` : ''}{scopeText}</span>}
-        title={stats.pending > 0 ? <><span className="text-[#FF8A80]">{stats.pending}</span> {stats.pending === 1 ? 'listing is' : 'listings are'} waiting.</> : <>The desk is clear.</>}
-        sub={<span suppressHydrationWarning>{greeting}, {firstName}. {stats.pending > 0 ? `The oldest has waited ${waitingFor(stats.oldest, now)}.` : 'Nobody is waiting on you. Share your link and more listings will come.'}</span>}
+        title={<span suppressHydrationWarning>{greeting}, {firstName}.</span>}
+        sub={<span suppressHydrationWarning>{stats.pending > 0 ? `${stats.pending} ${stats.pending === 1 ? 'listing is' : 'listings are'} waiting. The oldest has waited ${waitingFor(stats.oldest, now)}.` : 'The desk is clear. Share your link and more listings will come.'}</span>}
         actions={<>
-          {stats.pending > 0 && <button type="button" className="ops-btn ops-btn-cta ops-btn-lg" onClick={() => setView('review')}>Start reviewing</button>}
-          <button type="button" onClick={refresh} className="ops-btn ops-btn-ghost ops-btn-lg" aria-label="Refresh the list"><RefreshCw size={16} aria-hidden="true" />Refresh</button>
-          <span className="text-sm font-medium text-white/70" aria-live="off" suppressHydrationWarning>{now ? `Updated ${ago(now - updatedAt)}` : ''}</span>
+          <span className="text-[13px] font-medium text-[var(--o-mute)]" aria-live="off" suppressHydrationWarning>{now ? `Updated ${ago(now - updatedAt)}` : ''}</span>
+          <button type="button" onClick={refresh} className="ops-btn" aria-label="Refresh the list"><RefreshCw size={15} aria-hidden="true" />Refresh</button>
         </>}
       >
-        <div className="ops-kpis" aria-label="Today at the desk">
-          <BigStat label="To review" tone="red" value={stats.pending} hint={stats.overdue ? `${stats.overdue} over 24 hours` : stats.pending ? `Oldest ${waitingFor(stats.oldest, now)}` : 'All clear'} />
-          <BigStat label="On my plate" tone="blue" value={stats.mine} hint={`${stats.unclaimed} unclaimed`} />
-          <BigStat label="With sellers" tone="amber" value={stats.waiting} hint="Rejected, waiting on a fix" />
-          <BigStat label="Approved today" tone="green" value={approvedToday} hint={`${tabs.done.length} live in total`} />
-        </div>
-      </Hero>
+        {notice && <Notice kind="ok">{notice}</Notice>}
+        {message && <Notice kind="error">{message}</Notice>}
 
-      <Band tone="cream" label="Review" className="flex flex-col gap-6">
-        <div>
-          <p className="ops-eyebrow">The queue</p>
-          <h2 className="ops-h2 mt-2">Check it. Approve it. Move on.</h2>
-        </div>
-      {notice && <Notice kind="ok">{notice}</Notice>}
-      {message && <Notice kind="error">{message}</Notice>}
+        <div className="ops-bento">
+          <section className="ops-tile col-span-2 flex flex-col overflow-hidden lg:col-span-6 lg:row-span-3" aria-label="Next up">
+            {nextRow ? (
+              <>
+                <div className="ops-next-photo aspect-[4/3] sm:aspect-[16/10] lg:aspect-auto lg:min-h-[330px] lg:flex-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {nextSrc ? <img src={nextSrc} alt="" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-center justify-center text-[13px] font-medium text-[var(--o-mute)]">No photo</span>}
+                  <Ribbon tone={ageTone(nextRow.submitted_at, now)}><span suppressHydrationWarning>Next up · waiting {waitingFor(nextRow.submitted_at, now)}</span></Ribbon>
+                  {nextList.length > 1 && <span className="absolute right-3 top-3 z-[2] rounded-full bg-black/55 px-3 py-1 text-xs font-bold text-white backdrop-blur">{(nextIdx % nextList.length) + 1} of {nextList.length}</span>}
+                  <button type="button" className="absolute inset-0 z-[1] cursor-pointer" onClick={() => openRow(nextRow)} aria-label={`Open ${nextRow.title}`} />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] p-4 text-white sm:p-6">
+                    <p className="ops-num text-[40px] sm:text-[54px]">{naira(nextRow.price_ngn)}</p>
+                    <p className="font-display mt-2 line-clamp-2 text-xl font-extrabold leading-tight tracking-tight sm:text-2xl">{nextRow.title}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3.5 p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="ops-chip">{categoryLabel(nextRow.category)}</span>
+                    {isGlobal && <span className="ops-chip">{regionLabelOf(nextRow.region)}</span>}
+                    <span className="ops-chip">{ageLabel(nextRow.condition_age)}</span>
+                    <span className="ops-chip">{workingLabel(nextRow.condition_work)}</span>
+                    <Badge tone={badgeTone(badgeOf(nextRow, me.id))}>{badgeOf(nextRow, me.id)}</Badge>
+                  </div>
+                  <p className="text-[13.5px]"><span className="font-bold">{nextRow.seller_name}</span> <span className="ops-mute">· {nextRow.contact_visible ? nextRow.seller_phone : 'Contact shows once you are in charge'}</span></p>
+                  {Actions({ r: nextRow, big: true })}
+                  <div className="flex flex-wrap gap-2">
+                    {nextList.length > 1 && <button type="button" className="ops-btn ops-btn-sm" onClick={() => setNextIdx((i) => i + 1)}><SkipForward size={14} aria-hidden="true" />Skip</button>}
+                    <button type="button" className="ops-btn ops-btn-sm" onClick={() => openRow(nextRow)}>Full details <ArrowRight size={14} aria-hidden="true" /></button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--b-green-bg)] text-[var(--b-green-fg)]" aria-hidden="true"><Check size={26} /></span>
+                <p className="font-display text-2xl font-extrabold tracking-tight">Queue clear</p>
+                <p className="ops-mute max-w-xs text-sm">Nothing is waiting on you. Share your link and more listings will come.</p>
+              </div>
+            )}
+          </section>
 
-      <section className="flex flex-col gap-4" aria-label="Review">
+          <BigStat className="lg:col-span-3" label="To review" tone="red" value={stats.pending} hint={stats.overdue ? `${stats.overdue} over 24 hours` : stats.pending ? `Oldest ${waitingFor(stats.oldest, now)}` : 'All clear'} />
+          <BigStat className="lg:col-span-3" label="On my plate" tone="blue" value={stats.mine} hint={`${stats.unclaimed} unclaimed`} />
+          <BigStat className="lg:col-span-3" label="With sellers" tone="amber" value={stats.waiting} hint="Rejected, waiting on a fix" />
+          <BigStat className="lg:col-span-3" label="Approved today" tone="green" value={approvedToday} hint={`${tabs.done.length} live in total`} />
+
+          <section className="ops-tile col-span-2 flex flex-col gap-3 p-4 lg:col-span-6" aria-label="Regions">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="text-[15px] font-extrabold">{isGlobal ? 'Regions' : 'Your region'}</h2>
+              <p className="ops-mute text-[12.5px] font-medium">Waiting for review. Tap to filter the queue.</p>
+            </div>
+            <div className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))]">
+              {stats.perRegion.map(({ v, n }) => (
+                <button key={v} type="button" className="ops-region" aria-pressed={region === v} onClick={() => setRegion(region === v ? '' : v)}>
+                  <span className="text-[13px] font-bold">{regionLabelOf(v)}</span>
+                  <span className="ops-num text-[30px]">{n}</span>
+                  <span className="ops-bar !h-1.5" aria-hidden="true"><i className="bg-[var(--o-red)]" style={{ flexGrow: n }} /><i style={{ flexGrow: Math.max(0, regionMax - n) }} /></span>
+                </button>
+              ))}
+              {stats.perRegion.length === 0 && <p className="ops-mute text-sm">No region set for your account.</p>}
+            </div>
+          </section>
+
+          {link && (
+            <section className="ops-tile col-span-2 flex flex-col gap-4 p-4 sm:p-5 lg:col-span-12 lg:flex-row lg:items-center" aria-label="Your referral link">
+              <div className="min-w-0 lg:w-[34%]">
+                <p className="ops-eyebrow">Your link for sellers</p>
+                <h2 className="ops-h2 mt-1.5">Send sellers to you.</h2>
+                <p className="ops-mute mt-1.5 text-[13.5px]">Anyone who lists through it lands in your region and on your desk.</p>
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-2.5 sm:flex-row sm:items-center">
+                <p className="min-w-0 flex-1 truncate rounded-xl bg-[var(--o-card2)] px-4 py-3 text-[13.5px] font-semibold">{link}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" className="ops-btn" onClick={copy}>{copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}{copied ? 'Copied' : 'Copy link'}</button>
+                  <a className="ops-btn ops-btn-cta" href={whatsappShareUrl(link)} target="_blank" rel="noopener noreferrer"><Share2 size={16} aria-hidden="true" />WhatsApp</a>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section className="ops-tile col-span-2 flex flex-col gap-4 p-3 sm:p-5 lg:col-span-12" aria-label="Queue">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="ops-h2">Queue</h2>
+              <p className="ops-mute text-[12.5px] font-medium">Check it. Approve it. Move on.</p>
+            </div>
+      <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <div className="ops-seg" role="group" aria-label="View">
             {(['list', 'board', 'review'] as const).map((v) => (
@@ -370,7 +445,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         )}
 
         {view === null && (
-          <div className="ops-card overflow-hidden" aria-hidden="true">
+          <div className="ops-inset" aria-hidden="true">
             {[0, 1, 2, 3, 4].map((i) => <div key={i} className="flex items-center gap-3 border-b border-[var(--o-line)] p-3 last:border-0"><span className="ops-skel h-12 w-12" /><span className="flex-1 space-y-2"><span className="ops-skel block h-3 w-1/3" /><span className="ops-skel block h-3 w-1/2" /></span></div>)}
           </div>
         )}
@@ -405,7 +480,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
             {list.length === 0 && empty}
 
             {list.length > 0 && (
-              <div className="ops-card hidden overflow-hidden lg:block">
+              <div className="ops-inset hidden lg:block">
                 <table className="ops-table" aria-label="Listings">
                   <thead>
                     <tr>
@@ -478,7 +553,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
                     <p className="text-[13px] font-medium"><span className="ops-num text-xl">{selIdx + 1}</span> <span className="ops-mute">of {list.length}</span></p>
                     <div className="ops-bar flex-1" aria-hidden="true"><i className="bg-[var(--o-ink)]" style={{ flexGrow: selIdx + 1 }} /><i style={{ flexGrow: Math.max(0, list.length - selIdx - 1) }} /></div>
                   </div>
-                  <div className="overflow-hidden rounded-3xl border border-[var(--o-line)]">{Photo({ r: item, ratio: 'aspect-[4/5] max-h-[52vh] lg:max-h-[600px] sm:aspect-[4/3]' })}</div>
+                  <div className="overflow-hidden rounded-2xl border border-[var(--o-line)]">{Photo({ r: item, ratio: 'aspect-[4/5] max-h-[52vh] lg:max-h-[600px] sm:aspect-[4/3]' })}</div>
                 </div>
                 <div className="flex flex-col gap-3">
                   <p className="ops-num text-[48px]">{naira(item.price_ngn)}</p>
@@ -502,7 +577,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
             )}
           </div>
         )}
-      </section>
+      </div>
 
       <p className="ops-mute hidden flex-wrap items-center gap-x-4 gap-y-1 text-xs lg:flex" aria-label="Keyboard shortcuts">
         <span><span className="ops-kbd">J</span> <span className="ops-kbd">K</span> move</span>
@@ -514,26 +589,9 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         <span>Refreshes every minute</span>
       </p>
 
-      </Band>
-
-      {link && (
-        <Band tone="blue" label="Your referral link">
-          <div className="grid items-center gap-6 lg:grid-cols-[1fr_auto]">
-            <div className="min-w-0">
-              <p className="ops-eyebrow">Your link for sellers</p>
-              <h2 className="ops-h2 mt-2">Send sellers to you.</h2>
-              <p className="ops-mute mt-3 max-w-xl">Anyone who lists through this link lands in your region and on your desk.</p>
-            </div>
-            <div className="ops-card flex min-w-0 flex-col gap-3 p-4 lg:w-[460px]">
-              <p className="truncate rounded-full bg-[var(--o-card2)] px-4 py-3 text-[13.5px] font-semibold">{link}</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button type="button" className="ops-btn" onClick={copy}>{copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}{copied ? 'Copied' : 'Copy link'}</button>
-                <a className="ops-btn ops-btn-cta" href={whatsappShareUrl(link)} target="_blank" rel="noopener noreferrer"><Share2 size={16} aria-hidden="true" />WhatsApp</a>
-              </div>
-            </div>
-          </div>
-        </Band>
-      )}
+          </section>
+        </div>
+      </Hero>
 
       {open && (
         <ListingDetail

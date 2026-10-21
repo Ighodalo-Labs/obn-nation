@@ -7,7 +7,7 @@ import { adText, cleanSearch, pageRange, POOL_PAGE_SIZE, validFilters, type Pool
 import { CATEGORIES, REGIONS } from '@/lib/listing/schema';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 import { toCsv } from './csv';
-import { ageLabel, Badge, BigStat, categoryLabel, Band, Hero, Notice, regionLabelOf, workingLabel } from './ui';
+import { ageLabel, BigStat, categoryLabel, Band, Hero, Notice, regionLabelOf, workingLabel } from './ui';
 
 type Sort = 'recent' | 'price_low' | 'price_high';
 
@@ -101,11 +101,10 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
   return (
     <>
       <Hero
-        photo="/photos/kitchen.webp" pos="object-center"
         eyebrow={<>Regional pool · {me.isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region'}</>}
-        title={<>{shown.length}{more ? '+' : ''} {shown.length === 1 ? 'item is' : 'items are'} live.</>}
+        title={<>{shown.length}{more ? '+' : ''} {shown.length === 1 ? 'item' : 'items'} live in the pool.</>}
         sub="Approved and ready to advertise. Sales stay with the admin in charge."
-        actions={<button type="button" className="ops-btn ops-btn-cta ops-btn-lg" onClick={exportCsv} disabled={shown.length === 0}><Download size={16} aria-hidden="true" />Export CSV</button>}
+        actions={<button type="button" className="ops-btn ops-btn-cta" onClick={exportCsv} disabled={shown.length === 0}><Download size={16} aria-hidden="true" />Export CSV</button>}
       >
         <div className="ops-kpis" aria-live="polite">
           <BigStat label="Live items" tone="green" value={`${shown.length}${more ? '+' : ''}`} hint="Approved and advertised" />
@@ -115,9 +114,9 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
         </div>
       </Hero>
 
-      <Band tone="green" label="Pool" className="flex flex-col gap-6">
+      <Band label="Pool" className="flex flex-col gap-5 pb-4">
         {split.length > 0 && (
-          <div className="ops-card p-5" aria-label={me.isGlobal ? 'Stock value by region' : 'Stock value by category'}>
+          <div className="ops-tile p-5" aria-label={me.isGlobal ? 'Stock value by region' : 'Stock value by category'}>
             <p className="ops-eyebrow mb-3">Stock value by {me.isGlobal ? 'region' : 'category'}</p>
             <div className="ops-bar !h-3" role="img" aria-label={split.map((g) => `${g.label} ${naira(g.value)}`).join(', ')}>
               {split.map((g) => <i key={g.label} style={{ flexGrow: g.value, background: g.color }} />)}
@@ -133,9 +132,9 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
       <section className="flex flex-col gap-3" aria-label="Filters">
         <div className="flex flex-wrap items-center gap-2">
           {me.isGlobal && (
-            <div className="ops-seg" role="group" aria-label="Region">
-              <button type="button" aria-pressed={!filters.region} onClick={() => apply({ region: null })}>All regions</button>
-              {REGIONS.map((r) => <button key={r.value} type="button" aria-pressed={filters.region === r.value} onClick={() => apply({ region: filters.region === r.value ? null : r.value })}>{r.label}</button>)}
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Region">
+              <button type="button" className="ops-chipbtn" aria-pressed={!filters.region} onClick={() => apply({ region: null })}>All regions</button>
+              {REGIONS.map((r) => <button key={r.value} type="button" className="ops-chipbtn" aria-pressed={filters.region === r.value} onClick={() => apply({ region: filters.region === r.value ? null : r.value })}>{r.label}</button>)}
             </div>
           )}
           <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-bold">
@@ -143,9 +142,9 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
             Only items I am in charge of
           </label>
         </div>
-        <div className="ops-seg" role="group" aria-label="Category">
-          <button type="button" aria-pressed={!filters.category} onClick={() => apply({ category: null })}>Everything</button>
-          {CATEGORIES.map((c) => <button key={c.value} type="button" aria-pressed={filters.category === c.value} onClick={() => apply({ category: filters.category === c.value ? null : c.value })}>{c.label}</button>)}
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Category">
+          <button type="button" className="ops-chipbtn" aria-pressed={!filters.category} onClick={() => apply({ category: null })}>Everything</button>
+          {CATEGORIES.map((c) => <button key={c.value} type="button" className="ops-chipbtn" aria-pressed={filters.category === c.value} onClick={() => apply({ category: filters.category === c.value ? null : c.value })}>{c.label}</button>)}
         </div>
         <form className="grid gap-2 sm:grid-cols-[1fr_200px_auto]" role="search" onSubmit={(e) => { e.preventDefault(); apply({ search: filters.search }); }}>
           <div className="relative">
@@ -165,42 +164,43 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
 
       {error && <Notice kind="error">{error}</Notice>}
       {!loading && shown.length === 0 && (
-        <div className="ops-card flex flex-col items-center gap-1.5 px-6 py-14 text-center">
+        <div className="ops-tile flex flex-col items-center gap-1.5 px-6 py-14 text-center">
           <p className="text-base font-extrabold">{mineOnly ? 'Nothing is in your charge yet.' : 'The pool is empty.'}</p>
           <p className="ops-mute max-w-md">{mineOnly ? 'Claim and approve listings in Review and they show up here.' : 'Approved listings land here, ready to advertise.'}</p>
         </div>
       )}
 
-      <ul className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 min-[1100px]:grid-cols-3 min-[1400px]:grid-cols-4" aria-label="Approved listings">
+      <ul className="ops-masonry" aria-label="Approved listings">
         {shown.map((r, i) => {
           const mine = r.assigned_admin_id === me.id;
           const src = thumbs[r.photo_urls[0]];
           const share = `https://wa.me/?text=${encodeURIComponent(adText(r))}`;
-          const feature = false && i === 0;
+          const ratio = ['aspect-[4/5]', 'aspect-square', 'aspect-[4/3]', 'aspect-[5/6]'][i % 4];
           return (
-            <li key={r.id} className={`ops-card ops-lift flex flex-col overflow-hidden ${feature ? 'sm:col-span-2 xl:row-span-2' : ''}`}>
-              <div className={`ops-photo ${feature ? 'aspect-[4/3]' : 'aspect-[4/3]'}`} style={{ cursor: 'default' }}>
+            <li key={r.id} className="ops-tile ops-lift overflow-hidden">
+              <div className={`ops-next-photo !rounded-none ${ratio}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-end p-3 text-[13px] font-medium text-[var(--o-mute)]">No photo</span>}
-                {mine && <span className="absolute right-3 top-3 z-[2]"><Badge tone="green">You are in charge</Badge></span>}
-                <span className="ops-num absolute bottom-2 left-2 z-[2] rounded-md bg-[var(--o-card)] px-2.5 py-1 text-[13.5px] shadow-sm">{naira(r.price_ngn)}</span>
-              </div>
-              <div className="flex flex-col gap-3 p-4">
-                <div>
-                  <p className="truncate text-base font-bold">{r.title}</p>
-                  <p className="ops-mute text-[13px]">
-                    {categoryLabel(r.category)}{me.isGlobal ? ` · ${regionLabelOf(r.region)}` : ''} · {ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}
-                  </p>
+                {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-center justify-center text-[13px] font-medium text-[var(--o-mute)]">No photo</span>}
+                <span className="absolute left-3 top-3 z-[2] flex flex-wrap gap-1.5">
+                  <span className="rounded-full bg-black/55 px-2.5 py-1 text-[11.5px] font-bold text-white backdrop-blur">{categoryLabel(r.category)}{me.isGlobal ? ` · ${regionLabelOf(r.region)}` : ''}</span>
+                </span>
+                {mine && <span className="absolute right-3 top-3 z-[2] rounded-full bg-[var(--o-green)] px-2.5 py-1 text-[11.5px] font-bold text-white">Yours</span>}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] p-4 text-white">
+                  <p className="ops-num text-[30px]">{naira(r.price_ngn)}</p>
+                  <p className="mt-1.5 line-clamp-2 text-[15px] font-bold leading-snug">{r.title}</p>
                 </div>
-                <p className="text-[13px] font-medium">{r.seller_name} · {r.seller_phone}</p>
+              </div>
+              <div className="flex flex-col gap-2.5 p-3.5">
+                <p className="ops-mute text-[12.5px]">{ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}</p>
+                <p className="text-[13px] font-semibold">{r.seller_name} <span className="ops-mute font-medium">· {r.seller_phone}</span></p>
                 {!r.contact_visible && r.admin_in_charge_name && (
-                  <p className="ops-mute text-[13px]">In charge: {r.admin_in_charge_name}. Coordinate with them in the group chat.</p>
+                  <p className="ops-mute text-[12.5px]">In charge: {r.admin_in_charge_name}. Coordinate with them in the group chat.</p>
                 )}
-                <div className="mt-auto grid grid-cols-2 gap-2">
-                  <button type="button" className="ops-btn ops-btn-sm" onClick={() => copyAd(r)}>
+                <div className="flex gap-2">
+                  <button type="button" className="ops-chipbtn flex-1 justify-center" onClick={() => copyAd(r)}>
                     {copied === r.id ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copied === r.id ? 'Copied' : 'Copy ad'}
                   </button>
-                  <a className="ops-btn ops-btn-go ops-btn-sm" href={share} target="_blank" rel="noopener noreferrer"><Share2 size={14} aria-hidden="true" />WhatsApp</a>
+                  <a className="ops-chipbtn flex-1 justify-center !border-[var(--o-green)] !text-[var(--o-green-t)] hover:!bg-[var(--b-green-bg)]" href={share} target="_blank" rel="noopener noreferrer"><Share2 size={14} aria-hidden="true" />WhatsApp</a>
                 </div>
               </div>
             </li>
