@@ -76,7 +76,7 @@ export default function Home() {
       <style>{`html,body{background:#F6F6F4 !important;color:#0A0A0A}`}</style>
       <script
         dangerouslySetInnerHTML={{
-          __html: "try{if(sessionStorage.getItem('obn-intro')){document.documentElement.classList.add('no-intro')}else{sessionStorage.setItem('obn-intro','1')}}catch(e){}",
+          __html: "try{if(/[?&]intro/.test(location.search)){sessionStorage.removeItem('obn-intro')}if(sessionStorage.getItem('obn-intro')){document.documentElement.classList.add('no-intro')}else{sessionStorage.setItem('obn-intro','1')}}catch(e){}",
         }}
       />
       <LandingMotion />
