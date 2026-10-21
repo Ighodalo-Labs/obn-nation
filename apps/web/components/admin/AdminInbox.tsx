@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Check, Copy, RefreshCw, Search, Share2, SkipForward, X } from 'lucide-react';
+import { ArrowRight, Check, Copy, Inbox, RefreshCw, Search, Share2, SlidersHorizontal, SkipForward, X } from 'lucide-react';
 import { badgeOf, naira, splitTabs, TABS, waitingFor, whatsappShareUrl, type FeedRow, type TabId } from '@/lib/admin/inbox';
 import { CATEGORIES, REGIONS } from '@/lib/listing/schema';
 import { postJson } from '@/lib/auth/client';
 import { ListingDetail } from './ListingDetail';
 import { RejectModal } from './RejectModal';
-import { ageLabel, Badge, categoryLabel, ConfirmDialog, Notice, regionLabelOf, Ribbon, workingLabel, type Tone } from './ui';
+import { ageLabel, Badge, BigStat, categoryLabel, ConfirmDialog, Notice, PageTitle, regionLabelOf, Ribbon, workingLabel, type Tone } from './ui';
 
 export interface Me { id: string; role: 'regional_admin' | 'global_admin'; region: string | null; name: string | null }
 
@@ -113,7 +113,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     return sorted(tabs[tab]);
   }, [view, cols, sorted, tabs, tab]);
 
-  useEffect(() => { if (view === null) setView(window.innerWidth < 1024 ? 'review' : 'board'); }, [view]);
+  useEffect(() => { if (view === null) setView('list'); }, [view]);
 
   const open = openId ? rows.find((r) => r.id === openId) ?? null : null;
   const openIdx = openId ? list.findIndex((r) => r.id === openId) : -1;
@@ -201,25 +201,27 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   const greeting = !now ? 'Hello' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const dateText = !now ? '' : new Date(now).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'long' });
   const approvedToday = tabs.done.filter((r) => r.approved_at && new Date(r.approved_at).toDateString() === new Date(now).toDateString()).length;
-  const total = approvedToday + stats.waiting + stats.pending;
-  const scopeText = isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region';
+    const scopeText = isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region';
 
   // Plain render helpers, called as functions (not components) so React keeps the DOM between renders.
   function Meta({ r }: { r: FeedRow }) {
     return (
-      <p className="ops-mute text-sm font-semibold">
+      <p className="ops-mute truncate text-[13px]">
         {categoryLabel(r.category)}{isGlobal ? ` · ${regionLabelOf(r.region)}` : ''} · {ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}
       </p>
     );
   }
 
+  const openRow = (r: FeedRow) => { setSelId(r.id); setOpenId(r.id); };
+  const badgeTone = (b: string): Tone => (b === 'Unclaimed' ? 'amber' : b === 'Assigned to you' ? 'green' : 'mute');
+
   function Photo({ r, ratio = 'aspect-[4/3]' }: { r: FeedRow; ratio?: string }) {
     const src = thumbs[r.photo_urls[0]];
     const pending = r.status === 'pending_review';
     return (
-      <button type="button" className={`ops-photo ${ratio}`} onClick={() => { setSelId(r.id); setOpenId(r.id); }} aria-label={`Open ${r.title}`}>
+      <button type="button" className={`ops-photo ${ratio}`} onClick={() => openRow(r)} aria-label={`Open ${r.title}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {src ? <img src={src} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-end p-3 text-sm font-bold text-[#5B5547]">No photo</span>}
+        {src ? <img src={src} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-end p-3 text-[13px] font-medium text-[#6B6B76]">No photo</span>}
         {pending && <Ribbon tone={ageTone(r.submitted_at, now)}>Waiting {waitingFor(r.submitted_at, now)}</Ribbon>}
         {r.status === 'rejected' && <Ribbon tone="blue">With seller</Ribbon>}
         {r.status === 'approved' && <Ribbon tone="green">Live</Ribbon>}
@@ -227,23 +229,24 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     );
   }
 
-  function Actions({ r, big = false }: { r: FeedRow; big?: boolean }) {
+  function Actions({ r, big = false, compact = false }: { r: FeedRow; big?: boolean; compact?: boolean }) {
     const b = busy === r.id;
-    const size = big ? 'ops-btn-lg' : '';
+    const size = big ? 'ops-btn-lg' : compact ? '!min-h-8 !px-2.5 !text-[13px]' : '';
+    const stop = (fn: () => void) => (e: { stopPropagation: () => void }) => { e.stopPropagation(); fn(); };
     if (r.status === 'pending_review') {
       return (
-        <div className={`grid gap-2 ${r.assigned_admin_id === null ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          {r.assigned_admin_id === null && <button type="button" className={`ops-btn ops-btn-blue ${size}`} disabled={b} onClick={() => act(r, 'claim')}>Claim</button>}
-          <button type="button" className={`ops-btn ops-btn-stop ${size}`} disabled={b} onClick={() => setRejecting(r)}>Reject</button>
-          <button type="button" className={`ops-btn ops-btn-go ${size}`} disabled={b} onClick={() => setApproving(r)}>Approve</button>
+        <div className={`flex gap-2 ${compact ? 'justify-end' : ''}`}>
+          {r.assigned_admin_id === null && <button type="button" className={`ops-btn ops-btn-blue ${size} ${compact ? '' : 'flex-1'}`} disabled={b} onClick={stop(() => act(r, 'claim'))}>Claim</button>}
+          <button type="button" className={`ops-btn ops-btn-stop ${size} ${compact ? '' : 'flex-1'}`} disabled={b} onClick={stop(() => setRejecting(r))}>Reject</button>
+          <button type="button" className={`ops-btn ops-btn-go ${size} ${compact ? '' : 'flex-1'}`} disabled={b} onClick={stop(() => setApproving(r))}>Approve</button>
         </div>
       );
     }
     if (r.status === 'rejected') {
       return (
-        <div className="flex flex-col gap-2">
-          {failedIds.has(r.id) && <p className="text-sm font-bold text-brand-red">Message not sent</p>}
-          <button type="button" className={`ops-btn ${size}`} disabled={b} onClick={() => resend(r)}>Send new link</button>
+        <div className={`flex items-center gap-2 ${compact ? 'justify-end' : 'flex-col items-stretch'}`}>
+          {failedIds.has(r.id) && <p className="text-xs font-semibold text-brand-red">Message not sent</p>}
+          <button type="button" className={`ops-btn ${size}`} disabled={b} onClick={stop(() => resend(r))}>Send new link</button>
         </div>
       );
     }
@@ -254,16 +257,16 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     const badge = badgeOf(r, me.id);
     return (
       <li key={r.id} className={`ops-card ops-lift overflow-hidden ${selected?.id === r.id ? 'ops-sel' : ''}`}>
-        {Photo({ r })}
-        <div className="flex flex-col gap-2 p-4">
-          <p className="ops-num text-[34px]">{naira(r.price_ngn)}</p>
-          <p className="font-display truncate text-lg font-extrabold leading-tight tracking-tight">{r.title}</p>
+        {Photo({ r, ratio: 'aspect-[16/10]' })}
+        <div className="flex flex-col gap-1.5 p-3">
+          <p className="ops-num text-xl">{naira(r.price_ngn)}</p>
+          <p className="truncate text-sm font-semibold">{r.title}</p>
           {Meta({ r })}
-          <p className="flex flex-wrap items-center gap-2 text-sm">
-            <Badge tone={badge === 'Unclaimed' ? 'amber' : badge === 'Assigned to you' ? 'green' : 'mute'}>{badge}</Badge>
-            <span className="ops-mute font-semibold">{r.seller_name}{r.contact_visible ? ` · ${r.seller_phone}` : ''}</span>
+          <p className="flex flex-wrap items-center gap-2 text-[13px]">
+            <Badge tone={badgeTone(badge)}>{badge}</Badge>
+            <span className="ops-mute truncate">{r.seller_name}{r.contact_visible ? ` · ${r.seller_phone}` : ''}</span>
           </p>
-          <div className="pt-1">{Actions({ r })}</div>
+          <div className="pt-1.5">{Actions({ r })}</div>
         </div>
       </li>
     );
@@ -271,16 +274,16 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
 
   const COLS = [
     { id: 'unclaimed', title: 'Unclaimed', color: '#D32F2F', rows: cols.unclaimed, note: 'Nobody has this yet' },
-    { id: 'claimed', title: 'Claimed', color: '#1565C0', rows: cols.claimed, note: 'Mine and my team’s' },
-    { id: 'waiting', title: 'Waiting for seller', color: '#F2B233', rows: cols.waiting, note: 'Rejected, fix on the way' },
-    { id: 'live', title: 'Live', color: '#2E7D32', rows: cols.liveShown, note: cols.live.length > BOARD_LIVE_MAX ? `Latest ${BOARD_LIVE_MAX} of ${cols.live.length}` : 'In the pool' },
+    { id: 'claimed', title: 'Claimed', color: '#2563EB', rows: cols.claimed, note: 'Mine and my team’s' },
+    { id: 'waiting', title: 'Waiting for seller', color: '#F59E0B', rows: cols.waiting, note: 'Rejected, fix on the way' },
+    { id: 'live', title: 'Live', color: '#16A34A', rows: cols.liveShown, note: cols.live.length > BOARD_LIVE_MAX ? `Latest ${BOARD_LIVE_MAX} of ${cols.live.length}` : 'In the pool' },
   ];
 
   const empty = (
-    <div className="flex flex-col items-start gap-3 py-10">
-      <div className="flex h-2 w-28 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></div>
-      <p className="font-display text-3xl font-extrabold tracking-tight">{filtered ? 'Nothing matches those filters.' : 'Queue clear.'}</p>
-      <p className="ops-mute max-w-md">{filtered ? 'Try clearing a filter.' : 'Nobody is waiting on you. Share your link and more listings will come.'}</p>
+    <div className="ops-card flex flex-col items-center gap-1.5 px-6 py-14 text-center">
+      <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#F4F4F5]" aria-hidden="true"><Inbox size={16} className="text-[#6B6B76]" /></span>
+      <p className="text-[13.5px] font-semibold">{filtered ? 'Nothing matches those filters' : 'Queue clear'}</p>
+      <p className="ops-mute max-w-sm text-[13.5px]">{filtered ? 'Try clearing a filter.' : 'Nobody is waiting on you. Share your link and more listings will come.'}</p>
     </div>
   );
 
@@ -293,46 +296,29 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   };
 
   return (
-    <div className="flex flex-col gap-8 md:gap-10">
-      <header className="ops-rise flex flex-col gap-6">
-        <div>
-          <p className="ops-eyebrow" suppressHydrationWarning>{dateText}</p>
-          <h1 className="font-display mt-2 text-xl font-extrabold tracking-tight sm:text-2xl" suppressHydrationWarning>{greeting}, {firstName}.</h1>
-          <p className="font-display mt-3 max-w-4xl text-[30px] font-extrabold leading-[1.04] tracking-[-0.035em] sm:text-5xl lg:text-6xl">
-            {stats.pending > 0 ? (
-              <><span className="text-brand-red">{stats.pending}</span> {stats.pending === 1 ? 'listing is' : 'listings are'} waiting. The oldest has waited {waitingFor(stats.oldest, now)}.</>
-            ) : <>Nothing is waiting. The desk is clear.</>}
-          </p>
-        </div>
+    <div className="flex flex-col gap-5">
+      <header className="ops-rise flex flex-col gap-5">
+        <PageTitle title="Review" sub={<span suppressHydrationWarning>{greeting}, {firstName}{dateText ? ` · ${dateText}` : ''} · {scopeText}</span>}>
+          <span className="ops-mute hidden text-xs sm:inline" aria-live="off" suppressHydrationWarning>{now ? `Updated ${ago(now - updatedAt)}` : ''}</span>
+          <button type="button" onClick={refresh} className="ops-btn" aria-label="Refresh the list"><RefreshCw size={14} aria-hidden="true" />Refresh</button>
+        </PageTitle>
 
-        <div aria-label="Today at the desk">
-          <div className="ops-bar" role="img" aria-label={`${approvedToday} approved today, ${stats.waiting} waiting for sellers, ${stats.pending} to review`}>
-            {total === 0 ? null : (
-              <>
-                <i className="bg-brand-green" style={{ flexGrow: approvedToday }} />
-                <i className="bg-brand-blue" style={{ flexGrow: stats.waiting }} />
-                <i className="bg-brand-red" style={{ flexGrow: stats.pending }} />
-              </>
-            )}
-          </div>
-          <dl className="mt-3 flex flex-wrap gap-x-8 gap-y-2 text-[15px]">
-            <div className="flex items-baseline gap-2"><dd className="ops-num text-2xl sm:text-3xl text-brand-green">{approvedToday}</dd><dt className="font-bold">approved today</dt></div>
-            <div className="flex items-baseline gap-2"><dd className="ops-num text-2xl sm:text-3xl text-brand-blue">{stats.waiting}</dd><dt className="font-bold">with sellers</dt></div>
-            <div className="flex items-baseline gap-2"><dd className="ops-num text-2xl sm:text-3xl text-brand-red">{stats.pending}</dd><dt className="font-bold">to review{stats.overdue ? ` · ${stats.overdue} over 24 hours` : ''}</dt></div>
-            <div className="flex items-baseline gap-2"><dd className="ops-num text-2xl sm:text-3xl">{stats.mine}</dd><dt className="font-bold">on my plate</dt></div>
-          </dl>
+        <div className="ops-kpis" aria-label="Today at the desk">
+          <BigStat label="To review" tone="red" value={stats.pending} hint={stats.overdue ? `${stats.overdue} over 24 hours` : stats.pending ? `Oldest ${waitingFor(stats.oldest, now)}` : 'All clear'} />
+          <BigStat label="On my plate" value={stats.mine} hint={`${stats.unclaimed} unclaimed`} />
+          <BigStat label="With sellers" tone="amber" value={stats.waiting} hint="Rejected, waiting on a fix" />
+          <BigStat label="Approved today" tone="green" value={approvedToday} hint={`${tabs.done.length} live in total`} />
         </div>
-
       </header>
 
       {notice && <Notice kind="ok">{notice}</Notice>}
       {message && <Notice kind="error">{message}</Notice>}
 
-      <section className="flex flex-col gap-4" aria-label="Review">
-        <div className="flex flex-wrap items-center gap-3">
+      <section className="flex flex-col gap-3" aria-label="Review">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="ops-seg" role="group" aria-label="View">
-            {(['board', 'list', 'review'] as const).map((v) => (
-              <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>{v === 'board' ? 'Board' : v === 'list' ? 'List' : 'Review mode'}</button>
+            {(['list', 'board', 'review'] as const).map((v) => (
+              <button key={v} type="button" aria-pressed={view === v} onClick={() => setView(v)}>{v === 'list' ? 'Table' : v === 'board' ? 'Board' : 'Review mode'}</button>
             ))}
           </div>
           {isGlobal && (
@@ -343,18 +329,15 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
               ))}
             </div>
           )}
-          <span className="ml-auto flex items-center gap-3">
-            <span className="ops-mute hidden text-sm sm:inline" aria-live="off">Updated {ago(now - updatedAt)}</span>
-            <button type="button" onClick={refresh} className="ops-btn !min-h-10" aria-label="Refresh the list"><RefreshCw size={16} aria-hidden="true" />Refresh</button>
-          </span>
+          <button type="button" className="ops-btn ml-auto sm:!hidden" aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}><SlidersHorizontal size={14} aria-hidden="true" />{showFilters ? 'Hide' : 'Filters'}</button>
         </div>
 
-        <button type="button" className="ops-btn self-start sm:!hidden" aria-expanded={showFilters} onClick={() => setShowFilters((v) => !v)}>{showFilters ? 'Hide filters' : 'Search and filters'}</button>
-        <div className={`${showFilters ? 'grid' : 'hidden'} gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr]`}>
+        <div className={`${showFilters ? 'grid' : 'hidden'} gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_1fr_1fr_1fr]`}>
           <div className="relative sm:col-span-2 lg:col-span-1">
             <label htmlFor="q" className="sr-only">Search title, brand, model or seller</label>
-            <Search size={18} className="pointer-events-none absolute left-4 top-3.5" aria-hidden="true" />
-            <input id="q" ref={search} className="ops-input !pl-11" type="search" placeholder="Search  ( / )" value={q} maxLength={60} onChange={(e) => setQ(e.target.value)} />
+            <Search size={15} className="pointer-events-none absolute left-3 top-[10px] text-[#6B6B76]" aria-hidden="true" />
+            <input id="q" ref={search} className="ops-input !pl-9 !pr-9" type="search" placeholder="Search listings" value={q} maxLength={60} onChange={(e) => setQ(e.target.value)} />
+            <span className="ops-kbd pointer-events-none absolute right-2.5 top-[7px] hidden lg:inline-flex" aria-hidden="true">/</span>
           </div>
           <label className="sr-only" htmlFor="f-cat">Category</label>
           <select id="f-cat" className="ops-input" value={category} onChange={(e) => setCategory(e.target.value)}>
@@ -371,27 +354,31 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
           </select>
         </div>
         {filtered && (
-          <p className="flex items-center gap-3 text-sm font-semibold">Showing {list.length}{view === 'board' ? '' : ` of ${view === 'review' ? tabs.review.length : tabs[tab].length}`} in {scopeText}.
-            <button type="button" className="ops-btn !min-h-9 !px-3 !text-sm" onClick={() => { setQ(''); setRegion(''); setCategory(''); setWho('all'); }}><X size={14} aria-hidden="true" />Clear filters</button>
+          <p className="flex items-center gap-3 text-[13px] font-medium">Showing {list.length}{view === 'board' ? '' : ` of ${view === 'review' ? tabs.review.length : tabs[tab].length}`} in {scopeText}.
+            <button type="button" className="ops-btn !min-h-7 !px-2 !text-xs" onClick={() => { setQ(''); setRegion(''); setCategory(''); setWho('all'); }}><X size={12} aria-hidden="true" />Clear filters</button>
           </p>
         )}
 
-        {view === null && <div className="min-h-[40vh]" aria-hidden="true" />}
+        {view === null && (
+          <div className="ops-card overflow-hidden" aria-hidden="true">
+            {[0, 1, 2, 3, 4].map((i) => <div key={i} className="flex items-center gap-3 border-b border-[#E4E4E7] p-3 last:border-0"><span className="ops-skel h-12 w-12" /><span className="flex-1 space-y-2"><span className="ops-skel block h-3 w-1/3" /><span className="ops-skel block h-3 w-1/2" /></span></div>)}
+          </div>
+        )}
 
         {view === 'board' && (
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4" aria-label="Pipeline board">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" aria-label="Pipeline board">
             {COLS.map((c) => (
-              <section key={c.id} className="ops-col flex min-w-0 flex-col" style={{ ['--c' as string]: c.color }} aria-label={c.title}>
-                <header className="flex items-end justify-between gap-2 py-3">
-                  <div className="min-w-0">
-                    <h2 className="font-display text-xl font-extrabold leading-tight tracking-tight">{c.title}</h2>
-                    <p className="ops-mute truncate text-sm">{c.note}</p>
+              <section key={c.id} className="ops-col flex min-w-0 flex-col rounded-xl bg-[#F4F4F5] p-2" aria-label={c.title}>
+                <header className="flex items-center justify-between gap-2 px-2 pb-2 pt-1.5">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="h-2 w-2 flex-none rounded-full" style={{ background: c.color }} aria-hidden="true" />
+                    <h2 className="truncate text-[13.5px] font-semibold">{c.title}</h2>
                   </div>
-                  <span className="ops-num text-5xl">{c.id === 'live' ? cols.live.length : c.rows.length}</span>
+                  <span className="ops-num text-[13px] text-[#6B6B76]">{c.id === 'live' ? cols.live.length : c.rows.length}</span>
                 </header>
-                <ul className="ops-colbody flex flex-col gap-4">
+                <ul className="ops-colbody flex flex-col gap-2">
                   {c.rows.map((r) => BoardCard({ r }))}
-                  {c.rows.length === 0 && <li className="ops-mute rounded-2xl border-2 border-dashed border-[#D6CDB9] px-4 py-10 text-center text-sm font-semibold">Nothing here</li>}
+                  {c.rows.length === 0 && <li className="ops-mute rounded-lg border border-dashed border-[#D4D4D8] px-4 py-8 text-center text-[13px]">{c.note}</li>}
                 </ul>
               </section>
             ))}
@@ -399,36 +386,71 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         )}
 
         {view === 'list' && (
-          <div className="flex flex-col gap-4">
-            <div className="ops-seg" role="tablist" aria-label="Listings">
+          <div className="flex flex-col gap-3">
+            <div className="ops-seg self-start" role="tablist" aria-label="Listings">
               {TABS.map((t) => (
                 <button key={t.id} role="tab" type="button" aria-selected={tab === t.id} onClick={() => setTab(t.id)}>{t.label} <span className="ops-segn">{tabs[t.id].length}</span></button>
               ))}
             </div>
             {list.length === 0 && empty}
-            <ul className="flex flex-col gap-3" aria-label="Listings">
+
+            {list.length > 0 && (
+              <div className="ops-card hidden overflow-hidden lg:block">
+                <table className="ops-table" aria-label="Listings">
+                  <thead>
+                    <tr>
+                      <th scope="col">Listing</th><th scope="col">Price</th><th scope="col">Seller</th><th scope="col">Status</th>
+                      <th scope="col">In charge</th><th scope="col"><span className="sr-only">Actions</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {list.map((r) => {
+                      const badge = badgeOf(r, me.id);
+                      const src = thumbs[r.photo_urls[0]];
+                      return (
+                        <tr key={r.id} data-sel={selected?.id === r.id} onClick={() => openRow(r)}>
+                          <td className="max-w-[340px]">
+                            <button type="button" className="flex w-full min-w-0 items-center gap-3 text-left" onClick={(e) => { e.stopPropagation(); openRow(r); }} aria-label={`Open ${r.title}`}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {src ? <img src={src} alt="" className="h-11 w-11 flex-none rounded-lg object-cover" /> : <span className="h-11 w-11 flex-none rounded-lg bg-[#F1F1F3]" aria-hidden="true" />}
+                              <span className="min-w-0"><span className="block truncate font-semibold">{r.title}</span>{Meta({ r })}</span>
+                            </button>
+                          </td>
+                          <td className="ops-num whitespace-nowrap text-[13.5px]">{naira(r.price_ngn)}</td>
+                          <td className="max-w-[200px]"><span className="block truncate font-medium">{r.seller_name}</span><span className="ops-mute block truncate text-[13px]">{r.contact_visible ? r.seller_phone : 'Hidden until claimed'}</span></td>
+                          <td>
+                            {r.status === 'pending_review' ? <Badge tone={ageTone(r.submitted_at, now)}>Waiting {waitingFor(r.submitted_at, now)}</Badge>
+                              : r.status === 'rejected' ? <Badge tone="blue">With seller</Badge> : <Badge tone="green">Live</Badge>}
+                          </td>
+                          <td><Badge tone={badgeTone(badge)}>{badge}</Badge></td>
+                          <td className="whitespace-nowrap">{r.status !== 'approved' ? Actions({ r, compact: true }) : <span className="flex justify-end"><ArrowRight size={16} className="text-[#A1A1AA]" aria-hidden="true" /></span>}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <ul className="flex flex-col gap-2 lg:hidden" aria-label="Listings">
               {list.map((r) => {
                 const badge = badgeOf(r, me.id);
                 const src = thumbs[r.photo_urls[0]];
                 return (
-                  <li key={r.id} className={`ops-card ops-lift overflow-hidden ${selected?.id === r.id ? 'ops-sel' : ''}`}>
-                    <div className="flex flex-col md:flex-row md:items-center">
-                      <button type="button" className="flex min-w-0 flex-1 gap-4 p-3 text-left" onClick={() => { setSelId(r.id); setOpenId(r.id); }} aria-label={`Open ${r.title}`}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        {src ? <img src={src} alt="" className="h-28 w-28 flex-none rounded-xl object-cover" /> : <span className="h-28 w-28 flex-none rounded-xl bg-[#EBE5D6]" aria-hidden="true" />}
-                        <span className="flex min-w-0 flex-col justify-center gap-1.5">
-                          <span className="ops-num text-4xl">{naira(r.price_ngn)}</span>
-                          <span className="font-display truncate text-lg font-extrabold leading-tight tracking-tight">{r.title}</span>
-                          {Meta({ r })}
-                          <span className="flex flex-wrap items-center gap-2 text-sm">
-                            {r.status === 'pending_review' && <Badge tone={ageTone(r.submitted_at, now)}>Waiting {waitingFor(r.submitted_at, now)}</Badge>}
-                            <Badge tone={badge === 'Unclaimed' ? 'amber' : badge === 'Assigned to you' ? 'green' : 'mute'}>{badge}</Badge>
-                            <span className="ops-mute font-semibold">{r.seller_name}{r.contact_visible ? ` · ${r.seller_phone}` : ''}</span>
-                          </span>
+                  <li key={r.id} className={`ops-card overflow-hidden ${selected?.id === r.id ? 'ops-sel' : ''}`}>
+                    <button type="button" className="flex w-full min-w-0 gap-3 p-3 text-left" onClick={() => openRow(r)} aria-label={`Open ${r.title}`}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {src ? <img src={src} alt="" className="h-[72px] w-[72px] flex-none rounded-lg object-cover" /> : <span className="h-[72px] w-[72px] flex-none rounded-lg bg-[#F1F1F3]" aria-hidden="true" />}
+                      <span className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="flex items-start justify-between gap-2"><span className="truncate text-sm font-semibold">{r.title}</span><span className="ops-num flex-none text-[13.5px]">{naira(r.price_ngn)}</span></span>
+                        {Meta({ r })}
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          {r.status === 'pending_review' && <Badge tone={ageTone(r.submitted_at, now)}>Waiting {waitingFor(r.submitted_at, now)}</Badge>}
+                          <Badge tone={badgeTone(badge)}>{badge}</Badge>
                         </span>
-                      </button>
-                      {r.status !== 'approved' && <div className="border-t-2 border-[#D6CDB9] p-3 md:w-[320px] md:border-l-2 md:border-t-0">{Actions({ r })}</div>}
-                    </div>
+                      </span>
+                    </button>
+                    {r.status !== 'approved' && <div className="border-t border-[#E4E4E7] p-2.5">{Actions({ r })}</div>}
                   </li>
                 );
               })}
@@ -439,32 +461,32 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         {view === 'review' && (
           <div className="flex flex-col gap-4" aria-label="Review mode">
             {!item ? empty : (
-              <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
                 onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => onTouchEnd(e.changedTouches[0].clientX)}>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
-                    <p className="font-display text-xl font-extrabold"><span className="ops-num text-4xl">{selIdx + 1}</span> of {list.length}</p>
-                    <div className="ops-bar !h-2 flex-1" aria-hidden="true"><i className="bg-[#16140F]" style={{ flexGrow: selIdx + 1 }} /><i style={{ flexGrow: Math.max(0, list.length - selIdx - 1) }} /></div>
+                    <p className="text-[13px] font-medium"><span className="ops-num text-xl">{selIdx + 1}</span> <span className="ops-mute">of {list.length}</span></p>
+                    <div className="ops-bar flex-1" aria-hidden="true"><i className="bg-[#111114]" style={{ flexGrow: selIdx + 1 }} /><i style={{ flexGrow: Math.max(0, list.length - selIdx - 1) }} /></div>
                   </div>
-                  <div className="overflow-hidden rounded-2xl border-2 border-[#16140F]">{Photo({ r: item, ratio: 'aspect-[4/5] max-h-[52vh] lg:max-h-[620px] sm:aspect-[4/3]' })}</div>
+                  <div className="overflow-hidden rounded-xl border border-[#E4E4E7]">{Photo({ r: item, ratio: 'aspect-[4/5] max-h-[52vh] lg:max-h-[600px] sm:aspect-[4/3]' })}</div>
                 </div>
-                <div className="flex flex-col gap-4">
-                  <p className="ops-num text-[64px] sm:text-[84px]">{naira(item.price_ngn)}</p>
-                  <h2 className="font-display text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl">{item.title}</h2>
+                <div className="flex flex-col gap-3">
+                  <p className="ops-num text-[40px]">{naira(item.price_ngn)}</p>
+                  <h2 className="font-display text-xl font-semibold leading-tight tracking-tight">{item.title}</h2>
                   {Meta({ r: item })}
-                  <p className="line-clamp-3 text-[15px] leading-relaxed">{item.description}</p>
-                  <p className="flex flex-wrap items-center gap-2 text-sm">
-                    <Badge tone={badgeOf(item, me.id) === 'Unclaimed' ? 'amber' : badgeOf(item, me.id) === 'Assigned to you' ? 'green' : 'mute'}>{badgeOf(item, me.id)}</Badge>
-                    <span className="ops-mute font-semibold">{item.seller_name}{item.contact_visible ? ` · ${item.seller_phone}` : ''}</span>
+                  <p className="line-clamp-3 text-sm leading-relaxed">{item.description}</p>
+                  <p className="flex flex-wrap items-center gap-2 text-[13px]">
+                    <Badge tone={badgeTone(badgeOf(item, me.id))}>{badgeOf(item, me.id)}</Badge>
+                    <span className="ops-mute">{item.seller_name}{item.contact_visible ? ` · ${item.seller_phone}` : ''}</span>
                   </p>
-                  <div className="fixed inset-x-0 z-20 flex flex-col gap-2 border-t-2 border-[#16140F] bg-[#F4F0E8] p-3 max-lg:bottom-[calc(60px+env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0">
+                  <div className="fixed inset-x-0 z-20 flex flex-col gap-2 border-t border-[#E4E4E7] bg-white/95 p-3 backdrop-blur max-lg:bottom-[calc(56px+env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0">
                     {Actions({ r: item, big: true })}
                     <div className="grid grid-cols-2 gap-2">
-                      <button type="button" className="ops-btn" onClick={() => step(1)} disabled={list.length < 2}><SkipForward size={18} aria-hidden="true" />Skip</button>
-                      <button type="button" className="ops-btn" onClick={() => setOpenId(item.id)}>Full details <ArrowRight size={18} aria-hidden="true" /></button>
+                      <button type="button" className="ops-btn" onClick={() => step(1)} disabled={list.length < 2}><SkipForward size={14} aria-hidden="true" />Skip</button>
+                      <button type="button" className="ops-btn" onClick={() => setOpenId(item.id)}>Full details <ArrowRight size={14} aria-hidden="true" /></button>
                     </div>
                   </div>
-                  <div className="h-32 lg:hidden" aria-hidden="true" />
+                  <div className="h-28 lg:hidden" aria-hidden="true" />
                 </div>
               </div>
             )}
@@ -472,7 +494,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         )}
       </section>
 
-      <p className="ops-mute hidden flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold lg:flex" aria-label="Keyboard shortcuts">
+      <p className="ops-mute hidden flex-wrap items-center gap-x-4 gap-y-1 text-xs lg:flex" aria-label="Keyboard shortcuts">
         <span><span className="ops-kbd">J</span> <span className="ops-kbd">K</span> move</span>
         <span><span className="ops-kbd">Enter</span> open</span>
         <span><span className="ops-kbd">C</span> claim</span>
@@ -483,14 +505,14 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
       </p>
 
       {link && (
-          <section className="flex flex-wrap items-center gap-x-4 gap-y-2 border-y-2 border-[#16140F] py-3" aria-label="Your referral link">
-            <p className="ops-eyebrow">Your link for sellers</p>
-            <p className="min-w-0 flex-1 truncate text-sm font-bold">{link}</p>
-            <div className="flex gap-2">
-              <button type="button" className="ops-btn !min-h-10" onClick={copy}>{copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}{copied ? 'Copied' : 'Copy'}</button>
-              <a className="ops-btn ops-btn-go !min-h-10" href={whatsappShareUrl(link)} target="_blank" rel="noopener noreferrer"><Share2 size={18} aria-hidden="true" />WhatsApp</a>
-            </div>
-          </section>
+        <section className="ops-card flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3" aria-label="Your referral link">
+          <p className="ops-eyebrow">Your link for sellers</p>
+          <p className="min-w-0 flex-1 truncate text-[13px] font-medium">{link}</p>
+          <div className="flex gap-2">
+            <button type="button" className="ops-btn" onClick={copy}>{copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copied ? 'Copied' : 'Copy'}</button>
+            <a className="ops-btn ops-btn-go" href={whatsappShareUrl(link)} target="_blank" rel="noopener noreferrer"><Share2 size={14} aria-hidden="true" />WhatsApp</a>
+          </div>
+        </section>
       )}
 
       {open && (
@@ -509,7 +531,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
       )}
       {approving && (
         <ConfirmDialog title="Approve this listing?" confirmLabel="Approve and go live" busy={busy === approving.id}
-          body={<><p><b>{approving.title}</b> · {naira(approving.price_ngn)}</p><p className="ops-mute mt-1">It goes live in the pool for buyers.</p></>}
+          body={<><p><b className="font-semibold">{approving.title}</b> · {naira(approving.price_ngn)}</p><p className="ops-mute mt-1">It goes live in the pool for buyers.</p></>}
           onCancel={() => setApproving(null)} onConfirm={() => act(approving, 'approve')} />
       )}
       {rejecting && (

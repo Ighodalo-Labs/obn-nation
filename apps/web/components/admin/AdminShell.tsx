@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ClipboardCheck, Globe2, Home, LogOut, Package, Store } from 'lucide-react';
+import { ChevronsUpDown, ClipboardCheck, Globe2, Home, LogOut, Package, Store } from 'lucide-react';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 import { regionLabelOf } from './ui';
 
@@ -38,52 +38,74 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
     try { await createBrowserSupabase().auth.signOut(); } finally { window.location.href = '/list'; }
   }
 
+  const accountMenu = (up: boolean) => menu && (
+    <div role="menu" className={`ops-menu ${up ? 'bottom-[calc(100%+6px)] left-0' : 'right-0 top-[calc(100%+6px)]'}`}>
+      <div className="px-2.5 pb-2 pt-2">
+        <p className="truncate text-sm font-semibold">{me.name || 'Admin'}</p>
+        <p className="ops-mute text-xs">{isGlobal ? 'Global Admin' : 'Regional Admin'} · {scope}</p>
+      </div>
+      <hr className="ops-rule mb-1" />
+      <Link role="menuitem" href="/list" className="ops-menuitem"><Store size={16} aria-hidden="true" />Seller view</Link>
+      <Link role="menuitem" href="/" className="ops-menuitem"><Home size={16} aria-hidden="true" />Home page</Link>
+      <button role="menuitem" type="button" className="ops-menuitem" onClick={signOut} disabled={leaving}><LogOut size={16} aria-hidden="true" />{leaving ? 'Signing out…' : 'Sign out'}</button>
+    </div>
+  );
+
   return (
     <div className="ops-root">
-      <div className="flex h-1.5" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
-      <header className="ops-top sticky top-0 z-30">
-        <div className="mx-auto flex min-h-16 w-full max-w-[1400px] items-center gap-4 px-4 md:px-8">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="OBN NATION home">
-            <Image src="/brand/obn-logo-clear.webp" alt="" width={40} height={40} priority className="h-10 w-10" />
-            <span className="font-display hidden text-lg font-extrabold tracking-tight sm:block">OBN NATION</span>
-          </Link>
-          <nav aria-label="Admin" className="ml-2 hidden items-center gap-1 md:flex">
-            {items.map(({ id, href, label }) => (
-              <Link key={id} href={href} className="ops-navlink" aria-current={current === id ? 'page' : undefined}>
-                {label}
-                {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="ops-badge ops-b-red !px-2 !py-0.5">{reviewCount}</span>}
-              </Link>
-            ))}
-          </nav>
-          <span className="ml-auto" />
-          <span className="ops-badge ops-b-mute hidden sm:inline-flex">{isGlobal ? 'Global' : 'Regional'} · {scope}</span>
-          <div ref={menuRef} className="relative">
-            <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
-              className="flex h-11 min-w-11 items-center justify-center rounded-full bg-brand-blue px-1 text-sm font-extrabold text-white transition-colors hover:bg-[#0E4A91]">
-              {initials || 'A'}
-            </button>
-            {menu && (
-              <div role="menu" className="ops-menu">
-                <div className="px-3 pb-2 pt-3">
-                  <p className="truncate font-extrabold">{me.name || 'Admin'}</p>
-                  <p className="ops-mute text-sm">{isGlobal ? 'Global Admin' : 'Regional Admin'} · {scope}</p>
-                </div>
-                <hr className="ops-rule mb-1" />
-                <Link role="menuitem" href="/list" className="ops-menuitem"><Store size={18} aria-hidden="true" />Seller view</Link>
-                <Link role="menuitem" href="/" className="ops-menuitem"><Home size={18} aria-hidden="true" />Home page</Link>
-                <button role="menuitem" type="button" className="ops-menuitem" onClick={signOut} disabled={leaving}><LogOut size={18} aria-hidden="true" />{leaving ? 'Signing out…' : 'Sign out'}</button>
-              </div>
-            )}
-          </div>
+      <aside className="ops-side" aria-label="Sidebar">
+        <Link href="/" className="flex h-14 items-center gap-2.5 border-b border-[var(--o-line)] px-4" aria-label="OBN NATION home">
+          <Image src="/brand/obn-logo-clear.webp" alt="" width={28} height={28} priority className="h-7 w-7" />
+          <span className="font-display text-[13.5px] font-semibold tracking-tight">OBN NATION</span>
+          <span className="ops-chip ml-auto !text-[11px]">Admin</span>
+        </Link>
+        <nav aria-label="Admin" className="flex flex-1 flex-col gap-0.5 p-2.5">
+          <p className="ops-eyebrow px-2.5 pb-1.5 pt-3">Workspace</p>
+          {items.map(({ id, href, label, Icon }) => (
+            <Link key={id} href={href} className="ops-navlink" aria-current={current === id ? 'page' : undefined}>
+              <Icon size={16} aria-hidden="true" />{label}
+              {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="ml-auto rounded-md bg-brand-red px-1.5 text-[11px] font-bold leading-5 text-white tabular-nums">{reviewCount}</span>}
+            </Link>
+          ))}
+        </nav>
+        <div ref={menuRef} className="relative border-t border-[var(--o-line)] p-2.5">
+          <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
+            className="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-[var(--o-card2)]">
+            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[var(--o-ink)] text-xs font-bold text-white">{initials || 'A'}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] font-semibold leading-tight">{me.name || 'Admin'}</span>
+              <span className="ops-mute block truncate text-xs">{isGlobal ? 'Global' : 'Regional'} · {scope}</span>
+            </span>
+            <ChevronsUpDown size={14} className="ops-mute flex-none" aria-hidden="true" />
+          </button>
+          <div className="hidden lg:block">{accountMenu(true)}</div>
         </div>
-      </header>
+      </aside>
 
-      <main className="mx-auto w-full max-w-[1400px] px-4 pb-32 pt-8 md:px-8 md:pb-16 md:pt-12">{children}</main>
+      <div className="ops-main">
+        <header className="ops-topm sticky top-0 z-30 lg:hidden">
+          <div className="flex h-14 items-center gap-3 px-4">
+            <Link href="/" className="flex items-center gap-2" aria-label="OBN NATION home">
+              <Image src="/brand/obn-logo-clear.webp" alt="" width={28} height={28} priority className="h-7 w-7" />
+              <span className="font-display text-[13.5px] font-semibold tracking-tight">OBN NATION</span>
+            </Link>
+            <span className="ml-auto ops-chip hidden min-[380px]:inline-flex">{isGlobal ? 'Global' : 'Regional'} · {scope}</span>
+            <div className="relative max-lg:ml-auto min-[380px]:ml-0">
+              <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--o-ink)] text-xs font-bold text-white">{initials || 'A'}</button>
+              <div className="lg:hidden">{accountMenu(false)}</div>
+            </div>
+          </div>
+        </header>
 
-      <nav aria-label="Admin tabs" className="ops-tabbar fixed inset-x-0 bottom-0 z-30 flex md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <main className="mx-auto w-full max-w-[1320px] px-4 pb-28 pt-5 lg:px-8 lg:pb-12 lg:pt-8">{children}</main>
+      </div>
+
+      <nav aria-label="Admin tabs" className="ops-tabbar fixed inset-x-0 bottom-0 z-30 flex lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {items.map(({ id, href, label, Icon }) => (
-          <Link key={id} href={href} className="ops-tab" aria-current={current === id ? 'page' : undefined}>
-            <Icon size={22} aria-hidden="true" />{label}
+          <Link key={id} href={href} className="ops-tab relative" aria-current={current === id ? 'page' : undefined}>
+            <Icon size={20} aria-hidden="true" />{label}
+            {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="absolute left-1/2 top-1.5 ml-2 rounded-full bg-brand-red px-1.5 text-[10px] font-bold leading-4 text-white">{reviewCount}</span>}
           </Link>
         ))}
       </nav>

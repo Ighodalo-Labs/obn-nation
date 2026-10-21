@@ -117,6 +117,7 @@ export default function Home() {
             <Image key={src} src={src} alt="" fill priority={i === 0} sizes="100vw" className={`slide object-cover ${pos}`} style={{ animationDelay: `calc(var(--intro) + ${i * 6}s - 0.5s)` }} />
           ))}
         </div>
+        <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/45 md:hidden" aria-hidden="true" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/80 via-[#0A0A0A]/40 to-transparent" aria-hidden="true" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/50 via-transparent to-transparent" aria-hidden="true" />
         <div className={`${INNER} flex min-h-[calc(100svh-4.5rem)] flex-col justify-center pb-24 pt-16`}>
@@ -124,7 +125,7 @@ export default function Home() {
             <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
             One Beta Nation
           </p>
-          <h1 className="font-display max-w-4xl text-[clamp(2.6rem,6vw,5.2rem)] font-extrabold leading-[1.0] tracking-[-0.04em] text-white">
+          <h1 className="font-display max-w-4xl text-[clamp(2rem,8.2vw,3.4rem)] font-extrabold leading-[1.02] md:text-[clamp(3.2rem,6vw,5.2rem)] tracking-[-0.04em] text-white">
             <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
             <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
           </h1>

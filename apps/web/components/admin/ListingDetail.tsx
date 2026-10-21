@@ -55,32 +55,32 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
   const badge = badgeOf(row, me);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[#16140F]/55" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" data-drawer aria-label={row.title} className="ops-drawer flex h-full w-full max-w-[560px] flex-col overflow-hidden border-l-2 border-[#16140F] bg-[#F4F0E8] text-[#16140F]">
-        <div className="flex items-center gap-2 border-b-2 border-[#16140F] px-4 py-3">
+    <div className="fixed inset-0 z-50 flex justify-end bg-[#111114]/35 backdrop-blur-[2px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div role="dialog" aria-modal="true" data-drawer aria-label={row.title} className="ops-drawer flex h-full w-full max-w-[520px] flex-col overflow-hidden border-l border-[#E4E4E7] bg-white text-[#111114] shadow-[-24px_0_48px_-24px_rgba(17,17,20,.25)]">
+        <div className="flex items-center gap-2 border-b border-[#E4E4E7] px-4 py-2.5">
           <Badge tone={badge === 'Unclaimed' ? 'amber' : badge === 'Assigned to you' ? 'green' : 'mute'}>{badge}</Badge>
           {pending && <span className="ops-mute text-xs">Waiting {waitingFor(row.submitted_at, now)}</span>}
           <span className="ml-auto flex items-center gap-1">
-            {onPrev && <button type="button" onClick={onPrev} aria-label="Previous listing" className="ops-btn !min-h-10 !w-10 !px-0"><ChevronLeft size={18} aria-hidden="true" /></button>}
-            {onNext && <button type="button" onClick={onNext} aria-label="Next listing" className="ops-btn !min-h-10 !w-10 !px-0"><ChevronRight size={18} aria-hidden="true" /></button>}
-            <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="ops-btn !min-h-10 !w-10 !px-0"><X size={18} aria-hidden="true" /></button>
+            {onPrev && <button type="button" onClick={onPrev} aria-label="Previous listing" className="ops-btn !min-h-8 !w-8 !px-0"><ChevronLeft size={16} aria-hidden="true" /></button>}
+            {onNext && <button type="button" onClick={onNext} aria-label="Next listing" className="ops-btn !min-h-8 !w-8 !px-0"><ChevronRight size={16} aria-hidden="true" /></button>}
+            <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="ops-btn !min-h-8 !w-8 !px-0"><X size={16} aria-hidden="true" /></button>
           </span>
         </div>
 
         <div className="ops-scroll flex flex-1 flex-col gap-5 overflow-y-auto p-4 pb-6">
-          {photos === null && <div className="aspect-[4/3] w-full animate-pulse rounded-2xl bg-[#EBE5D6]" aria-label="Loading photos" />}
+          {photos === null && <div className="aspect-[4/3] w-full ops-skel rounded-xl" aria-label="Loading photos" />}
           {photos && photos.length > 0 && (
             <div className="flex flex-col gap-2">
-              <div className="relative overflow-hidden rounded-2xl bg-black">
+              <div className="relative overflow-hidden rounded-xl bg-black">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photos[idx]} alt={`Photo ${idx + 1} of ${photos.length}`} className="aspect-[4/3] w-full object-contain" />
-                <span className="absolute bottom-2 right-2 rounded-md bg-[#16140F] px-2 py-0.5 text-xs font-bold text-white">{idx + 1} / {photos.length}</span>
+                <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white">{idx + 1} / {photos.length}</span>
               </div>
               {photos.length > 1 && (
                 <ul className="flex gap-2 overflow-x-auto" aria-label="Photos">
                   {photos.map((u, i) => (
                     <li key={u} className="flex-none">
-                      <button type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`} aria-current={i === idx} className={`block overflow-hidden rounded-lg border-2 ${i === idx ? 'border-[#1565C0]' : 'border-transparent opacity-70 hover:opacity-100'}`}>
+                      <button type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`} aria-current={i === idx} className={`block overflow-hidden rounded-lg border-2 ${i === idx ? 'border-[#111114]' : 'border-transparent opacity-70 hover:opacity-100'}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={u} alt="" className="h-16 w-16 object-cover" />
                       </button>
@@ -95,22 +95,22 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
           {row.video_url && (videoBad ? (
             <p className="ops-card2 p-3 text-sm ops-mute">Video unavailable</p>
           ) : video ? (
-            <video src={video} controls playsInline className="max-h-72 w-full rounded-2xl bg-black" onError={() => setVideoBad(true)} />
-          ) : <div className="h-24 w-full animate-pulse rounded-2xl bg-[#EBE5D6]" aria-label="Loading video" />)}
+            <video src={video} controls playsInline className="max-h-72 w-full rounded-xl bg-black" onError={() => setVideoBad(true)} />
+          ) : <div className="h-24 w-full ops-skel rounded-xl" aria-label="Loading video" />)}
 
           <div>
-            <h2 className="font-display text-3xl font-extrabold leading-tight tracking-tight">{row.title}</h2>
-            <p className="ops-num mt-3 text-6xl">{naira(row.price_ngn)}</p>
+            <h2 className="font-display text-xl font-semibold leading-tight tracking-tight">{row.title}</h2>
+            <p className="ops-num mt-2 text-[34px]">{naira(row.price_ngn)}</p>
           </div>
-          <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{row.description}</p>
-          <dl className="grid grid-cols-2 gap-2 text-sm">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">{row.description}</p>
+          <dl className="grid grid-cols-2 gap-2 text-[13px]">
             {facts.filter(([, v]) => v).map(([k, v]) => (
-              <div key={k} className="ops-card2 px-3 py-2"><dt className="ops-eyebrow !text-[11px]">{k}</dt><dd className="font-bold">{v}</dd></div>
+              <div key={k} className="ops-card2 px-3 py-2"><dt className="ops-eyebrow !text-[10.5px]">{k}</dt><dd className="font-medium">{v}</dd></div>
             ))}
           </dl>
-          <div className="ops-card2 p-4 text-sm">
+          <div className="ops-card2 p-3.5 text-[13px]">
             <p className="ops-eyebrow">Seller</p>
-            <p className="mt-1 text-base font-semibold">{row.seller_name}</p>
+            <p className="mt-1 text-sm font-semibold">{row.seller_name}</p>
             <p>{row.seller_phone}</p>
             {!row.contact_visible && (
               <p className="ops-mute mt-2 flex items-start gap-2"><ShieldAlert size={16} className="mt-0.5 flex-none" aria-hidden="true" />Full details show once you are in charge of this listing.</p>
@@ -119,7 +119,7 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
         </div>
 
         {pending && (
-          <div className="grid grid-cols-3 gap-2 border-t-2 border-[#16140F] bg-[#F4F0E8] p-4" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
+          <div className="grid grid-cols-3 gap-2 border-t border-[#E4E4E7] bg-white p-3" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
             <button type="button" className="ops-btn ops-btn-stop ops-btn-lg" disabled={busy} onClick={onReject}>Reject <span className="ops-kbd hidden md:inline-flex">R</span></button>
             {row.assigned_admin_id === null ? (
               <button type="button" className="ops-btn ops-btn-blue ops-btn-lg" disabled={busy} onClick={onClaim}>Claim <span className="ops-kbd hidden md:inline-flex">C</span></button>

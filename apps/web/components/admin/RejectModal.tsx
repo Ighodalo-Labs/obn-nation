@@ -24,13 +24,13 @@ export function RejectModal({ title, busy, onCancel, onSubmit }: {
       <p className="ops-mute text-sm">The seller gets this reason on WhatsApp, with a link to fix the listing.</p>
       <div className="flex flex-wrap gap-2">
         {REASON_CHIPS.map((c) => (
-          <button key={c} type="button" className="ops-btn !min-h-11 !rounded-full !px-4 !text-sm" onClick={() => { setReason(c); setError(null); box.current?.focus(); }}>
+          <button key={c} type="button" className="ops-btn !min-h-8 !rounded-full !px-3 !text-[13px]" onClick={() => { setReason(c); setError(null); box.current?.focus(); }}>
             {c}
           </button>
         ))}
       </div>
       <div className="flex flex-col gap-2">
-        <label htmlFor="reason" className="flex items-baseline justify-between text-[15px] font-semibold">Reason <span className="ops-mute text-xs font-normal">{reason.trim().length} / 500</span></label>
+        <label htmlFor="reason" className="flex items-baseline justify-between text-[13px] font-semibold">Reason <span className="ops-mute text-xs font-normal">{reason.trim().length} / 500</span></label>
         <textarea id="reason" ref={box} className="ops-input min-h-28" rows={4} maxLength={500} value={reason}
           aria-invalid={Boolean(error)} aria-describedby={error ? 'reason-error' : undefined}
           onChange={(e) => { setReason(e.target.value); setError(null); }} />

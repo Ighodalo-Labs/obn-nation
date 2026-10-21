@@ -7,7 +7,7 @@ import { adText, cleanSearch, pageRange, POOL_PAGE_SIZE, validFilters, type Pool
 import { CATEGORIES, REGIONS } from '@/lib/listing/schema';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 import { toCsv } from './csv';
-import { ageLabel, Badge, categoryLabel, Notice, regionLabelOf, workingLabel } from './ui';
+import { ageLabel, Badge, BigStat, categoryLabel, Notice, PageTitle, regionLabelOf, workingLabel } from './ui';
 
 type Sort = 'recent' | 'price_low' | 'price_high';
 
@@ -77,7 +77,7 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
   const split = useMemo(() => {
     const groups = me.isGlobal ? REGIONS : CATEGORIES;
     const key = (r: FeedRow) => (me.isGlobal ? r.region : r.category);
-    const palette = ['#D32F2F', '#2E7D32', '#1565C0', '#16140F', '#F2B233', '#7A5C2E'];
+    const palette = ['#D32F2F', '#16A34A', '#2563EB', '#111114', '#F59E0B', '#92600A'];
     return groups
       .map((g, i) => ({ label: g.label, value: shown.filter((r) => key(r) === g.value).reduce((n, r) => n + (Number(r.price_ngn) || 0), 0), n: shown.filter((r) => key(r) === g.value).length, color: palette[i % palette.length] }))
       .filter((g) => g.n > 0)
@@ -99,44 +99,44 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <header className="ops-rise flex flex-col gap-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="ops-eyebrow">Regional pool · {me.isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region'}</p>
-            <p className="font-display mt-3 max-w-4xl text-[38px] font-extrabold leading-[1.02] tracking-[-0.035em] sm:text-6xl" aria-live="polite">
-              <span className="text-brand-green">{shown.length}{more ? '+' : ''}</span> {shown.length === 1 ? 'item is' : 'items are'} live, worth <span className="whitespace-nowrap">{naira(total)}</span>.
-            </p>
-            <p className="ops-mute mt-3 max-w-xl">Sales stay with the admin in charge. {mineCount > 0 ? `${mineCount} of these are yours.` : ''}</p>
-          </div>
-          <button type="button" className="ops-btn" onClick={exportCsv} disabled={shown.length === 0}><Download size={18} aria-hidden="true" />Export CSV</button>
+    <div className="flex flex-col gap-5">
+      <header className="ops-rise flex flex-col gap-5">
+        <PageTitle title="Pool" sub={<>Regional pool · {me.isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region'}. Sales stay with the admin in charge.</>}>
+          <button type="button" className="ops-btn" onClick={exportCsv} disabled={shown.length === 0}><Download size={14} aria-hidden="true" />Export CSV</button>
+        </PageTitle>
+
+        <div className="ops-kpis" aria-live="polite">
+          <BigStat label="Live items" tone="green" value={`${shown.length}${more ? '+' : ''}`} hint="Approved and advertised" />
+          <BigStat label="Stock value" value={naira(total)} hint="Asking prices added up" />
+          <BigStat label="In my charge" tone="blue" value={mineCount} hint="Sales stay with me" />
+          <BigStat label={me.isGlobal ? 'Regions' : 'Categories'} value={split.length} hint={split[0] ? `Top: ${split[0].label}` : 'Nothing yet'} />
         </div>
 
         {split.length > 0 && (
-          <div aria-label={me.isGlobal ? 'Stock value by region' : 'Stock value by category'}>
+          <div className="ops-card px-4 py-3" aria-label={me.isGlobal ? 'Stock value by region' : 'Stock value by category'}>
             <p className="ops-eyebrow mb-2">Stock value by {me.isGlobal ? 'region' : 'category'}</p>
-            <div className="ops-bar !h-5" role="img" aria-label={split.map((g) => `${g.label} ${naira(g.value)}`).join(', ')}>
+            <div className="ops-bar !h-2" role="img" aria-label={split.map((g) => `${g.label} ${naira(g.value)}`).join(', ')}>
               {split.map((g) => <i key={g.label} style={{ flexGrow: g.value, background: g.color }} />)}
             </div>
-            <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
+            <ul className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]">
               {split.map((g) => (
-                <li key={g.label} className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm" style={{ background: g.color }} aria-hidden="true" /><span className="font-extrabold">{g.label}</span><span className="ops-mute font-semibold">{naira(g.value)} · {g.n}</span></li>
+                <li key={g.label} className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: g.color }} aria-hidden="true" /><span className="font-medium">{g.label}</span><span className="ops-mute">{naira(g.value)} · {g.n}</span></li>
               ))}
             </ul>
           </div>
         )}
       </header>
 
-      <section className="flex flex-col gap-4" aria-label="Filters">
-        <div className="flex flex-wrap items-center gap-3">
+      <section className="flex flex-col gap-2.5" aria-label="Filters">
+        <div className="flex flex-wrap items-center gap-2">
           {me.isGlobal && (
             <div className="ops-seg" role="group" aria-label="Region">
               <button type="button" aria-pressed={!filters.region} onClick={() => apply({ region: null })}>All regions</button>
               {REGIONS.map((r) => <button key={r.value} type="button" aria-pressed={filters.region === r.value} onClick={() => apply({ region: filters.region === r.value ? null : r.value })}>{r.label}</button>)}
             </div>
           )}
-          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px] font-bold">
-            <input type="checkbox" className="h-5 w-5 accent-[#D32F2F]" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
+          <label className="flex min-h-8 cursor-pointer items-center gap-2 text-[13px] font-medium">
+            <input type="checkbox" className="h-4 w-4 accent-[#D32F2F]" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
             Only items I am in charge of
           </label>
         </div>
@@ -144,11 +144,11 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
           <button type="button" aria-pressed={!filters.category} onClick={() => apply({ category: null })}>Everything</button>
           {CATEGORIES.map((c) => <button key={c.value} type="button" aria-pressed={filters.category === c.value} onClick={() => apply({ category: filters.category === c.value ? null : c.value })}>{c.label}</button>)}
         </div>
-        <form className="grid gap-2 sm:grid-cols-[1fr_220px_auto]" role="search" onSubmit={(e) => { e.preventDefault(); apply({ search: filters.search }); }}>
+        <form className="grid gap-2 sm:grid-cols-[1fr_200px_auto]" role="search" onSubmit={(e) => { e.preventDefault(); apply({ search: filters.search }); }}>
           <div className="relative">
             <label htmlFor="pool-search" className="sr-only">Search by title</label>
-            <Search size={18} className="pointer-events-none absolute left-4 top-3.5" aria-hidden="true" />
-            <input id="pool-search" className="ops-input !pl-11" type="search" placeholder="Search by title" value={filters.search} maxLength={60}
+            <Search size={15} className="pointer-events-none absolute left-3 top-[10px] text-[#6B6B76]" aria-hidden="true" />
+            <input id="pool-search" className="ops-input !pl-9" type="search" placeholder="Search by title" value={filters.search} maxLength={60}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
               onBlur={() => { if (cleanSearch(filters.search) !== filters.search) apply({ search: filters.search }); }} />
           </div>
@@ -156,49 +156,48 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
           <select id="pool-sort" className="ops-input" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
             <option value="recent">Recently approved</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option>
           </select>
-          <button type="submit" className="ops-btn ops-btn-red" disabled={loading}>Search</button>
+          <button type="submit" className="ops-btn ops-btn-go" disabled={loading}>Search</button>
         </form>
       </section>
 
       {error && <Notice kind="error">{error}</Notice>}
       {!loading && shown.length === 0 && (
-        <div className="flex flex-col items-start gap-3 py-10">
-          <div className="flex h-2 w-28 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></div>
-          <p className="font-display text-3xl font-extrabold tracking-tight">{mineOnly ? 'Nothing is in your charge yet.' : 'The pool is empty.'}</p>
+        <div className="ops-card flex flex-col items-center gap-1.5 px-6 py-14 text-center">
+          <p className="text-[13.5px] font-semibold">{mineOnly ? 'Nothing is in your charge yet.' : 'The pool is empty.'}</p>
           <p className="ops-mute max-w-md">{mineOnly ? 'Claim and approve listings in Review and they show up here.' : 'Approved listings land here, ready to advertise.'}</p>
         </div>
       )}
 
-      <ul className="grid grid-flow-dense grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Approved listings">
+      <ul className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2 min-[1100px]:grid-cols-3 min-[1400px]:grid-cols-4" aria-label="Approved listings">
         {shown.map((r, i) => {
           const mine = r.assigned_admin_id === me.id;
           const src = thumbs[r.photo_urls[0]];
           const share = `https://wa.me/?text=${encodeURIComponent(adText(r))}`;
-          const feature = i === 0 && shown.length > 4;
+          const feature = false && i === 0;
           return (
             <li key={r.id} className={`ops-card ops-lift flex flex-col overflow-hidden ${feature ? 'sm:col-span-2 xl:row-span-2' : ''}`}>
-              <div className={`ops-photo ${feature ? 'aspect-[4/3] xl:aspect-auto xl:min-h-[420px] xl:flex-1' : 'aspect-[4/3]'}`} style={{ cursor: 'default' }}>
+              <div className={`ops-photo ${feature ? 'aspect-[4/3]' : 'aspect-[4/3]'}`} style={{ cursor: 'default' }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-end p-3 text-sm font-bold text-[#5B5547]">No photo</span>}
-                {mine && <span className="absolute right-3 top-3 z-[2]"><Badge tone="green">You are in charge</Badge></span>}
-                <span className={`ops-num absolute bottom-0 left-0 z-[2] bg-[#16140F] px-4 py-2.5 text-[#F4F0E8] ${feature ? 'text-5xl' : 'text-[30px]'}`}>{naira(r.price_ngn)}</span>
+                {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-end p-3 text-[13px] font-medium text-[#6B6B76]">No photo</span>}
+                {mine && <span className="absolute right-2 top-2 z-[2]"><Badge tone="green">You are in charge</Badge></span>}
+                <span className="ops-num absolute bottom-2 left-2 z-[2] rounded-md bg-white/95 px-2.5 py-1 text-[13.5px] shadow-sm">{naira(r.price_ngn)}</span>
               </div>
-              <div className="flex flex-col gap-3 p-4">
+              <div className="flex flex-col gap-2.5 p-3.5">
                 <div>
-                  <p className="font-display truncate text-lg font-extrabold tracking-tight">{r.title}</p>
-                  <p className="ops-mute text-sm font-semibold">
+                  <p className="truncate text-sm font-semibold">{r.title}</p>
+                  <p className="ops-mute text-[13px]">
                     {categoryLabel(r.category)}{me.isGlobal ? ` · ${regionLabelOf(r.region)}` : ''} · {ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}
                   </p>
                 </div>
-                <p className="text-sm font-semibold">{r.seller_name} · {r.seller_phone}</p>
+                <p className="text-[13px] font-medium">{r.seller_name} · {r.seller_phone}</p>
                 {!r.contact_visible && r.admin_in_charge_name && (
-                  <p className="ops-mute text-sm">In charge: {r.admin_in_charge_name}. Coordinate with them in the group chat.</p>
+                  <p className="ops-mute text-[13px]">In charge: {r.admin_in_charge_name}. Coordinate with them in the group chat.</p>
                 )}
                 <div className="mt-auto grid grid-cols-2 gap-2">
                   <button type="button" className="ops-btn" onClick={() => copyAd(r)}>
-                    {copied === r.id ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}{copied === r.id ? 'Copied' : 'Copy ad text'}
+                    {copied === r.id ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copied === r.id ? 'Copied' : 'Copy ad text'}
                   </button>
-                  <a className="ops-btn ops-btn-go" href={share} target="_blank" rel="noopener noreferrer"><Share2 size={18} aria-hidden="true" />WhatsApp</a>
+                  <a className="ops-btn ops-btn-go" href={share} target="_blank" rel="noopener noreferrer"><Share2 size={14} aria-hidden="true" />WhatsApp</a>
                 </div>
               </div>
             </li>
