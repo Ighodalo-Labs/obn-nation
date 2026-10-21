@@ -7,7 +7,7 @@ export function ListingCard({ mode, stage = 0, className = '' }: Props) {
   return (
     <figure className={className}>
       <div
-        className="phone w-full max-w-[22rem] overflow-hidden rounded-2xl border border-[#E4E2DD] bg-white shadow-[0_30px_60px_-24px_rgba(20,20,20,.35)]"
+        className="phone w-full max-w-[22rem] overflow-hidden rounded-2xl border border-white/10 bg-white shadow-[0_40px_80px_-24px_rgba(0,0,0,.6)]"
         data-mode={mode}
         data-stage={stage}
       >
