@@ -16,11 +16,11 @@ export function LandingMotion() {
       gsap.registerPlugin(ScrollTrigger);
       const mm = gsap.matchMedia();
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {
-          gsap.fromTo(el, { y: 28, opacity: 0 }, {
-            y: 0, opacity: 1, duration: 0.9, ease: 'power3.out',
-            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-          });
+        gsap.set('[data-reveal]', { y: 28, opacity: 0 });
+        ScrollTrigger.batch('[data-reveal]', {
+          start: 'top 90%',
+          once: true,
+          onEnter: (batch) => gsap.to(batch, { y: 0, opacity: 1, duration: 0.6, ease: 'back.out(1.2)', stagger: { each: 0.07, from: 'start' } }),
         });
         gsap.utils.toArray<HTMLElement>('[data-drift]').forEach((el) => {
           gsap.fromTo(el, { yPercent: -4 }, {

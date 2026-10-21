@@ -163,9 +163,10 @@ export default function Home() {
         <ul className="mt-10 grid auto-rows-[200px] grid-cols-2 gap-3 sm:auto-rows-[220px] sm:grid-cols-4 sm:gap-4">
           {TILES.map((t) => (
             <li key={t.label} className={`${t.span} col-span-1`} data-reveal>
-              <Link href="/list" className="photo-card group relative block h-full w-full overflow-hidden rounded-3xl bg-[#0A0A0A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0A0A0A]">
+              <Link href="/list" className="photo-card group relative block cursor-pointer h-full w-full overflow-hidden rounded-3xl bg-[#0A0A0A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#0A0A0A]">
                 <Image src={t.src} alt={t.alt} fill sizes="(min-width:640px) 25vw, 50vw" className={`object-cover ${t.pos}`} />
                 <span className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/5 to-transparent" aria-hidden="true" />
+                <span className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-[#0A0A0A]"><ShieldCheck size={14} className="text-brand-green" aria-hidden="true" />Admin checked</span>
                 <span className="absolute inset-x-5 bottom-4 flex items-center justify-between text-white">
                   <b className="text-lg font-semibold sm:text-xl">{t.label}</b>
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 backdrop-blur transition-colors group-hover:bg-brand-red"><ArrowUpRight size={18} aria-hidden="true" /></span>
