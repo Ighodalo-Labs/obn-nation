@@ -17,7 +17,7 @@ export function DetailsFields({ draft, errors, set }: {
           onChange={(e) => set('title', e.target.value)} />
       </Field>
       <Field id="description" label="Description" hint={`${draft.description.length} / 1000`} error={errors.description}>
-        <textarea id="description" className={`${inputClass} min-h-28`} rows={4} maxLength={1000} value={draft.description}
+        <textarea id="description" className={`${inputClass} min-h-32`} rows={4} maxLength={1000} value={draft.description}
           placeholder="What it is, how old it is, what comes with it."
           aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? 'description-error' : undefined}
           onChange={(e) => set('description', e.target.value)} />
@@ -37,7 +37,7 @@ export function DetailsFields({ draft, errors, set }: {
         onChange={(v) => set('condition_work', v)} error={errors.condition_work} columns={3} />
       <Field id="price" label="Price" error={errors.price}>
         <div className="flex gap-2">
-          <span className="flex min-h-12 items-center rounded-xl border border-border bg-bg px-3 text-base text-muted">₦</span>
+          <span className="flex min-h-14 items-center rounded-2xl bg-[#16140F] px-5 text-lg font-bold text-white">₦</span>
           <input id="price" className={inputClass} type="text" inputMode="numeric" autoComplete="off" placeholder="150,000"
             value={formatPrice(draft.price)} aria-invalid={Boolean(errors.price)} aria-describedby={errors.price ? 'price-error' : undefined}
             onChange={(e) => set('price', priceDigits(e.target.value))} />

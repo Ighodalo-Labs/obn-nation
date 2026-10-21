@@ -3,14 +3,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { clock, formatSentTo, postJson } from '@/lib/auth/client';
+import { pillButton, primaryButton } from '@/components/listing/ui';
 
 type Step = 'phone' | 'code' | 'name';
 
 interface SendOk { sent: true; phone: string; resend_after_seconds: number }
 interface VerifyOk { user: { needs_name: boolean }; next: string }
 
-const input = 'h-12 w-full rounded-xl border border-border bg-bg px-3 text-base text-white placeholder:text-muted focus:border-tint-blue focus:outline-none focus:ring-2 focus:ring-tint-blue';
-const primary = 'h-12 w-full rounded-full bg-brand-red text-base font-semibold text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+const input = 'min-h-14 w-full rounded-2xl border-2 border-[#E2D9CA] bg-white px-4 text-lg text-[#16140F] placeholder:text-[#8E8778] transition-colors hover:border-[#BDB3A1] focus:border-[#1565C0] focus:outline-none focus:ring-4 focus:ring-[#1565C0]/15';
+const primary = `${primaryButton} w-full`;
+const eyebrow = (text: string) => (
+  <p className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.22em] text-[#6B655A]">
+    <span className="flex h-1 w-10 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
+    {text}
+  </p>
+);
+const heading = 'font-display text-[clamp(2rem,6vw,2.9rem)] font-extrabold leading-[1.03] tracking-[-0.035em]';
 
 export function SignInFlow({ next }: { next: string | null }) {
   const router = useRouter();
@@ -84,20 +92,21 @@ export function SignInFlow({ next }: { next: string | null }) {
   };
 
   return (
-    <section className="flex flex-col gap-4 pb-8" aria-live="polite">
+    <section className="flex flex-col gap-5" aria-live="polite">
       {step === 'phone' && (
         <form className="flex flex-col gap-4" onSubmit={onSubmit(sendCode)} noValidate>
-          <h1 className="text-[28px] font-semibold leading-tight tracking-tight">Sign in with WhatsApp</h1>
-          <p className="-mt-2 text-base text-muted">We send a 6-digit code. No password needed.</p>
-          <label htmlFor="phone" className="text-sm text-muted">Phone number</label>
+          {eyebrow('Sell on OBN NATION')}
+          <h1 className={heading}>Let’s get you in.</h1>
+          <p className="-mt-2 text-lg text-[#6B655A]">We send a 6-digit code on WhatsApp. No password to remember.</p>
+          <label htmlFor="phone" className="text-base font-bold">Your WhatsApp number</label>
           <div className="flex gap-2">
-            <span className="flex h-12 items-center rounded-xl border border-border bg-bg px-3 text-base text-muted">+234</span>
+            <span className="flex min-h-14 items-center rounded-2xl bg-[#16140F] px-4 text-lg font-bold text-white">+234</span>
             <input
               id="phone" ref={firstField} className={input} type="tel" inputMode="tel" autoComplete="tel-national"
               placeholder="803 123 4567" value={digits} onChange={(e) => setDigits(e.target.value)} aria-describedby="phone-help"
             />
           </div>
-          <p id="phone-help" className="text-sm text-muted">Use a number that has WhatsApp. Buyers never see it.</p>
+          <p id="phone-help" className="text-sm text-[#6B655A]">Use a number that has WhatsApp. Buyers never see it.</p>
           <button className={primary} type="submit" disabled={busy || digits.replace(/\D/g, '').length < 10}>
             {busy ? 'Sending…' : 'Send code'}
           </button>
@@ -106,19 +115,20 @@ export function SignInFlow({ next }: { next: string | null }) {
 
       {step === 'code' && (
         <form className="flex flex-col gap-4" onSubmit={onSubmit(verify)} noValidate>
-          <h1 className="text-[26px] font-semibold leading-tight">Enter your code</h1>
-          <p className="text-base text-muted">Sent to WhatsApp {formatSentTo(phone)}</p>
+          {eyebrow('Check WhatsApp')}
+          <h1 className={heading}>Enter your code.</h1>
+          <p className="text-lg text-[#6B655A]">Sent to WhatsApp {formatSentTo(phone)}</p>
           <label htmlFor="code" className="sr-only">6-digit code</label>
           <input
-            id="code" ref={firstField} className={`${input} text-center text-2xl tracking-[0.5em]`} type="text" inputMode="numeric"
+            id="code" ref={firstField} className={`${input} text-center text-3xl font-extrabold tracking-[0.5em]`} type="text" inputMode="numeric"
             autoComplete="one-time-code" maxLength={6} placeholder="••••••" value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
           />
-          <div className="flex items-center justify-between text-sm">
-            <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent" disabled={wait > 0 || busy} onClick={sendCode}>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <button type="button" className={pillButton} disabled={wait > 0 || busy} onClick={sendCode}>
               {wait > 0 ? `Resend in ${clock(wait)}` : 'Resend code'}
             </button>
-            <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent" onClick={() => { setStep('phone'); setError(null); }}>
+            <button type="button" className={pillButton} onClick={() => { setStep('phone'); setError(null); }}>
               Change number
             </button>
           </div>
@@ -130,13 +140,14 @@ export function SignInFlow({ next }: { next: string | null }) {
 
       {step === 'name' && (
         <form className="flex flex-col gap-4" onSubmit={onSubmit(saveName)} noValidate>
-          <h1 className="text-[26px] font-semibold leading-tight">One last thing</h1>
-          <label htmlFor="name" className="text-base">What should we call you?</label>
+          {eyebrow('Almost there')}
+          <h1 className={heading}>One last thing.</h1>
+          <label htmlFor="name" className="text-base font-bold">What should we call you?</label>
           <input
             id="name" ref={firstField} className={input} type="text" autoComplete="name" maxLength={80}
             placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} aria-describedby="name-help"
           />
-          <p id="name-help" className="text-sm text-muted">Shown to admins only.</p>
+          <p id="name-help" className="text-sm text-[#6B655A]">Shown to admins only.</p>
           <button className={primary} type="submit" disabled={busy || name.trim().length < 2}>
             {busy ? 'Saving…' : 'Continue'}
           </button>
@@ -144,7 +155,7 @@ export function SignInFlow({ next }: { next: string | null }) {
       )}
 
       {error && (
-        <p role="alert" className="rounded-xl border border-tint-red bg-bg p-3 text-base text-tint-red">
+        <p role="alert" className="rounded-2xl border-2 border-[#C62828]/30 bg-[#FDECEA] p-4 text-base font-semibold text-[#7A1B16]">
           {error}
         </p>
       )}

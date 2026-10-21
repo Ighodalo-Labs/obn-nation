@@ -13,9 +13,9 @@ export const metadata: Metadata = { title: 'Fix your listing · OBN NATION', rob
 function Problem({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-start gap-4 py-8">
-      <h1 className="text-2xl">We cannot open this link</h1>
-      <p role="alert" className="text-base">{message}</p>
-      <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-white/25 disabled:hover:bg-transparent">Go to the home page</Link>
+      <h1 className="font-display text-[clamp(1.9rem,5vw,2.6rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">We cannot open this link</h1>
+      <p role="alert" className="text-lg text-[#6B655A]">{message}</p>
+      <Link href="/" className="inline-flex min-h-14 items-center justify-center rounded-full bg-brand-red px-7 text-base font-bold text-white transition-all hover:bg-[#16140F] active:scale-[.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16140F]">Go to the home page</Link>
     </div>
   );
 }
