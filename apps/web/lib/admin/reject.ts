@@ -13,7 +13,7 @@ export const rejectSchema = z.object({
 export const reissueSchema = z.object({ listing_id: z.string().uuid() });
 export type RejectBody = z.infer<typeof rejectSchema>;
 
-export type Notification = { status: 'sent'; twilio_sid: string } | { status: 'failed'; reason: string };
+export type Notification = { status: 'sent'; twilio_sid: string; stub_edit_link?: string } | { status: 'failed'; reason: string };
 
 export interface SellerInfo { phone: string; fullName: string; title: string; reason: string }
 
@@ -36,7 +36,8 @@ async function finish(deps: RejectDeps, listingId: string, link: string, expires
       notification = { status: 'failed', reason: 'seller_not_found' };
     } else {
       const r = await deps.notify(seller.phone, { firstName: firstName(seller.fullName), title: seller.title, reason: seller.reason, link });
-      notification = r.status === 'sent' ? { status: 'sent', twilio_sid: r.sid } : { status: 'failed', reason: r.reason };
+      // Test mode only (WhatsApp stub): nothing is sent, so the link is returned to the admin who rejected, so the flow can be tried by hand. Live mode never returns it.
+      notification = r.status === 'sent' ? { status: 'sent', twilio_sid: r.sid, ...(r.sid === 'stub' ? { stub_edit_link: link } : {}) } : { status: 'failed', reason: r.reason };
     }
   } catch {
     notification = { status: 'failed', reason: 'send_error' }; // the rejection is already saved, so this is not an error response
