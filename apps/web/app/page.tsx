@@ -3,7 +3,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { ListingCard } from '@/components/landing/ListingCard';
-import { ArrowUpRight, BadgeCheck, Camera, Check, Lock, MapPin, ShieldCheck } from 'lucide-react';
+import { ArrowUpRight, BadgeCheck, Camera, Lock, MapPin, ShieldCheck } from 'lucide-react';
 
 
 const ABOUT = [
@@ -19,11 +19,11 @@ const STEPS = [
 ];
 
 const TILES = [
-  { label: 'Phones', src: '/photos/people/man-smiling-phone.webp', alt: 'A young man smiling at his phone', span: 'sm:row-span-2', pos: 'object-[50%_30%]' },
-  { label: 'TVs', src: '/photos/people/old-tvs-electronics-stall.webp', alt: 'A woman beside a stack of used TVs at an electronics stall', span: 'sm:col-span-2', pos: 'object-[50%_55%]' },
-  { label: 'Computers', src: '/photos/people/man-laptop-agbada.webp', alt: 'A man in traditional wear holding a laptop', span: '', pos: 'object-[50%_25%]' },
+  { label: 'Phones', src: '/photos/devices.webp', alt: 'A phone, tablet and laptop on a wooden table', span: 'sm:row-span-2', pos: 'object-[30%_50%]' },
+  { label: 'TVs', src: '/photos/tv-wall.webp', alt: 'A TV on the wall of a tidy living room', span: 'sm:col-span-2', pos: 'object-[50%_42%]' },
+  { label: 'Computers', src: '/photos/devices.webp', alt: 'A laptop and tablet on a desk', span: '', pos: 'object-[10%_95%]' },
   { label: 'Fridges and kitchen', src: '/photos/kitchen.webp', alt: 'A kitchen with a washing machine and fridge', span: '', pos: 'object-center' },
-  { label: 'Furniture', src: '/photos/people/woman-sofa-phone.webp', alt: 'A woman relaxing on a sofa', span: 'sm:col-span-2', pos: 'object-[50%_60%]' },
+  { label: 'Furniture', src: '/photos/living-room.webp', alt: 'A sofa and coffee table in a living room', span: 'sm:col-span-2', pos: 'object-[80%_70%]' },
 ];
 const MORE = ['Generators', 'Other'];
 
@@ -105,53 +105,31 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className={`${BLEED} relative isolate overflow-hidden bg-[#F6F6F4]`}>
-        <div className="pointer-events-none absolute -right-40 -top-40 -z-10 h-[620px] w-[620px] rounded-full bg-[#F4D9A8]/40 blur-3xl" aria-hidden="true" />
-        <div className={`${INNER} grid items-center gap-10 py-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:py-20`}>
-          <div className="order-2 lg:order-1">
-            <p className="hero-fade mb-7 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#3A3A37]" style={{ ['--d' as string]: '.05s' }}>
-              <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
-              One Beta Nation
-            </p>
-            <h1 className="font-display text-[clamp(2.5rem,5vw,4.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">
-              <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
-              <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what</span></span>
-              <span className="line-mask"><span style={{ ['--d' as string]: '.34s' }}>you don’t.</span></span>
-            </h1>
-            <p className="hero-fade mt-7 max-w-md text-lg leading-relaxed text-[#3A3A37]" style={{ ['--d' as string]: '.5s' }}>
-              List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
-            </p>
-            <div className="hero-fade mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center" style={{ ['--d' as string]: '.65s' }}>
-              <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white shadow-[0_14px_30px_-10px_rgba(211,47,47,.6)] hover:bg-[#B71C1C] focus-visible:outline-[#0A0A0A]`}>
-                List an item <ArrowUpRight size={18} aria-hidden="true" />
-              </Link>
-              <a href="#how" className="flex min-h-12 items-center px-2 text-base font-semibold underline decoration-black/30 underline-offset-[6px] hover:decoration-black">See how it works</a>
-            </div>
-            <p className="hero-fade mt-10 flex items-center gap-2 text-sm text-[#5C5C58]" style={{ ['--d' as string]: '.8s' }}>
-              <MapPin size={16} className="text-brand-red" aria-hidden="true" /> Now open in Port Harcourt, Delta and Ekiti
-            </p>
-          </div>
-          <div className="order-1 lg:order-2">
-            <div className="relative mx-auto aspect-[4/4.4] w-full max-w-md lg:max-w-none">
-              <span className="absolute -left-3 top-10 bottom-10 flex w-1.5 flex-col overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
-              <div className="absolute inset-0 overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-30px_rgba(40,20,0,.45)]">
-                <Image src="/photos/people/woman-sofa-phone.webp" alt="A woman smiling at her phone on a sofa" fill priority sizes="(min-width:1024px) 520px, 90vw" className="settle object-cover object-[68%_35%]" />
-              </div>
-              <div className="hero-fade absolute -left-4 bottom-10 flex items-center gap-3 rounded-2xl bg-white p-3 pr-5 shadow-[0_24px_50px_-18px_rgba(0,0,0,.4)] sm:-left-8" style={{ ['--d' as string]: '.9s' }}>
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-green text-white"><Check size={20} aria-hidden="true" /></span>
-                <span className="leading-tight"><b className="block text-sm font-semibold">Approved</b><span className="text-xs text-[#5C5C58]">Live in Port Harcourt</span></span>
-              </div>
-              <div className="hero-fade absolute -right-2 top-8 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold shadow-[0_20px_40px_-18px_rgba(0,0,0,.35)] sm:-right-6" style={{ ['--d' as string]: '1.05s' }}>
-                <ShieldCheck size={16} className="text-brand-blue" aria-hidden="true" /> Checked by an admin
-              </div>
-            </div>
+      {/* Hero: full photo, one clear message, one clear action */}
+      <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
+        <Image src="/photos/living-room.webp" alt="" fill priority sizes="100vw" className="settle -z-20 object-cover object-[70%_50%]" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/80 via-[#0A0A0A]/40 to-transparent" aria-hidden="true" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/50 via-transparent to-transparent" aria-hidden="true" />
+        <div className={`${INNER} flex min-h-[620px] flex-col justify-center pb-28 pt-16 lg:min-h-[700px]`}>
+          <p className="hero-fade mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm text-white backdrop-blur" style={{ ['--d' as string]: '.1s' }}>
+            <MapPin size={16} aria-hidden="true" /> Now in Port Harcourt, Delta and Ekiti
+          </p>
+          <h1 className="font-display max-w-4xl text-[clamp(2.6rem,6vw,5.2rem)] font-extrabold leading-[1.0] tracking-[-0.04em] text-white">
+            <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
+            <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
+          </h1>
+          <p className="hero-fade mt-6 max-w-xl text-lg leading-relaxed text-white/85 sm:text-xl" style={{ ['--d' as string]: '.5s' }}>
+            List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
+          </p>
+          <div className="hero-fade mt-9 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.65s' }}>
+            <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item <ArrowUpRight size={18} aria-hidden="true" /></Link>
+            <a href="#how" className={`${BTN} border border-white/40 bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-white`}>See how it works</a>
           </div>
         </div>
       </section>
 
       {/* Proof strip overlapping the hero */}
-      <section className={`${INNER} relative z-10 -mt-14`}>
+      <section className={`${INNER} relative z-10 -mt-16`}>
         <ul className="grid gap-px overflow-hidden rounded-2xl bg-black/10 shadow-[0_24px_60px_-20px_rgba(0,0,0,.35)] sm:grid-cols-3" data-reveal>
           {PROOF.map(({ Icon, title, text }) => (
             <li key={title} className="flex items-start gap-4 bg-white p-6">
@@ -163,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* What you can list: photo grid */}
-      <section className={`${INNER} py-20 sm:py-28`} aria-labelledby="list-h">
+      <section className={`${INNER} py-14 sm:py-20`} aria-labelledby="list-h">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end" data-reveal>
           <div className="max-w-2xl">
             <h2 id="list-h" className={H2}>What you can list</h2>
@@ -196,8 +174,8 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section id="how" className={`${BLEED} bg-white`} aria-labelledby="how-h">
-        <div className={`${INNER} grid items-center gap-14 py-20 sm:py-28 lg:grid-cols-[1.1fr_.9fr]`}>
+      <section id="how" className={`${BLEED} bg-[#ECE6DC]`} aria-labelledby="how-h">
+        <div className={`${INNER} grid items-center gap-12 py-14 sm:py-20 lg:grid-cols-[1.1fr_.9fr]`}>
           <div>
             <h2 id="how-h" className={H2} data-reveal>Three steps. No shop to set up.</h2>
             <ol className="mt-10 flex flex-col gap-8">
@@ -212,7 +190,7 @@ export default function Home() {
           </div>
           <div className="relative mx-auto w-full max-w-md pb-16" data-reveal>
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl">
-              <Image src="/photos/people/friends-phones-street.webp" alt="Two friends checking a phone together on a Lagos street" fill sizes="(min-width:1024px) 420px, 90vw" className="object-cover object-[40%_50%]" />
+              <Image src="/photos/tv-wall.webp" alt="A TV on a wall in a tidy living room" fill sizes="(min-width:1024px) 420px, 90vw" className="object-cover object-[50%_40%]" />
             </div>
             <ListingCard mode="auto" className="absolute -bottom-0 -left-4 w-[78%] sm:-left-10" />
           </div>
@@ -221,9 +199,9 @@ export default function Home() {
 
       {/* Safety */}
       <section id="safety" className={`${BLEED} bg-[#0A0A0A] text-white`} aria-labelledby="safe-h">
-        <div className={`${INNER} py-20 sm:py-28`}>
+        <div className={`${INNER} py-14 sm:py-20`}>
           <h2 id="safe-h" className={`${H2} max-w-3xl`} data-reveal>A real person checks every listing.</h2>
-          <ul className="mt-12 grid gap-4 md:grid-cols-3">
+          <ul className="mt-9 grid gap-4 md:grid-cols-3">
             {TRUST.map(({ Icon, title, text, bar }) => (
               <li key={title} className="overflow-hidden rounded-2xl border border-white/10 bg-[#171717]" data-reveal>
                 <span className={`block h-1 ${bar}`} aria-hidden="true" />
@@ -239,7 +217,7 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className={`${INNER} grid gap-12 py-20 sm:py-28 lg:grid-cols-[.8fr_1.2fr]`} aria-labelledby="faq-h">
+      <section id="faq" className={`${BLEED} bg-[#F6F6F4]`} aria-labelledby="faq-h"><div className={`${INNER} grid gap-10 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
         <h2 id="faq-h" className={H2} data-reveal>Questions, answered.</h2>
         <div className="divide-y divide-black/10 border-y border-black/10" data-reveal>
           {FAQ.map((f) => (
@@ -252,11 +230,12 @@ export default function Home() {
             </details>
           ))}
         </div>
+        </div>
       </section>
 
       {/* About (PRD 3, client copy word for word) */}
-      <section id="about" className={`${BLEED} bg-white`} aria-labelledby="about-h">
-        <div className={`${INNER} grid gap-12 py-20 sm:py-28 lg:grid-cols-[.8fr_1.2fr]`}>
+      <section id="about" className={`${BLEED} bg-[#ECE6DC]`} aria-labelledby="about-h">
+        <div className={`${INNER} grid gap-12 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr]`}>
           <div data-reveal>
             <h2 id="about-h" className={H2}>About OBN NATION</h2>
             <ul className="mt-8 flex flex-col gap-3">
@@ -275,9 +254,9 @@ export default function Home() {
 
       {/* Closing call to action */}
       <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
-        <Image src="/photos/people/market-woman-phone.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-[50%_35%]" />
+        <Image src="/photos/kitchen.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-center" />
         <div className="absolute inset-0 -z-10 bg-[#0A0A0A]/65" aria-hidden="true" />
-        <div className={`${INNER} flex flex-col items-center py-24 text-center sm:py-32`}>
+        <div className={`${INNER} flex flex-col items-center py-16 text-center sm:py-24`}>
           <h2 className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-[-0.035em] text-white sm:text-6xl" data-reveal>Got something to sell?</h2>
           <Link href="/list" className={`${BTN} mt-9 bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-white`}>List an item</Link>
         </div>
