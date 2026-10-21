@@ -60,11 +60,11 @@ export const metadata: Metadata = {
   openGraph: { title: 'OBN NATION — Connecting People', description: ABOUT[0].split('. ')[0] + '.', type: 'website' },
 };
 
-const FULL = 'relative left-1/2 w-screen -translate-x-1/2';
+const FULL = 'ml-[calc(50%-50vw)] w-screen';
 const BLEED = '';
 const INNER = 'mx-auto w-full max-w-6xl px-5';
 const BTN = 'flex min-h-12 items-center justify-center rounded-full px-7 text-base font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
-const H2 = 'text-3xl font-semibold leading-[1.1] tracking-[-0.03em] sm:text-5xl';
+const H2 = 'font-display text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-5xl';
 const NAVLINK = 'flex min-h-12 items-center rounded-full px-4 text-sm font-medium text-[#0A0A0A]/75 transition-colors hover:bg-black/5 hover:text-[#0A0A0A]';
 
 /** Gateway page (PRD 6.1). Server-rendered and complete without scripts. Motion is added on top. */
@@ -72,11 +72,6 @@ export default function Home() {
   return (
     <main className={`${FULL} bg-[#F6F6F4] pb-24 text-[#0A0A0A] md:pb-0`}>
       <style>{`html,body{background:#F6F6F4 !important;color:#0A0A0A}`}</style>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: "try{if(/[?&]intro/.test(location.search)){sessionStorage.removeItem('obn-intro')}if(sessionStorage.getItem('obn-intro')){document.documentElement.classList.add('no-intro')}else{sessionStorage.setItem('obn-intro','1')}}catch(e){}",
-        }}
-      />
       <LandingMotion />
 
       {/* Opening: logo, a red, green and blue line, then the screen lifts away. Once per visit. */}
@@ -110,30 +105,46 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Hero: warm photo on the right, one clear message and one clear action on the left */}
+      {/* Hero */}
       <section className={`${BLEED} relative isolate overflow-hidden bg-[#F6F6F4]`}>
-        <div className="relative mx-auto aspect-[4/3] w-full max-w-xl px-5 pt-4 lg:absolute lg:inset-y-0 lg:right-0 lg:mx-0 lg:aspect-auto lg:w-[60%] lg:max-w-none lg:p-0">
-          <Image src="/photos/people/woman-sofa-phone.webp" alt="A woman smiling at her phone on a sofa" fill priority sizes="(min-width:1024px) 60vw, 90vw" className="settle rounded-3xl object-cover object-[60%_40%] lg:rounded-none lg:[mask-image:linear-gradient(to_right,transparent,black_38%)]" />
-          <div className="hero-fade absolute bottom-6 left-9 flex items-center gap-3 rounded-2xl bg-white/95 p-3 pr-5 shadow-[0_20px_50px_-15px_rgba(0,0,0,.35)] backdrop-blur lg:bottom-16 lg:left-[22%]" style={{ ['--d' as string]: '.9s' }}>
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-green text-white"><Check size={20} aria-hidden="true" /></span>
-            <span className="leading-tight"><b className="block text-sm font-semibold">Approved</b><span className="text-xs text-[#5C5C58]">Live in Port Harcourt</span></span>
-          </div>
-        </div>
-        <div className={`${INNER} relative flex flex-col justify-center py-12 lg:min-h-[640px] lg:py-24`}>
-          <div className="max-w-xl lg:max-w-[54%]">
-            <p className="hero-fade mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium" style={{ ['--d' as string]: '.1s' }}>
-              <MapPin size={16} className="text-brand-red" aria-hidden="true" /> Now in Port Harcourt, Delta and Ekiti
+        <div className="pointer-events-none absolute -right-40 -top-40 -z-10 h-[620px] w-[620px] rounded-full bg-[#F4D9A8]/40 blur-3xl" aria-hidden="true" />
+        <div className={`${INNER} grid items-center gap-10 py-10 lg:grid-cols-[1.05fr_.95fr] lg:gap-16 lg:py-20`}>
+          <div className="order-2 lg:order-1">
+            <p className="hero-fade mb-7 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.22em] text-[#3A3A37]" style={{ ['--d' as string]: '.05s' }}>
+              <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
+              One Beta Nation
             </p>
-            <h1 className="text-[clamp(2.3rem,4.7vw,4.3rem)] font-semibold leading-[1.02] tracking-[-0.04em]">
+            <h1 className="font-display text-[clamp(2.5rem,5vw,4.6rem)] font-extrabold leading-[1.02] tracking-[-0.04em]">
               <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
-              <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
+              <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what</span></span>
+              <span className="line-mask"><span style={{ ['--d' as string]: '.34s' }}>you don’t.</span></span>
             </h1>
-            <p className="hero-fade mt-6 max-w-md text-lg leading-relaxed text-[#3A3A37]" style={{ ['--d' as string]: '.5s' }}>
+            <p className="hero-fade mt-7 max-w-md text-lg leading-relaxed text-[#3A3A37]" style={{ ['--d' as string]: '.5s' }}>
               List an item in minutes. An admin checks it. Then it is ready for buyers in your community.
             </p>
-            <div className="hero-fade mt-8 flex flex-col gap-3 sm:flex-row" style={{ ['--d' as string]: '.65s' }}>
-              <Link href="/list" className={`${BTN} bg-brand-red text-white hover:bg-[#B71C1C] focus-visible:outline-[#0A0A0A]`}>List an item</Link>
-              <a href="#how" className={`${BTN} border border-black/20 bg-white text-[#0A0A0A] hover:bg-black/5 focus-visible:outline-[#0A0A0A]`}>See how it works</a>
+            <div className="hero-fade mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center" style={{ ['--d' as string]: '.65s' }}>
+              <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white shadow-[0_14px_30px_-10px_rgba(211,47,47,.6)] hover:bg-[#B71C1C] focus-visible:outline-[#0A0A0A]`}>
+                List an item <ArrowUpRight size={18} aria-hidden="true" />
+              </Link>
+              <a href="#how" className="flex min-h-12 items-center px-2 text-base font-semibold underline decoration-black/30 underline-offset-[6px] hover:decoration-black">See how it works</a>
+            </div>
+            <p className="hero-fade mt-10 flex items-center gap-2 text-sm text-[#5C5C58]" style={{ ['--d' as string]: '.8s' }}>
+              <MapPin size={16} className="text-brand-red" aria-hidden="true" /> Now open in Port Harcourt, Delta and Ekiti
+            </p>
+          </div>
+          <div className="order-1 lg:order-2">
+            <div className="relative mx-auto aspect-[4/4.4] w-full max-w-md lg:max-w-none">
+              <span className="absolute -left-3 top-10 bottom-10 flex w-1.5 flex-col overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
+              <div className="absolute inset-0 overflow-hidden rounded-[2rem] shadow-[0_40px_90px_-30px_rgba(40,20,0,.45)]">
+                <Image src="/photos/people/woman-sofa-phone.webp" alt="A woman smiling at her phone on a sofa" fill priority sizes="(min-width:1024px) 520px, 90vw" className="settle object-cover object-[68%_35%]" />
+              </div>
+              <div className="hero-fade absolute -left-4 bottom-10 flex items-center gap-3 rounded-2xl bg-white p-3 pr-5 shadow-[0_24px_50px_-18px_rgba(0,0,0,.4)] sm:-left-8" style={{ ['--d' as string]: '.9s' }}>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-green text-white"><Check size={20} aria-hidden="true" /></span>
+                <span className="leading-tight"><b className="block text-sm font-semibold">Approved</b><span className="text-xs text-[#5C5C58]">Live in Port Harcourt</span></span>
+              </div>
+              <div className="hero-fade absolute -right-2 top-8 flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold shadow-[0_20px_40px_-18px_rgba(0,0,0,.35)] sm:-right-6" style={{ ['--d' as string]: '1.05s' }}>
+                <ShieldCheck size={16} className="text-brand-blue" aria-hidden="true" /> Checked by an admin
+              </div>
             </div>
           </div>
         </div>

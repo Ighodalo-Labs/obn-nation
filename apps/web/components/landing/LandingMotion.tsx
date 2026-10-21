@@ -1,12 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
+
+const useBeforePaint = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**
  * Scroll reveals for the landing page. The page is complete without it (server-rendered).
  * GSAP loads after first paint, and only when the visitor has not asked for reduced motion.
  */
 export function LandingMotion() {
+  // The opening plays on every full page load, but not when someone comes back to Home from another page.
+  useBeforePaint(() => {
+    const w = window as unknown as { __obnIntroSeen?: boolean };
+    if (w.__obnIntroSeen) document.documentElement.classList.add('no-intro');
+    w.__obnIntroSeen = true;
+  }, []);
+
   useEffect(() => {
     let revert: (() => void) | undefined;
     let cancelled = false;

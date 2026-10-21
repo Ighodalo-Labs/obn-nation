@@ -35,7 +35,7 @@ html.no-intro { --intro: 0s; }
 @keyframes bar-in { to { transform: scaleX(1); } }
 .intro { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; background: #0a0a0a; pointer-events: none;
   animation: intro-out .85s cubic-bezier(.76,0,.24,1) 1.75s forwards, intro-gone 0s linear 2.7s forwards; }
-.intro .logo { animation: logo-in .9s cubic-bezier(.2,.8,.2,1) both .1s; }
+.intro .logo { filter: brightness(1.7) saturate(1.3); animation: logo-in .9s cubic-bezier(.2,.8,.2,1) both .1s; }
 .intro .bar { display: flex; width: min(56vw, 240px); height: 3px; }
 .intro .bar span { flex: 1; transform: scaleX(0); transform-origin: left; animation: bar-in .45s ease forwards; }
 .intro .bar span:nth-child(1) { background: #d32f2f; animation-delay: .8s; }
