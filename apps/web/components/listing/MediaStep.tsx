@@ -19,7 +19,7 @@ function PhotoTile({ src, label, hint, icon, disabled, onClick }: { src: string;
     >
       <Image src={src} alt="" fill sizes="(min-width:640px) 260px, 45vw" className="object-cover opacity-70 transition-all duration-500 group-hover:scale-105 group-hover:opacity-90" />
       <span className="absolute inset-0 bg-gradient-to-t from-[#16140F]/85 via-[#16140F]/20 to-transparent" aria-hidden="true" />
-      <span className="relative flex items-center gap-2 text-lg font-extrabold">{icon}{label}</span>
+      <span className="relative flex items-center gap-2 text-lg font-bold">{icon}{label}</span>
       <span className="relative text-sm text-white/80">{hint}</span>
     </button>
   );

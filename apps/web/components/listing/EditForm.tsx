@@ -63,7 +63,7 @@ export function EditForm({ token, listing, signed }: { token: string; listing: E
     return (
       <div className="flex flex-col gap-4 py-4" role="status">
         <span className="flex h-1.5 w-20 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
-        <h1 className="font-display text-[clamp(2.2rem,6vw,3.2rem)] font-extrabold leading-[1] tracking-[-0.04em]">Sent for review.</h1>
+        <h1 className="font-display text-[clamp(2.2rem,6vw,3.2rem)] font-bold leading-[1] tracking-[-0.01em]">Sent for review.</h1>
         <p className="max-w-sm text-lg text-[#6B655A]">Thank you. An admin will check your changes. This link cannot be used again.</p>
       </div>
     );
@@ -72,7 +72,7 @@ export function EditForm({ token, listing, signed }: { token: string; listing: E
   const sending = state.phase === 'sending';
   return (
     <form className="flex flex-col gap-6" noValidate onSubmit={(e) => { e.preventDefault(); void send(); }}>
-      <h1 className="font-display text-[clamp(1.9rem,5vw,2.6rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">Fix your listing</h1>
+      <h1 className="font-display text-[clamp(1.9rem,5vw,2.6rem)] font-bold leading-[1.05] tracking-[-0.01em]">Fix your listing</h1>
       {listing.rejection_reason && (
         <div role="note" className="rounded-2xl border-2 border-[#C62828]/30 bg-[#FDECEA] p-4">
           <p className="text-sm font-bold uppercase tracking-wide text-[#7A1B16]">The admin said</p>

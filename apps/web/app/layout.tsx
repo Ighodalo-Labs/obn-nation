@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import '@fontsource-variable/manrope';
+import '@fontsource-variable/schibsted-grotesk';
 import './globals.css';
 
 export const metadata: Metadata = {

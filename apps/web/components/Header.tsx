@@ -16,7 +16,7 @@ export function Header() {
         <Link href="/" className="flex min-h-12 items-center gap-3" aria-label="OBN NATION home">
           <Image src="/brand/obn-logo-clear.webp" alt="" width={44} height={44} priority className="h-11 w-11 rounded-full bg-[#0A0A0A] p-0.5" />
           <span className="flex flex-col leading-tight">
-            <span className="font-display text-base font-extrabold tracking-tight">OBN NATION</span>
+            <span className="font-display text-base font-bold">OBN NATION</span>
             <span className="text-xs text-[#6B655A]">Connecting People</span>
           </span>
         </Link>

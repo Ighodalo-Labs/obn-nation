@@ -29,7 +29,7 @@ export function StepHeader({ step, title }: { step: 1 | 2 | 3; title: string }) 
             <li key={name} className={`flex items-start ${i < 2 ? 'flex-1' : ''}`}>
               <span className="flex w-16 flex-col items-center gap-1.5 text-center sm:w-24">
                 <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-extrabold transition-colors ${
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-base font-bold transition-colors ${
                     done || current ? `${STEP_FILL[i]} text-white` : 'border-2 border-[#D5CCBB] bg-white text-[#8E8778]'
                   } ${current ? 'ring-4 ring-[#16140F]/10' : ''}`}
                 >
@@ -42,7 +42,7 @@ export function StepHeader({ step, title }: { step: 1 | 2 | 3; title: string }) 
           );
         })}
       </ol>
-      <h1 className="font-display text-[clamp(1.9rem,5vw,2.6rem)] font-extrabold leading-[1.05] tracking-[-0.035em]">{title}</h1>
+      <h1 className="font-display text-[clamp(1.9rem,5vw,2.6rem)] font-bold leading-[1.05] tracking-[-0.01em]">{title}</h1>
     </div>
   );
 }
@@ -100,7 +100,7 @@ export function CardChoice({
               {o.icon && <span aria-hidden="true" className={selected ? 'text-white' : 'text-[#6B655A]'}>{o.icon}</span>}
               <span className={row ? 'font-bold' : 'font-bold leading-tight'}>{o.label}</span>
               {selected && (
-                <span aria-hidden="true" className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#16140F]">✓</span>
+                <span aria-hidden="true" className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold text-[#16140F]">✓</span>
               )}
             </label>
           );

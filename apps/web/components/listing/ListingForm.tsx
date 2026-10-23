@@ -81,7 +81,7 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
 
       {step > 1 && (
         <p className="flex w-fit flex-wrap items-center gap-3 rounded-full bg-[#FAF7F2] py-1.5 pl-5 pr-1.5 text-sm">
-          <span className="font-extrabold">{regionOptions.find((r) => r.value === draft.region)?.label}</span>
+          <span className="font-bold">{regionOptions.find((r) => r.value === draft.region)?.label}</span>
           <span className="text-[#6B655A]">{categoryOptions.find((c) => c.value === draft.category)?.label}</span>
           <button type="button" className={`${pillButton} !min-h-12`} onClick={() => go(1)}>Change</button>
         </p>

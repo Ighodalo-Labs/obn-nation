@@ -14,7 +14,7 @@ const config: Config = {
         tint: { red: tokens.redTint, green: tokens.greenTint, blue: tokens.blueTint },
       },
       maxWidth: { screen480: '480px' },
-      fontFamily: { display: ['"Manrope Variable"', 'system-ui', 'sans-serif'], sans: ['system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'] },
+      fontFamily: { display: ['"Schibsted Grotesk Variable"', 'system-ui', 'sans-serif'], sans: ['"Schibsted Grotesk Variable"', 'system-ui', '-apple-system', '"Segoe UI"', 'Roboto', 'sans-serif'] },
     },
   },
   plugins: [],

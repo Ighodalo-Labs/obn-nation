@@ -18,7 +18,7 @@ const eyebrow = (text: string) => (
     {text}
   </p>
 );
-const heading = 'font-display text-[clamp(2rem,6vw,2.9rem)] font-extrabold leading-[1.03] tracking-[-0.035em]';
+const heading = 'font-display text-[clamp(2rem,6vw,2.9rem)] font-bold leading-[1.03] tracking-[-0.01em]';
 
 export function SignInFlow({ next }: { next: string | null }) {
   const router = useRouter();
@@ -124,7 +124,7 @@ export function SignInFlow({ next }: { next: string | null }) {
               {Array.from({ length: 6 }, (_, i) => (
                 <span
                   key={i}
-                  className={`sell-box flex h-16 items-center justify-center rounded-2xl border-2 bg-white font-display text-3xl font-extrabold text-[#16140F] transition-all duration-200 ${code[i] ? 'sell-pop border-[#16140F]' : i === code.length ? 'border-[#1565C0] ring-4 ring-[#1565C0]/15' : 'border-[#E2D9CA]'}`}
+                  className={`sell-box flex h-16 items-center justify-center rounded-2xl border-2 bg-white font-display text-3xl font-bold text-[#16140F] transition-all duration-200 ${code[i] ? 'sell-pop border-[#16140F]' : i === code.length ? 'border-[#1565C0] ring-4 ring-[#1565C0]/15' : 'border-[#E2D9CA]'}`}
                 >
                   {code[i] ?? (i === code.length ? <i className="sell-caret h-7 w-0.5 bg-[#1565C0]" /> : '')}
                 </span>

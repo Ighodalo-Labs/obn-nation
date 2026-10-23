@@ -29,7 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               ))}
               <div className="absolute inset-0 bg-gradient-to-t from-[#16140F]/90 via-[#16140F]/10 to-transparent" />
               <div className="absolute inset-x-8 bottom-8 text-white">
-                <p className="font-display text-5xl font-extrabold leading-[1] tracking-[-0.04em]">Sell what<br />you don’t use.</p>
+                <p className="font-display text-5xl font-bold leading-[1] tracking-[-0.01em]">Sell what<br />you don’t use.</p>
                 <p className="mt-3 max-w-xs text-base text-white/80">Takes about five minutes. Free to list.</p>
               </div>
             </div>
@@ -38,7 +38,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <li key={title} className="flex items-stretch gap-4">
                   <span className={`w-1.5 rounded-full ${color}`} />
                   <span className="flex flex-col py-0.5">
-                    <span className="font-display text-lg font-extrabold tracking-tight">{`0${i + 1}`} {title}</span>
+                    <span className="font-display text-lg font-bold">{`0${i + 1}`} {title}</span>
                     <span className="text-sm text-[#6B655A]">{text}</span>
                   </span>
                 </li>

@@ -58,7 +58,7 @@ const FULL = 'ml-[calc(50%-50vw)] w-screen';
 const BLEED = '';
 const INNER = 'mx-auto w-full max-w-6xl px-5';
 const BTN = 'flex min-h-12 items-center justify-center rounded-full px-7 text-base font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2';
-const H2 = 'font-display text-3xl font-extrabold leading-[1.08] tracking-[-0.035em] sm:text-5xl';
+const H2 = 'font-display text-3xl font-bold leading-[1.08] tracking-[-0.01em] sm:text-5xl';
 const NAVLINK = 'flex min-h-12 items-center rounded-full px-4 text-sm font-medium text-white/75 transition-colors hover:bg-white/10 hover:text-white';
 
 /** Gateway page (PRD 6.1). Server-rendered and complete without scripts. Motion is added on top. */
@@ -125,7 +125,7 @@ export default function Home() {
             <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
             One Beta Nation
           </p>
-          <h1 className="font-display max-w-4xl text-[clamp(2rem,8.2vw,3.4rem)] font-extrabold leading-[1.02] md:text-[clamp(3.2rem,6vw,5.2rem)] tracking-[-0.04em] text-white">
+          <h1 className="font-display max-w-4xl text-[clamp(2rem,8.2vw,3.4rem)] font-bold leading-[1.02] md:text-[clamp(3.2rem,6vw,5.2rem)] tracking-[-0.01em] text-white">
             <span className="line-mask"><span style={{ ['--d' as string]: '.1s' }}>Someone near you</span></span>
             <span className="line-mask"><span style={{ ['--d' as string]: '.22s' }}>needs what you don’t.</span></span>
           </h1>
@@ -202,9 +202,9 @@ export default function Home() {
             <ol className="mt-10 flex flex-col">
               {TRUST.map(({ n, title, text, bg }) => (
                 <li key={title} className="group flex gap-5 border-t border-white/10 py-6 transition-colors hover:border-white/40" data-reveal>
-                  <span className={`${bg} flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-display text-base font-extrabold text-white transition-transform duration-300 group-hover:scale-110`}>{n}</span>
+                  <span className={`${bg} flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-display text-base font-bold text-white transition-transform duration-300 group-hover:scale-110`}>{n}</span>
                   <span>
-                    <h3 className="font-display text-xl font-extrabold tracking-tight">{title}</h3>
+                    <h3 className="font-display text-xl font-bold">{title}</h3>
                     <p className="mt-1 max-w-md text-base text-white/70">{text}</p>
                   </span>
                 </li>
@@ -218,7 +218,7 @@ export default function Home() {
               </div>
               <div className="relative aspect-[16/9]"><Image src="/photos/kitchen.webp" alt="" fill sizes="400px" className="object-cover" /></div>
               <div className="px-5 pb-5 pt-4">
-                <b className="font-display text-xl font-extrabold">Washing machine, 7 kg</b>
+                <b className="font-display text-xl font-bold">Washing machine, 7 kg</b>
                 <p className="text-sm text-[#5C5C58]">Port Harcourt · Neatly used</p>
                 <ul className="mt-4 grid gap-2 text-sm font-medium">
                   {['Photos are clear', 'Video plays', 'Price looks fair', 'Item is allowed'].map((c) => (
@@ -247,7 +247,7 @@ export default function Home() {
             {FAQ.map((f, i) => (
               <details key={f.q} className="group overflow-hidden rounded-2xl bg-white/70 transition-colors open:bg-white hover:bg-white" data-reveal>
                 <summary className="flex min-h-16 items-center gap-4 px-5 py-4 text-lg font-semibold">
-                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-sm font-extrabold text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i % 3]}`}>{i + 1}</span>
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i % 3]}`}>{i + 1}</span>
                   <span className="flex-1">{f.q}</span>
                   <span className="plus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-xl transition-transform" aria-hidden="true">+</span>
                 </summary>
@@ -265,8 +265,8 @@ export default function Home() {
           <ul className="mt-10 grid gap-3 md:grid-cols-3">
             {VALUES.map((v, i) => (
               <li key={v.title} className={`${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i]} rounded-2xl p-6 text-white transition-transform duration-300 hover:-translate-y-1`} data-reveal>
-                <span className="font-display text-sm font-extrabold text-white/60">0{i + 1}</span>
-                <b className="font-display mt-6 block text-2xl font-extrabold leading-tight tracking-tight">{v.title}</b>
+                <span className="font-display text-sm font-bold text-white/60">0{i + 1}</span>
+                <b className="font-display mt-6 block text-2xl font-bold leading-tight">{v.title}</b>
               </li>
             ))}
           </ul>
@@ -282,7 +282,7 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/90 via-[#0A0A0A]/65 to-[#0A0A0A]/30" aria-hidden="true" />
         <div className={`${INNER} grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.2fr_.8fr]`}>
           <div>
-            <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] font-extrabold leading-[1.02] tracking-[-0.04em] text-white" data-reveal>Got something to sell?</h2>
+            <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] font-bold leading-[1.02] tracking-[-0.01em] text-white" data-reveal>Got something to sell?</h2>
             <p className="mt-5 max-w-lg text-lg text-white/80" data-reveal>Take photos, record a short video, set a price. An admin does the rest.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row" data-reveal>
               <Link href="/list" className={`${BTN} gap-2 bg-brand-red text-white hover:bg-white hover:text-[#0A0A0A] focus-visible:outline-white`}>List an item <ArrowUpRight size={18} aria-hidden="true" /></Link>
@@ -292,7 +292,7 @@ export default function Home() {
           <ul className="grid gap-3" data-reveal>
             {[['1', 'bg-brand-red', 'Add photos and a video'], ['2', 'bg-brand-blue', 'An admin checks it'], ['3', 'bg-brand-green', 'It goes live']].map(([n, c, t]) => (
               <li key={n} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 text-white backdrop-blur">
-                <span className={`${c} flex h-10 w-10 items-center justify-center rounded-full font-display font-extrabold`}>{n}</span>
+                <span className={`${c} flex h-10 w-10 items-center justify-center rounded-full font-display font-bold`}>{n}</span>
                 <span className="text-lg font-semibold">{t}</span>
               </li>
             ))}
@@ -306,7 +306,7 @@ export default function Home() {
           <div className="flex flex-col items-start gap-4">
             <div className="flex items-center gap-4">
               <Image src="/brand/obn-logo-clear.webp" alt="OBN NATION" width={80} height={80} className="h-16 w-16" />
-              <span className="font-display text-xl font-extrabold tracking-tight text-white">OBN NATION</span>
+              <span className="font-display text-xl font-bold text-white">OBN NATION</span>
             </div>
             <p className="max-w-xs text-base">One Beta Nation. A community marketplace that turns things you don’t use into value.</p>
             <Link href="/list" className={`${BTN} bg-brand-red text-white transition-all hover:bg-white hover:text-[#0A0A0A] active:scale-95 focus-visible:outline-white`}>List an item</Link>
