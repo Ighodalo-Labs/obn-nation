@@ -365,3 +365,6 @@ select.ops-input option { background: var(--p-surface); color: var(--p-text); }
 .sell-shake { animation: sell-shake .45s ease both; }
 .sell-caret { animation: sell-blink 1s steps(1) infinite; }
 @media (prefers-reduced-motion: reduce) { .sell-stagger > *, .sell-chip, .sell-pop, .sell-shake, .sell-caret { animation: none !important; } }
+
+/* Anchor jumps stop below the sticky header instead of under it */
+section[id] { scroll-margin-top: 72px; }

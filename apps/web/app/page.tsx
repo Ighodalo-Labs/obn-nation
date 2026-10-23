@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { MobileMenu } from '@/components/MobileMenu';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
@@ -99,9 +100,13 @@ export default function Home() {
             <a href="#faq" className={NAVLINK}>FAQ</a>
             <a href="#about" className={NAVLINK}>About</a>
           </nav>
-          <Link href="/list" className={`${BTN} ml-auto bg-brand-red px-5 text-sm text-white hover:bg-brand-green focus-visible:outline-white md:ml-3 md:px-6 md:text-base`}>
+          <Link href="/list" className={`${BTN} ml-3 hidden bg-brand-red px-6 text-base text-white hover:bg-brand-green focus-visible:outline-white md:inline-flex`}>
             List an item
           </Link>
+          <MobileMenu
+            items={[{ href: '/#how', label: 'How it works' }, { href: '/#safety', label: 'Safety' }, { href: '/#faq', label: 'FAQ' }, { href: '/#about', label: 'About' }]}
+            cta={{ href: '/list', label: 'List an item' }}
+          />
         </div>
       </header>
 

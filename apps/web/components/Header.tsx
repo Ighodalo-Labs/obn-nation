@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { MobileMenu } from '@/components/MobileMenu';
 
 export const BLEED = 'relative left-1/2 w-screen -translate-x-1/2';
 
@@ -20,10 +21,11 @@ export function Header() {
             <span className="text-xs text-[#6B655A]">Connecting People</span>
           </span>
         </Link>
-        <nav aria-label="Site" className="ml-auto flex items-center gap-1 text-sm font-semibold">
+        <nav aria-label="Site" className="ml-auto hidden items-center gap-1 text-sm font-semibold md:flex">
           <Link href="/" className="flex min-h-12 items-center rounded-full px-4 text-[#16140F]/75 transition-colors hover:bg-[#16140F] hover:text-white">Home</Link>
           <Link href="/#about" className="flex min-h-12 items-center rounded-full px-4 text-[#16140F]/75 transition-colors hover:bg-[#16140F] hover:text-white">About</Link>
         </nav>
+        <MobileMenu tone="light" items={[{ href: '/', label: 'Home' }, { href: '/#about', label: 'About' }, { href: '/#faq', label: 'FAQ' }]} cta={{ href: '/list', label: 'Sell on OBN NATION' }} />
       </div>
     </header>
   );
