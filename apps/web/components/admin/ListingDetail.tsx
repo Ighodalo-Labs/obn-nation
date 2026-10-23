@@ -7,8 +7,8 @@ import { createBrowserSupabase } from '@/lib/supabase/browser';
 import { ageLabel, Badge, categoryLabel, regionLabelOf, workingLabel } from './ui';
 
 /** Full listing view (PRD AD-3): gallery, video, all fields, masked seller card, actions. Side drawer on desktop, full screen on phones. */
-export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove, onReject, onPrev, onNext }: {
-  row: FeedRow; me: string; busy: boolean; now: number; onClose: () => void; onClaim: () => void; onApprove: () => void; onReject: () => void;
+export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove, onReject, onResend, onPrev, onNext }: {
+  row: FeedRow; me: string; busy: boolean; now: number; onClose: () => void; onClaim: () => void; onApprove: () => void; onReject: () => void; onResend?: () => void;
   onPrev?: () => void; onNext?: () => void;
 }) {
   const [photos, setPhotos] = useState<string[] | null>(null);
@@ -153,6 +153,12 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
               <button type="button" className="ops-btn ops-btn-lg" disabled={busy} onClick={onClaim}>Claim <kbd className="ops-kbd hidden md:inline-flex">C</kbd></button>
             ) : <button type="button" className="ops-btn ops-btn-lg" onClick={onClose}>Close</button>}
             <button type="button" className="ops-btn ops-btn-go ops-btn-lg" disabled={busy} onClick={onApprove}>Approve <kbd className="ops-kbd hidden md:inline-flex">A</kbd></button>
+          </div>
+        )}
+        {row.status === 'rejected' && onResend && (
+          <div className="ops-actionbar" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+            <button type="button" className="ops-btn ops-btn-lg" onClick={onClose}>Close</button>
+            <button type="button" className="ops-btn ops-btn-go ops-btn-lg" disabled={busy} onClick={onResend}>Send new link</button>
           </div>
         )}
       </div>

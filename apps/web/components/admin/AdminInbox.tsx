@@ -557,6 +557,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
           onClaim={() => act(open, 'claim')}
           onApprove={() => setApproving([open])}
           onReject={() => setRejecting(open)}
+          onResend={() => resend(open)}
           onPrev={openIdx > 0 ? () => go(openIdx - 1) : undefined}
           onNext={openIdx >= 0 && openIdx < list.length - 1 ? () => go(openIdx + 1) : undefined}
         />
