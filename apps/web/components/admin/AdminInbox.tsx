@@ -67,6 +67,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   const [approving, setApproving] = useState<FeedRow[] | null>(null);
   const [failedIds, setFailedIds] = useState<Set<string>>(new Set()); // rejections saved but WhatsApp failed (AD-6)
   const [notice, setNotice] = useState<string | null>(null);
+  const [testLink, setTestLink] = useState<{ title: string; url: string } | null>(null); // test mode only: WhatsApp is off, so the admin gets the seller's link here
   const [now, setNow] = useState(0);
   useEffect(() => { setNow(Date.now()); }, []);
   const [updatedAt, setUpdatedAt] = useState(0);
@@ -198,12 +199,15 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (busy) return;
     setBusy(row.id);
     setMessage(null);
-    const r = await postJson<{ notification: { status: 'sent' | 'failed' } }>('/api/listings/reject', { listing_id: row.id, reason });
+    const r = await postJson<{ notification: { status: 'sent' | 'failed'; stub_edit_link?: string } }>('/api/listings/reject', { listing_id: row.id, reason });
     setBusy(null);
     setRejecting(null);
     setOpenId(null);
     if (!r.ok) setMessage(r.error.message);
-    else markNotice(row.id, r.data.notification.status === 'sent', 'Rejected. The seller has been messaged.');
+    else if (r.data.notification.stub_edit_link) {
+      setTestLink({ title: row.title, url: r.data.notification.stub_edit_link });
+      markNotice(row.id, true, 'Rejected. Test mode: WhatsApp is off, so nothing was sent. Use the test link.');
+    } else markNotice(row.id, r.data.notification.status === 'sent', 'Rejected. The seller has been messaged.');
     refresh();
   }
 
@@ -211,10 +215,13 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (busy) return;
     setBusy(row.id);
     setMessage(null);
-    const r = await postJson<{ notification: { status: 'sent' | 'failed' } }>('/api/listings/reissue', { listing_id: row.id });
+    const r = await postJson<{ notification: { status: 'sent' | 'failed'; stub_edit_link?: string } }>('/api/listings/reissue', { listing_id: row.id });
     setBusy(null);
     if (!r.ok) setMessage(r.error.message);
-    else markNotice(row.id, r.data.notification.status === 'sent', 'New link sent to the seller.');
+    else if (r.data.notification.stub_edit_link) {
+      setTestLink({ title: row.title, url: r.data.notification.stub_edit_link });
+      markNotice(row.id, true, 'New link made. Test mode: WhatsApp is off, so nothing was sent.');
+    } else markNotice(row.id, r.data.notification.status === 'sent', 'New link sent to the seller.');
     refresh();
   }
 
@@ -324,6 +331,16 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         actions={<button type="button" onClick={refresh} className="ops-btn" aria-label="Refresh the list"><RefreshCw size={14} aria-hidden="true" />Refresh</button>}
       >
         {message && <Banner tone="crit" onDismiss={() => setMessage(null)}>{message}</Banner>}
+        {testLink && (
+          <Banner tone="warn" title="Test mode: WhatsApp is off, nothing was sent" onDismiss={() => setTestLink(null)}>
+            <p>Open this link as the seller of “{testLink.title}” to fix and resubmit it. It works once.</p>
+            <p className="mt-2 break-all text-xs">{testLink.url}</p>
+            <div className="mt-2 flex gap-2">
+              <button type="button" className="ops-btn" onClick={() => { void navigator.clipboard?.writeText(testLink.url).catch(() => {}); }}>Copy link</button>
+              <a className="ops-btn" href={testLink.url} target="_blank" rel="noreferrer">Open link</a>
+            </div>
+          </Banner>
+        )}
 
         <Metrics items={[
           { label: 'To review', value: stats.pending, tone: 'crit', hint: <span suppressHydrationWarning>{stats.overdue ? `${stats.overdue} over 24 hours` : stats.pending ? `Oldest ${waitingFor(stats.oldest, now)}` : 'All clear'}</span> },
