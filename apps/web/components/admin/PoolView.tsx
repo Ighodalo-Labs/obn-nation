@@ -77,7 +77,7 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
   const split = useMemo(() => {
     const groups = me.isGlobal ? REGIONS : CATEGORIES;
     const key = (r: FeedRow) => (me.isGlobal ? r.region : r.category);
-    const palette = ['#303030', '#047B5D', '#005BD3', '#8A8A8A', '#FFB800', '#C70A24'];
+    const palette = ['#D32F2F', '#2E7D32', '#1565C0', '#E8A200', '#8C8574', '#16140F'];
     return groups
       .map((g, i) => ({ label: g.label, value: shown.filter((r) => key(r) === g.value).reduce((n, r) => n + (Number(r.price_ngn) || 0), 0), n: shown.filter((r) => key(r) === g.value).length, color: palette[i % palette.length] }))
       .filter((g) => g.n > 0)
@@ -113,6 +113,7 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
 
   return (
     <Page
+      photo="/photos/kitchen.webp"
       title="Pool"
       sub={<>Approved and ready to advertise · {me.isGlobal ? 'All regions' : regionLabelOf(me.region) || 'Your region'}. Sales stay with the admin in charge.</>}
       actions={<button type="button" className="ops-btn" onClick={exportCsv} disabled={shown.length === 0}><Download size={14} aria-hidden="true" />Export CSV</button>}
@@ -176,7 +177,7 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
         </form>
 
         {!loading && shown.length === 0 && (
-          <EmptyState icon={<Package size={22} />} title={mineOnly ? 'Nothing is in your charge yet' : 'The pool is empty'}>
+          <EmptyState photo="/photos/kitchen.webp" icon={<Package size={22} />} title={mineOnly ? 'Nothing is in your charge yet' : 'The pool is empty'}>
             {mineOnly ? 'Claim and approve listings in Review and they show up here.' : 'Approved listings land here, ready to advertise.'}
           </EmptyState>
         )}
@@ -192,7 +193,7 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
                   <tr key={r.id} style={{ cursor: 'default' }}>
                     <td className="max-w-[300px] !w-auto !pl-4">
                       <div className="flex min-w-0 items-center gap-3">
-                        <Thumb src={thumbs[r.photo_urls[0]]} />
+                        <Thumb src={thumbs[r.photo_urls[0]]} large />
                         <span className="min-w-0"><span className="block truncate font-semibold">{r.title}</span><span className="ops-mute block truncate text-xs">{ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}</span></span>
                       </div>
                     </td>

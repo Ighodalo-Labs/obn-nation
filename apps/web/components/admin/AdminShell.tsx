@@ -67,7 +67,7 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
     <div className="ops-root">
       <header className="ops-top">
         <Link href="/admin/dashboard" className="ops-brand" aria-label="OBN NATION admin">
-          <Image src="/brand/obn-logo-clear.webp" alt="" width={28} height={28} priority className="h-7 w-7 rounded-lg bg-[#0A0A0A] p-0.5" />
+          <Image src="/brand/obn-logo-clear.webp" alt="" width={36} height={36} priority className="h-9 w-9 rounded-full bg-[#0A0A0A] p-0.5 ring-1 ring-white/25" />
           <span className="hidden sm:inline">OBN NATION</span>
         </Link>
         <form className="ops-top-search" role="search" onSubmit={(e) => { e.preventDefault(); onSearch(searchRef.current?.value ?? '', true); }}>

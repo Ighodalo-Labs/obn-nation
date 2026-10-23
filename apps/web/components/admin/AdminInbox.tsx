@@ -283,7 +283,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
         <div className="flex flex-wrap gap-2">
           {r.assigned_admin_id === null && <button type="button" className={`ops-btn ${size} ${grow}`} disabled={b} onClick={stop(() => act(r, 'claim'))}>Claim</button>}
           <button type="button" className={`ops-btn ops-btn-stop ${size} ${grow}`} disabled={b} onClick={stop(() => setRejecting(r))}>Reject</button>
-          <button type="button" className={`ops-btn ops-btn-primary ${size} ${grow}`} disabled={b} onClick={stop(() => setApproving([r]))}>Approve</button>
+          <button type="button" className={`ops-btn ops-btn-go ${size} ${grow}`} disabled={b} onClick={stop(() => setApproving([r]))}>Approve</button>
         </div>
       );
     }
@@ -306,7 +306,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   ];
 
   const empty = (
-    <EmptyState icon={<Inbox size={22} />} title={filtered ? 'No listings match those filters' : tab === 'review' ? 'Nothing to review' : 'No listings here'}
+    <EmptyState photo="/photos/living-room.webp" icon={<Inbox size={22} />} title={filtered ? 'No listings match those filters' : tab === 'review' ? 'Nothing to review' : 'No listings here'}
       action={filtered ? <button type="button" className="ops-btn" onClick={() => { setQ(''); setRegion(''); setCategory(''); setWho('all'); }}>Clear filters</button> : undefined}>
       {filtered ? 'Try changing or clearing a filter.' : 'Share your link with sellers and new listings will show up here.'}
     </EmptyState>
@@ -387,7 +387,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
               <span className="ml-2 flex flex-wrap gap-2">
                 <button type="button" className="ops-btn ops-btn-sm" disabled={claimable.length === 0 || busy !== null} onClick={() => bulk('claim', claimable)}>Claim{claimable.length ? ` (${claimable.length})` : ''}</button>
                 <button type="button" className="ops-btn ops-btn-sm ops-btn-stop" disabled={checkedRows.length !== 1 || needsReview.length !== 1 || busy !== null} title={checkedRows.length === 1 ? undefined : 'Reject one at a time so each seller gets their own reason'} onClick={() => needsReview[0] && setRejecting(needsReview[0])}>Reject</button>
-                <button type="button" className="ops-btn ops-btn-sm ops-btn-primary" disabled={needsReview.length === 0 || busy !== null} onClick={() => setApproving(needsReview)}>Approve{needsReview.length ? ` (${needsReview.length})` : ''}</button>
+                <button type="button" className="ops-btn ops-btn-sm ops-btn-go" disabled={needsReview.length === 0 || busy !== null} onClick={() => setApproving(needsReview)}>Approve{needsReview.length ? ` (${needsReview.length})` : ''}</button>
               </span>
               <button type="button" className="ops-btn ops-btn-plain ops-btn-sm ml-auto" onClick={() => setChecked(new Set())}>Clear selection</button>
             </div>

@@ -152,7 +152,7 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
             {row.assigned_admin_id === null ? (
               <button type="button" className="ops-btn ops-btn-lg" disabled={busy} onClick={onClaim}>Claim <kbd className="ops-kbd hidden md:inline-flex">C</kbd></button>
             ) : <button type="button" className="ops-btn ops-btn-lg" onClick={onClose}>Close</button>}
-            <button type="button" className="ops-btn ops-btn-primary ops-btn-lg" disabled={busy} onClick={onApprove}>Approve <kbd className="ops-kbd hidden md:inline-flex">A</kbd></button>
+            <button type="button" className="ops-btn ops-btn-go ops-btn-lg" disabled={busy} onClick={onApprove}>Approve <kbd className="ops-kbd hidden md:inline-flex">A</kbd></button>
           </div>
         )}
       </div>

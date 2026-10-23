@@ -18,11 +18,12 @@ export function Badge({ tone, children, plain = false }: { tone: Tone; children:
 }
 
 /** Page: title, one line of text, secondary actions at the top right, then stacked cards. */
-export function Page({ title, sub, actions, children }: { title: string; sub?: ReactNode; actions?: ReactNode; children: ReactNode }) {
+export function Page({ title, sub, actions, children, photo = '/photos/living-room.webp' }: { title: string; sub?: ReactNode; actions?: ReactNode; children: ReactNode; photo?: string }) {
   return (
     <div className="ops-page">
-      <div className="ops-pagehead">
+      <div className="ops-pagehead" style={{ ['--ops-photo' as string]: `url(${photo})` }}>
         <div className="min-w-0">
+          <p className="ops-eyebrow"><span className="ops-dash" aria-hidden="true"><i /><i /><i /></span>OBN NATION admin</p>
           <h1 className="ops-title">{title}</h1>
           {sub && <p className="ops-sub" aria-live="polite">{sub}</p>}
         </div>
@@ -52,7 +53,7 @@ export function Card({ title, actions, children, className = '', id, pad = true,
 /** A row of figures inside one card, split by hairlines. */
 export function Metrics({ items, five = false }: { items: { label: string; value: ReactNode; hint?: ReactNode; tone?: 'crit' | 'ok' | 'warn' | 'info' }[]; five?: boolean }) {
   return (
-    <section className="ops-card" aria-label="Summary">
+    <section aria-label="Summary">
       <div className={`ops-metrics${five ? ' ops-m5' : ''}`}>
         {items.map((m) => (
           <div key={m.label} className="ops-metric" data-tone={m.tone}>
@@ -148,10 +149,12 @@ export function Thumb({ src, large = false }: { src?: string; large?: boolean })
   </span>;
 }
 
-export function EmptyState({ icon, title, children, action }: { icon: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
+export function EmptyState({ icon, title, children, action, photo }: { icon: ReactNode; title: string; children?: ReactNode; action?: ReactNode; photo?: string }) {
   return (
     <div className="ops-empty">
-      <span className="ops-empty-ic" aria-hidden="true">{icon}</span>
+      {photo
+        ? <span className="ops-empty-photo" style={{ backgroundImage: `url(${photo})` }} aria-hidden="true" />
+        : <span className="ops-empty-ic" aria-hidden="true">{icon}</span>}
       <p className="font-semibold">{title}</p>
       {children && <p className="ops-mute max-w-sm text-[13px]">{children}</p>}
       {action && <div className="mt-3">{action}</div>}

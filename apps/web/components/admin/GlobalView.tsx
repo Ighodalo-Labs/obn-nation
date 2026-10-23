@@ -97,6 +97,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
 
   return (
     <Page
+      photo="/photos/devices.webp"
       title="Global"
       sub="All regions · every admin, every listing and the audit trail."
       actions={<button type="button" className="ops-btn ops-btn-primary" onClick={() => setDialog({ kind: 'add' })}><UserPlus size={14} aria-hidden="true" />Add admin</button>}
@@ -134,7 +135,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
 
       <Card id="g-admins" title={`Team (${admins.length})`} pad={false} label="Admins">
         {admins.length === 0 ? (
-          <EmptyState icon={<Users size={22} />} title="No admins yet" action={<button type="button" className="ops-btn ops-btn-primary" onClick={() => setDialog({ kind: 'add' })}>Add the first admin</button>} />
+          <EmptyState photo="/photos/devices.webp" icon={<Users size={22} />} title="No admins yet" action={<button type="button" className="ops-btn ops-btn-primary" onClick={() => setDialog({ kind: 'add' })}>Add the first admin</button>} />
         ) : (
           <>
             <div className="ops-tablewrap mt-3 hidden xl:block">
