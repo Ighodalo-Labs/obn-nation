@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, ClipboardCheck, Globe2, Home, LogOut, Package, Store } from 'lucide-react';
+import { ChevronDown, ClipboardCheck, Globe2, Home, LogOut, Package, Search, Store } from 'lucide-react';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 import { ThemeToggle } from './ThemeToggle';
 import { regionLabelOf } from './ui';
@@ -11,12 +11,13 @@ import { regionLabelOf } from './ui';
 type Current = 'review' | 'pool' | 'global';
 export interface ShellMe { name: string | null; role: 'regional_admin' | 'global_admin'; region: string | null }
 
-/** Frame for every admin screen: a slim header, a tab bar on phones, a quiet footer. */
+/** Frame for every admin screen (Shopify admin style): dark top bar with search and account, light left nav, tab bar on phones. */
 export function AdminShell({ current, me, reviewCount, children }: { current: Current; me: ShellMe; reviewCount?: number; children: ReactNode }) {
   const isGlobal = me.role === 'global_admin';
   const [leaving, setLeaving] = useState(false);
   const [menu, setMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const items = [
     { id: 'review' as const, href: '/admin/dashboard', label: 'Review', Icon: ClipboardCheck },
     { id: 'pool' as const, href: '/admin/pool', label: 'Pool', Icon: Package },
@@ -35,72 +36,93 @@ export function AdminShell({ current, me, reviewCount, children }: { current: Cu
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
   }, [menu]);
 
+  // On the Review screen the "/" key belongs to the table filter. Everywhere else it focuses the top search.
+  useEffect(() => {
+    if (current === 'review') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      e.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [current]);
+
+  // On the Review screen, typing here filters the table. On other screens, Enter jumps to Review with the search applied.
+  function onSearch(v: string, submit: boolean) {
+    if (current === 'review') window.dispatchEvent(new CustomEvent('ops:search', { detail: v }));
+    else if (submit) window.location.href = `/admin/dashboard?q=${encodeURIComponent(v.trim().slice(0, 60))}`;
+  }
+
   async function signOut() {
     setLeaving(true);
     try { await createBrowserSupabase().auth.signOut(); } finally { window.location.href = '/list'; }
   }
 
+  const count = typeof reviewCount === 'number' && reviewCount > 0 ? reviewCount : null;
+
   return (
     <div className="ops-root">
-      <header className="ops-head sticky top-0 z-40">
-        <div className="ops-inner flex h-14 items-center gap-2">
-          <Link href="/" className="flex items-center gap-2.5" aria-label="OBN NATION home">
-            <Image src="/brand/obn-logo-clear.webp" alt="" width={36} height={36} priority className="h-9 w-9 rounded-full bg-[#0A0A0A] p-0.5" />
-            <span className="flex flex-col leading-none">
-              <span className="font-display whitespace-nowrap text-[17px] font-extrabold tracking-tight">OBN NATION</span>
-              <span className="mt-1 hidden text-[11px] font-semibold text-[var(--o-mute)] min-[400px]:block">Admin desk · {scope}</span>
-            </span>
-          </Link>
-          <nav aria-label="Admin" className="ml-5 hidden items-center gap-1 lg:flex">
-            {items.map(({ id, href, label }) => (
-              <Link key={id} href={href} className="ops-pill" aria-current={current === id ? 'page' : undefined}>
-                {label}
-                {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="ops-pill-count">{reviewCount}</span>}
-              </Link>
-            ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
-            <Link href="/list" className="ops-pill border border-[var(--o-line)] bg-[var(--o-card)] max-lg:!hidden"><Store size={16} aria-hidden="true" />Seller view</Link>
-            <div ref={menuRef} className="relative">
-              <button type="button" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu"
-                className="flex min-h-10 items-center gap-2 rounded-full border border-[var(--o-line)] bg-[var(--o-card)] py-0.5 pl-0.5 pr-0.5 text-left transition-colors hover:bg-[var(--o-card2)] sm:pr-3">
-                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-brand-red text-xs font-extrabold text-white">{initials || 'A'}</span>
-                <span className="hidden text-sm font-semibold sm:inline">{firstName}</span>
-                <ChevronDown size={14} className="hidden sm:inline" aria-hidden="true" />
-              </button>
-              {menu && (
-                <div role="menu" className="ops-menu right-0 top-[calc(100%+8px)]">
-                  <div className="px-3.5 pb-2 pt-2.5">
-                    <p className="truncate text-sm font-bold">{me.name || 'Admin'}</p>
-                    <p className="ops-mute text-xs font-medium">{isGlobal ? 'Global Admin' : 'Regional Admin'} · {scope}</p>
-                  </div>
-                  <hr className="ops-rule mb-1.5" />
-                  <ThemeToggle variant="menu" />
-                  <Link role="menuitem" href="/list" className="ops-menuitem"><Store size={16} aria-hidden="true" />Seller view</Link>
-                  <Link role="menuitem" href="/" className="ops-menuitem"><Home size={16} aria-hidden="true" />Home page</Link>
-                  <button role="menuitem" type="button" className="ops-menuitem" onClick={signOut} disabled={leaving}><LogOut size={16} aria-hidden="true" />{leaving ? 'Signing out…' : 'Sign out'}</button>
+      <header className="ops-top">
+        <Link href="/admin/dashboard" className="ops-brand" aria-label="OBN NATION admin">
+          <Image src="/brand/obn-logo-clear.webp" alt="" width={28} height={28} priority className="h-7 w-7 rounded-lg bg-[#0A0A0A] p-0.5" />
+          <span className="hidden sm:inline">OBN NATION</span>
+        </Link>
+        <form className="ops-top-search" role="search" onSubmit={(e) => { e.preventDefault(); onSearch(searchRef.current?.value ?? '', true); }}>
+          <Search size={15} aria-hidden="true" />
+          <label htmlFor="ops-global-search" className="sr-only">Search listings</label>
+          <input id="ops-global-search" ref={searchRef} type="search" placeholder="Search listings" maxLength={60} autoComplete="off"
+            onChange={(e) => onSearch(e.target.value, false)} />
+          {current !== 'review' && <kbd aria-hidden="true">/</kbd>}
+        </form>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <div ref={menuRef} className="relative">
+            <button type="button" className="ops-acct" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu">
+              <span className="ops-avatar">{initials || 'A'}</span>
+              <span className="hidden sm:inline">{firstName}</span>
+              <ChevronDown size={14} className="hidden sm:inline" aria-hidden="true" />
+            </button>
+            {menu && (
+              <div role="menu" className="ops-menu right-0 top-[calc(100%+6px)]">
+                <div className="px-2 pb-2 pt-1.5">
+                  <p className="truncate text-[13px] font-semibold">{me.name || 'Admin'}</p>
+                  <p className="ops-mute text-xs">{isGlobal ? 'Global Admin' : 'Regional Admin'} · {scope}</p>
                 </div>
-              )}
-            </div>
+                <hr className="ops-divider mb-1" />
+                <ThemeToggle variant="menu" />
+                <Link role="menuitem" href="/list" className="ops-menuitem"><Store size={15} aria-hidden="true" />Seller view</Link>
+                <Link role="menuitem" href="/" className="ops-menuitem"><Home size={15} aria-hidden="true" />Home page</Link>
+                <button role="menuitem" type="button" className="ops-menuitem" onClick={signOut} disabled={leaving}><LogOut size={15} aria-hidden="true" />{leaving ? 'Signing out…' : 'Log out'}</button>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      <main>{children}</main>
+      <div className="ops-shell">
+        <nav aria-label="Admin" className="ops-side">
+          {items.map(({ id, href, label, Icon }) => (
+            <Link key={id} href={href} className="ops-navitem" aria-current={current === id ? 'page' : undefined}>
+              <Icon size={16} aria-hidden="true" />{label}
+              {id === 'review' && count !== null && <span className="ops-pillcount" data-hot="true">{count}</span>}
+            </Link>
+          ))}
+          <p className="ops-navlabel">Other</p>
+          <Link href="/list" className="ops-navitem"><Store size={16} aria-hidden="true" />Seller view</Link>
+          <Link href="/" className="ops-navitem"><Home size={16} aria-hidden="true" />Home page</Link>
+          <p className="ops-mute mt-auto px-2 pb-1 pt-6 text-xs">{scope}<br />Every action here is logged.</p>
+        </nav>
+        <main className="ops-main">{children}</main>
+      </div>
 
-      <footer className="ops-foot pb-[calc(60px+env(safe-area-inset-bottom))] lg:pb-0">
-        <div className="ops-inner flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-8 text-[12.5px] font-medium">
-          <p>OBN NATION admin desk · One Beta Nation</p>
-          <p>Every action here is logged.</p>
-        </div>
-      </footer>
-
-      <nav aria-label="Admin tabs" className="ops-tabbar fixed inset-x-0 bottom-0 z-30 flex lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav aria-label="Admin tabs" className="ops-tabbar">
         {items.map(({ id, href, label, Icon }) => (
-          <Link key={id} href={href} className="ops-tab relative" aria-current={current === id ? 'page' : undefined}>
-            <Icon size={21} aria-hidden="true" />{label}
-            {id === 'review' && typeof reviewCount === 'number' && reviewCount > 0 && <span className="absolute left-1/2 top-2 ml-2 rounded-full bg-brand-red px-1.5 text-[10px] font-extrabold leading-4 text-white">{reviewCount}</span>}
+          <Link key={id} href={href} className="ops-tabitem" aria-current={current === id ? 'page' : undefined}>
+            <Icon size={20} aria-hidden="true" />{label}
+            {id === 'review' && count !== null && <span className="absolute left-1/2 top-1.5 ml-2.5 rounded-full bg-[var(--p-crit)] px-1.5 text-[10px] font-semibold leading-4 text-white">{count}</span>}
           </Link>
         ))}
       </nav>

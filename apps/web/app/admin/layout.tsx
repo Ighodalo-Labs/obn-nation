@@ -1,5 +1,4 @@
-import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource-variable/plus-jakarta-sans';
+import '@fontsource-variable/schibsted-grotesk';
 import type { ReactNode } from 'react';
 
 // Runs before the first paint of the admin pages: picks the saved theme, or the system one, and puts it on the wrapper.

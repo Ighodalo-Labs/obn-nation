@@ -58,87 +58,101 @@ export function ListingDetail({ row, me, busy, now, onClose, onClaim, onApprove,
   const badge = badgeOf(row, me);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-[#0A0A0A]/60 backdrop-blur-[3px]" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" data-drawer aria-label={row.title} className="ops-drawer flex h-full w-full max-w-[580px] flex-col overflow-hidden bg-[var(--o-card)] text-[var(--o-ink)] shadow-[-30px_0_60px_-30px_rgba(0,0,0,.6)] sm:rounded-l-[24px]">
-        <div className="flex items-center gap-2 border-b border-[var(--o-line)] bg-[var(--o-card)] px-5 py-3">
-          <span className="ops-eyebrow">Review</span>
-          {pending ? <span className="ops-badge ops-b-red" suppressHydrationWarning>Waiting {waitingFor(row.submitted_at, now)}</span> : null}
-          <Badge tone={badge === 'Unclaimed' ? 'amber' : badge === 'Assigned to you' ? 'green' : 'mute'}>{badge}</Badge>
-          <span className="ml-auto flex items-center gap-1.5">
-            {onPrev && <button type="button" onClick={onPrev} aria-label="Previous listing" className="ops-btn !min-h-10 !w-10 !px-0"><ChevronLeft size={18} aria-hidden="true" /></button>}
-            {onNext && <button type="button" onClick={onNext} aria-label="Next listing" className="ops-btn !min-h-10 !w-10 !px-0"><ChevronRight size={18} aria-hidden="true" /></button>}
-            <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="ops-btn !min-h-10 !w-10 !px-0"><X size={18} aria-hidden="true" /></button>
+    <div className="ops-scrim flex justify-end" style={{ zIndex: 50 }} onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div role="dialog" aria-modal="true" data-drawer aria-label={row.title} className="ops-sheet flex h-full w-full max-w-[720px] flex-col overflow-hidden">
+        <div className="flex items-center gap-2 border-b border-[var(--p-border)] bg-[var(--p-surface)] px-3 py-2.5 sm:px-4">
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close" className="ops-btn ops-btn-icon"><X size={16} aria-hidden="true" /></button>
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-sm font-semibold">{row.title}</h2>
+            <p className="ops-mute truncate text-xs">{naira(row.price_ngn)} · {regionLabelOf(row.region)}</p>
+          </div>
+          {pending ? <Badge tone="red"><span suppressHydrationWarning>Waiting {waitingFor(row.submitted_at, now)}</span></Badge>
+            : row.status === 'approved' ? <Badge tone="green">Live</Badge> : <Badge tone="blue">With seller</Badge>}
+          <Badge tone={badge === 'Unclaimed' ? 'amber' : badge === 'Assigned to you' ? 'green' : 'mute'} plain>{badge}</Badge>
+          <span className="flex items-center gap-1">
+            {onPrev && <button type="button" onClick={onPrev} aria-label="Previous listing" className="ops-btn ops-btn-icon"><ChevronLeft size={16} aria-hidden="true" /></button>}
+            {onNext && <button type="button" onClick={onNext} aria-label="Next listing" className="ops-btn ops-btn-icon"><ChevronRight size={16} aria-hidden="true" /></button>}
           </span>
         </div>
 
-        <div className="ops-scroll flex flex-1 flex-col gap-6 overflow-y-auto p-5 pb-8">
-          {photos === null && <div className="aspect-[4/3] w-full ops-skel !rounded-2xl" aria-label="Loading photos" />}
-          {photos && photos.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <div className="relative overflow-hidden rounded-2xl bg-black">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photos[idx]} alt={`Photo ${idx + 1} of ${photos.length}`} className="aspect-[4/3] w-full object-contain sm:aspect-[3/2]" />
-                <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-3 py-1 text-xs font-bold text-white">{idx + 1} / {photos.length}</span>
-              </div>
-              {photos.length > 1 && (
-                <ul className="flex gap-2 overflow-x-auto" aria-label="Photos">
-                  {photos.map((u, i) => (
-                    <li key={u} className="flex-none">
-                      <button type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`} aria-current={i === idx} className={`block overflow-hidden rounded-lg border-2 ${i === idx ? 'border-[var(--o-ink)]' : 'border-transparent opacity-70 hover:opacity-100'}`}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={u} alt="" className="h-16 w-16 object-cover" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+        <div className="ops-scroll flex flex-1 flex-col gap-3 overflow-y-auto p-3 sm:p-4">
+          <section className="ops-card">
+            <div className="ops-card-h"><h3 className="ops-card-t">Media</h3></div>
+            <div className="ops-card-b flex flex-col gap-3">
+              {photos === null && <div className="ops-skel aspect-[4/3] w-full" aria-label="Loading photos" />}
+              {photos && photos.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <div className="relative overflow-hidden rounded-lg bg-black">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photos[idx]} alt={`Photo ${idx + 1} of ${photos.length}`} className="aspect-[4/3] w-full object-contain sm:aspect-[3/2]" />
+                    <span className="absolute bottom-2 right-2 rounded-md bg-black/70 px-2 py-0.5 text-xs font-medium text-white">{idx + 1} / {photos.length}</span>
+                  </div>
+                  {photos.length > 1 && (
+                    <ul className="flex gap-2 overflow-x-auto" aria-label="Photos">
+                      {photos.map((u, i) => (
+                        <li key={u} className="flex-none">
+                          <button type="button" onClick={() => setActive(i)} aria-label={`Show photo ${i + 1}`} aria-current={i === idx} className={`block overflow-hidden rounded-lg ${i === idx ? 'ring-2 ring-[var(--p-focus)]' : 'opacity-70 hover:opacity-100'}`}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={u} alt="" className="h-14 w-14 object-cover" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+              {photos && photos.length === 0 && <p className="text-[13px] text-[var(--p-crit-text)]">Photos could not be loaded.</p>}
+              {row.video_url && (videoBad ? (
+                <p className="ops-mute rounded-lg bg-[var(--p-surface2)] p-3 text-[13px]">Video unavailable</p>
+              ) : video ? (
+                <video src={video} controls playsInline className="max-h-72 w-full rounded-lg bg-black" onError={() => setVideoBad(true)} />
+              ) : <div className="ops-skel h-24 w-full" aria-label="Loading video" />)}
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <div className="ops-card-h"><h3 className="ops-card-t">Details</h3></div>
+            <div className="ops-card-b">
+              <p className="text-2xl font-semibold">{naira(row.price_ngn)}</p>
+              <p className="mt-2 whitespace-pre-wrap text-[13px] leading-5">{row.description}</p>
+              <dl className="ops-dl mt-3">
+                {facts.filter(([, v]) => v).map(([k, v]) => (<div key={k} className="contents"><dt>{k}</dt><dd>{v}</dd></div>))}
+              </dl>
+            </div>
+          </section>
+
+          <section className="ops-card">
+            <div className="ops-card-h"><h3 className="ops-card-t">Seller</h3></div>
+            <div className="ops-card-b text-[13px]">
+              <p className="font-semibold">{row.seller_name}</p>
+              <p className="ops-tnum">{row.seller_phone}</p>
+              {!row.contact_visible && (
+                <p className="ops-mute mt-2 flex items-start gap-2"><ShieldAlert size={14} className="mt-0.5 flex-none" aria-hidden="true" />Full details show once you are in charge of this listing.</p>
               )}
             </div>
-          )}
-          {photos && photos.length === 0 && <p className="text-[var(--o-red-t)]">Photos could not be loaded.</p>}
+          </section>
 
-          {row.video_url && (videoBad ? (
-            <p className="ops-card2 p-3 text-sm ops-mute">Video unavailable</p>
-          ) : video ? (
-            <video src={video} controls playsInline className="max-h-72 w-full rounded-2xl bg-black" onError={() => setVideoBad(true)} />
-          ) : <div className="h-24 w-full ops-skel !rounded-2xl" aria-label="Loading video" />)}
-
-          <div>
-            <p className="ops-num text-[46px] text-[var(--o-ink)]">{naira(row.price_ngn)}</p>
-            <h2 className="font-display mt-2 text-2xl font-extrabold leading-tight tracking-tight">{row.title}</h2>
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">{row.description}</p>
-          <dl className="grid grid-cols-2 gap-2 text-[13px]">
-            {facts.filter(([, v]) => v).map(([k, v]) => (
-              <div key={k} className="ops-card2 px-4 py-3"><dt className="ops-eyebrow !text-[10.5px]">{k}</dt><dd className="font-bold">{v}</dd></div>
-            ))}
-          </dl>
-          <div className="ops-card2 p-4 text-sm">
-            <p className="ops-eyebrow">Seller</p>
-            <p className="mt-1 text-sm font-semibold">{row.seller_name}</p>
-            <p>{row.seller_phone}</p>
-            {!row.contact_visible && (
-              <p className="ops-mute mt-2 flex items-start gap-2"><ShieldAlert size={16} className="mt-0.5 flex-none" aria-hidden="true" />Full details show once you are in charge of this listing.</p>
-            )}
-          </div>
           {pending && (
-            <div>
-              <p className="ops-eyebrow mb-2">Before you approve</p>
-              <ul className="ops-card2 flex flex-col p-2">
-                {['Photos are clear', 'Video plays', 'Price looks fair', 'Item is allowed'].map((c) => (
-                  <li key={c}><button type="button" className="ops-check" aria-pressed={checks.includes(c)} onClick={() => toggle(c)}><span><Check size={13} strokeWidth={3} aria-hidden="true" /></span>{c}</button></li>
-                ))}
-              </ul>
-            </div>
+            <section className="ops-card">
+              <div className="ops-card-h"><h3 className="ops-card-t">Before you approve</h3></div>
+              <div className="ops-card-b !pt-2">
+                <ul className="flex flex-col">
+                  {['Photos are clear', 'Video plays', 'Price looks fair', 'Item is allowed'].map((c) => (
+                    <li key={c}><button type="button" className="ops-check" aria-pressed={checks.includes(c)} onClick={() => toggle(c)}><span><Check size={11} strokeWidth={3} aria-hidden="true" /></span>{c}</button></li>
+                  ))}
+                </ul>
+              </div>
+            </section>
           )}
         </div>
 
         {pending && (
-          <div className="grid grid-cols-3 gap-2 border-t border-[var(--o-line)] bg-[var(--o-card)] p-4 shadow-[0_-12px_24px_-16px_rgba(0,0,0,.25)]" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-            <button type="button" className="ops-btn ops-btn-stop ops-btn-lg" disabled={busy} onClick={onReject}>Reject <span className="ops-kbd hidden md:inline-flex">R</span></button>
+          <div className="ops-actionbar" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+            <button type="button" className="ops-btn ops-btn-stop ops-btn-lg" disabled={busy} onClick={onReject}>Reject <kbd className="ops-kbd hidden md:inline-flex">R</kbd></button>
             {row.assigned_admin_id === null ? (
-              <button type="button" className="ops-btn ops-btn-blue ops-btn-lg" disabled={busy} onClick={onClaim}>Claim <span className="ops-kbd hidden md:inline-flex">C</span></button>
+              <button type="button" className="ops-btn ops-btn-lg" disabled={busy} onClick={onClaim}>Claim <kbd className="ops-kbd hidden md:inline-flex">C</kbd></button>
             ) : <button type="button" className="ops-btn ops-btn-lg" onClick={onClose}>Close</button>}
-            <button type="button" className="ops-btn ops-btn-go ops-btn-lg" disabled={busy} onClick={onApprove}>Approve <span className="ops-kbd hidden md:inline-flex">A</span></button>
+            <button type="button" className="ops-btn ops-btn-primary ops-btn-lg" disabled={busy} onClick={onApprove}>Approve <kbd className="ops-kbd hidden md:inline-flex">A</kbd></button>
           </div>
         )}
       </div>

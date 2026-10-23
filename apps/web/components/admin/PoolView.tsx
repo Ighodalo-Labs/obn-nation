@@ -1,13 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Check, Copy, Download, Search, Share2 } from 'lucide-react';
+import { Check, Copy, Download, Package, Search, Share2 } from 'lucide-react';
 import { naira, type FeedRow } from '@/lib/admin/inbox';
 import { adText, cleanSearch, pageRange, POOL_PAGE_SIZE, validFilters, type PoolFilters } from '@/lib/admin/pool';
 import { CATEGORIES, REGIONS } from '@/lib/listing/schema';
 import { createBrowserSupabase } from '@/lib/supabase/browser';
 import { toCsv } from './csv';
-import { ageLabel, BigStat, categoryLabel, Band, Hero, Notice, regionLabelOf, workingLabel } from './ui';
+import { ageLabel, Banner, Card, categoryLabel, EmptyState, Metrics, Page, regionLabelOf, Thumb, workingLabel } from './ui';
 
 type Sort = 'recent' | 'price_low' | 'price_high';
 
@@ -77,7 +77,7 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
   const split = useMemo(() => {
     const groups = me.isGlobal ? REGIONS : CATEGORIES;
     const key = (r: FeedRow) => (me.isGlobal ? r.region : r.category);
-    const palette = ['#D32F2F', '#16A34A', '#2563EB', '#7A7A74', '#F59E0B', '#92600A'];
+    const palette = ['#303030', '#047B5D', '#005BD3', '#8A8A8A', '#FFB800', '#C70A24'];
     return groups
       .map((g, i) => ({ label: g.label, value: shown.filter((r) => key(r) === g.value).reduce((n, r) => n + (Number(r.price_ngn) || 0), 0), n: shown.filter((r) => key(r) === g.value).length, color: palette[i % palette.length] }))
       .filter((g) => g.n > 0)
@@ -98,122 +98,139 @@ export function PoolView({ me, first, firstThumbs }: { me: { id: string; isGloba
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  function RowActions({ r, wide = false }: { r: FeedRow; wide?: boolean }) {
+    const share = `https://wa.me/?text=${encodeURIComponent(adText(r))}`;
+    return (
+      <div className="flex gap-2">
+        <button type="button" className={`ops-btn ops-btn-sm ${wide ? 'flex-1' : ''}`} onClick={() => copyAd(r)}>
+          {copied === r.id ? <Check size={13} aria-hidden="true" /> : <Copy size={13} aria-hidden="true" />}{copied === r.id ? 'Copied' : 'Copy ad'}
+        </button>
+        <a className={`ops-btn ops-btn-sm ${wide ? 'flex-1' : ''}`} href={share} target="_blank" rel="noopener noreferrer"><Share2 size={13} aria-hidden="true" />WhatsApp</a>
+      </div>
+    );
+  }
+  const inCharge = (r: FeedRow) => (r.assigned_admin_id === me.id ? 'You' : r.admin_in_charge_name || 'Nobody yet');
+
   return (
-    <>
-      <Hero
-        eyebrow={<>Regional pool · {me.isGlobal ? 'all regions' : regionLabelOf(me.region) || 'your region'}</>}
-        title={<>{shown.length}{more ? '+' : ''} {shown.length === 1 ? 'item' : 'items'} live in the pool.</>}
-        sub="Approved and ready to advertise. Sales stay with the admin in charge."
-        actions={<button type="button" className="ops-btn ops-btn-cta" onClick={exportCsv} disabled={shown.length === 0}><Download size={16} aria-hidden="true" />Export CSV</button>}
-      >
-        <div className="ops-kpis" aria-live="polite">
-          <BigStat label="Live items" tone="green" value={`${shown.length}${more ? '+' : ''}`} hint="Approved and advertised" />
-          <BigStat label="Stock value" tone="amber" value={naira(total)} hint="Asking prices added up" />
-          <BigStat label="In my charge" tone="blue" value={mineCount} hint="Sales stay with me" />
-          <BigStat label={me.isGlobal ? 'Regions' : 'Categories'} tone="red" value={split.length} hint={split[0] ? `Top: ${split[0].label}` : 'Nothing yet'} />
-        </div>
-      </Hero>
+    <Page
+      title="Pool"
+      sub={<>Approved and ready to advertise · {me.isGlobal ? 'All regions' : regionLabelOf(me.region) || 'Your region'}. Sales stay with the admin in charge.</>}
+      actions={<button type="button" className="ops-btn" onClick={exportCsv} disabled={shown.length === 0}><Download size={14} aria-hidden="true" />Export CSV</button>}
+    >
+      <Metrics items={[
+        { label: 'Live items', value: `${shown.length}${more ? '+' : ''}`, tone: 'ok', hint: 'Approved and advertised' },
+        { label: 'Stock value', value: naira(total), hint: 'Asking prices added up' },
+        { label: 'In my charge', value: mineCount, tone: 'info', hint: 'Sales stay with me' },
+        { label: me.isGlobal ? 'Regions' : 'Categories', value: split.length, hint: split[0] ? `Top: ${split[0].label}` : 'Nothing yet' },
+      ]} />
 
-      <Band label="Pool" className="flex flex-col gap-5 pb-4">
-        {split.length > 0 && (
-          <div className="ops-tile p-5" aria-label={me.isGlobal ? 'Stock value by region' : 'Stock value by category'}>
-            <p className="ops-eyebrow mb-3">Stock value by {me.isGlobal ? 'region' : 'category'}</p>
-            <div className="ops-bar !h-3" role="img" aria-label={split.map((g) => `${g.label} ${naira(g.value)}`).join(', ')}>
-              {split.map((g) => <i key={g.label} style={{ flexGrow: g.value, background: g.color }} />)}
-            </div>
-            <ul className="mt-3.5 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-              {split.map((g) => (
-                <li key={g.label} className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ background: g.color }} aria-hidden="true" /><span className="font-bold">{g.label}</span><span className="ops-mute ops-tnum">{naira(g.value)} · {g.n}</span></li>
-              ))}
-            </ul>
+      {split.length > 0 && (
+        <Card title={`Stock value by ${me.isGlobal ? 'region' : 'category'}`} label={me.isGlobal ? 'Stock value by region' : 'Stock value by category'}>
+          <div className="ops-bar" role="img" aria-label={split.map((g) => `${g.label} ${naira(g.value)}`).join(', ')}>
+            {split.map((g) => <i key={g.label} style={{ flexGrow: g.value, background: g.color }} />)}
           </div>
-        )}
+          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px]">
+            {split.map((g) => (
+              <li key={g.label} className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: g.color }} aria-hidden="true" /><span className="font-medium">{g.label}</span><span className="ops-mute ops-tnum">{naira(g.value)} · {g.n}</span></li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
-      <section className="flex flex-col gap-3" aria-label="Filters">
-        <div className="flex flex-wrap items-center gap-2">
-          {me.isGlobal && (
-            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Region">
-              <button type="button" className="ops-chipbtn" aria-pressed={!filters.region} onClick={() => apply({ region: null })}>All regions</button>
-              {REGIONS.map((r) => <button key={r.value} type="button" className="ops-chipbtn" aria-pressed={filters.region === r.value} onClick={() => apply({ region: filters.region === r.value ? null : r.value })}>{r.label}</button>)}
-            </div>
-          )}
-          <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-sm font-bold">
-            <input type="checkbox" className="ops-checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
-            Only items I am in charge of
-          </label>
-        </div>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Category">
-          <button type="button" className="ops-chipbtn" aria-pressed={!filters.category} onClick={() => apply({ category: null })}>Everything</button>
-          {CATEGORIES.map((c) => <button key={c.value} type="button" className="ops-chipbtn" aria-pressed={filters.category === c.value} onClick={() => apply({ category: filters.category === c.value ? null : c.value })}>{c.label}</button>)}
-        </div>
-        <form className="grid gap-2 sm:grid-cols-[1fr_200px_auto]" role="search" onSubmit={(e) => { e.preventDefault(); apply({ search: filters.search }); }}>
-          <div className="relative">
+      {error && <Banner tone="crit" onDismiss={() => setError(null)}>{error}</Banner>}
+
+      <Card pad={false} label="Approved listings">
+        <form className="ops-filters !border-b !border-[var(--p-border2)]" role="search" aria-label="Filters" onSubmit={(e) => { e.preventDefault(); apply({ search: filters.search }); }}>
+          <div className="ops-search">
             <label htmlFor="pool-search" className="sr-only">Search by title</label>
-            <Search size={15} className="pointer-events-none absolute left-4 top-[15px] text-[var(--o-mute)]" aria-hidden="true" />
-            <input id="pool-search" className="ops-input !pl-11" type="search" placeholder="Search by title" value={filters.search} maxLength={60}
+            <Search size={15} aria-hidden="true" />
+            <input id="pool-search" className="ops-input" type="search" placeholder="Search by title" value={filters.search} maxLength={60}
               onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))}
               onBlur={() => { if (cleanSearch(filters.search) !== filters.search) apply({ search: filters.search }); }} />
           </div>
-          <label className="sr-only" htmlFor="pool-sort">Sort</label>
-          <select id="pool-sort" className="ops-input" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-            <option value="recent">Recently approved</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option>
-          </select>
-          <button type="submit" className="ops-btn ops-btn-cta" disabled={loading}>Search</button>
+          {me.isGlobal && (
+            <label className="ops-filterbtn" data-on={Boolean(filters.region)}>
+              <span>{filters.region ? `Region: ${regionLabelOf(filters.region)}` : 'Region'}</span>
+              <select aria-label="Region" value={filters.region ?? ''} onChange={(e) => apply({ region: e.target.value || null })}>
+                <option value="">All regions</option>{REGIONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            </label>
+          )}
+          <label className="ops-filterbtn" data-on={Boolean(filters.category)}>
+            <span>{filters.category ? `Category: ${categoryLabel(filters.category)}` : 'Category'}</span>
+            <select aria-label="Category" value={filters.category ?? ''} onChange={(e) => apply({ category: e.target.value || null })}>
+              <option value="">All categories</option>{CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </label>
+          <label className="ops-filterbtn" data-on="true">
+            <span>Sort: {sort === 'recent' ? 'Recently approved' : sort === 'price_low' ? 'Price: low to high' : 'Price: high to low'}</span>
+            <select aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+              <option value="recent">Recently approved</option><option value="price_low">Price: low to high</option><option value="price_high">Price: high to low</option>
+            </select>
+          </label>
+          <label className="flex min-h-8 cursor-pointer items-center gap-2 text-[13px]">
+            <input type="checkbox" className="ops-checkbox" checked={mineOnly} onChange={(e) => setMineOnly(e.target.checked)} />
+            Only items I am in charge of
+          </label>
+          <button type="submit" className="ops-btn ops-btn-sm" disabled={loading}>Search</button>
         </form>
-      </section>
 
-      {error && <Notice kind="error">{error}</Notice>}
-      {!loading && shown.length === 0 && (
-        <div className="ops-tile flex flex-col items-center gap-1.5 px-6 py-14 text-center">
-          <p className="text-base font-extrabold">{mineOnly ? 'Nothing is in your charge yet.' : 'The pool is empty.'}</p>
-          <p className="ops-mute max-w-md">{mineOnly ? 'Claim and approve listings in Review and they show up here.' : 'Approved listings land here, ready to advertise.'}</p>
-        </div>
-      )}
+        {!loading && shown.length === 0 && (
+          <EmptyState icon={<Package size={22} />} title={mineOnly ? 'Nothing is in your charge yet' : 'The pool is empty'}>
+            {mineOnly ? 'Claim and approve listings in Review and they show up here.' : 'Approved listings land here, ready to advertise.'}
+          </EmptyState>
+        )}
 
-      <ul className="ops-masonry" aria-label="Approved listings">
-        {shown.map((r, i) => {
-          const mine = r.assigned_admin_id === me.id;
-          const src = thumbs[r.photo_urls[0]];
-          const share = `https://wa.me/?text=${encodeURIComponent(adText(r))}`;
-          const ratio = ['aspect-[4/5]', 'aspect-square', 'aspect-[4/3]', 'aspect-[5/6]'][i % 4];
-          return (
-            <li key={r.id} className="ops-tile ops-lift overflow-hidden">
-              <div className={`ops-next-photo !rounded-none ${ratio}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                {src ? <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 flex items-center justify-center text-[13px] font-medium text-[var(--o-mute)]">No photo</span>}
-                <span className="absolute left-3 top-3 z-[2] flex flex-wrap gap-1.5">
-                  <span className="rounded-full bg-black/55 px-2.5 py-1 text-[11.5px] font-bold text-white backdrop-blur">{categoryLabel(r.category)}{me.isGlobal ? ` · ${regionLabelOf(r.region)}` : ''}</span>
-                </span>
-                {mine && <span className="absolute right-3 top-3 z-[2] rounded-full bg-[var(--o-green)] px-2.5 py-1 text-[11.5px] font-bold text-white">Yours</span>}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] p-4 text-white">
-                  <p className="ops-num text-[30px]">{naira(r.price_ngn)}</p>
-                  <p className="mt-1.5 line-clamp-2 text-[15px] font-bold leading-snug">{r.title}</p>
+        {shown.length > 0 && (
+          <div className="ops-tablewrap hidden xl:block">
+            <table className="ops-table" aria-label="Approved listings">
+              <thead>
+                <tr><th scope="col" className="!w-auto !pl-4">Listing</th><th scope="col" className="ops-r">Price</th><th scope="col">Category</th>{me.isGlobal && <th scope="col">Region</th>}<th scope="col">Seller</th><th scope="col">In charge</th><th scope="col"><span className="sr-only">Actions</span></th></tr>
+              </thead>
+              <tbody>
+                {shown.map((r) => (
+                  <tr key={r.id} style={{ cursor: 'default' }}>
+                    <td className="max-w-[300px] !w-auto !pl-4">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <Thumb src={thumbs[r.photo_urls[0]]} />
+                        <span className="min-w-0"><span className="block truncate font-semibold">{r.title}</span><span className="ops-mute block truncate text-xs">{ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}</span></span>
+                      </div>
+                    </td>
+                    <td className="ops-num">{naira(r.price_ngn)}</td>
+                    <td className="whitespace-nowrap">{categoryLabel(r.category)}</td>
+                    {me.isGlobal && <td className="whitespace-nowrap">{regionLabelOf(r.region)}</td>}
+                    <td className="max-w-[170px]"><span className="block truncate">{r.seller_name}</span><span className="ops-mute block truncate text-xs">{r.seller_phone}</span></td>
+                    <td className="whitespace-nowrap">{inCharge(r)}</td>
+                    <td><RowActions r={r} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <ul className="xl:hidden" aria-label="Approved listings">
+          {shown.map((r) => (
+            <li key={r.id} className="ops-rowitem">
+              <div className="flex gap-3">
+                <Thumb src={thumbs[r.photo_urls[0]]} large />
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <div className="flex items-start justify-between gap-2"><p className="truncate text-[13px] font-semibold">{r.title}</p><p className="ops-tnum flex-none text-[13px] font-semibold">{naira(r.price_ngn)}</p></div>
+                  <p className="ops-mute truncate text-xs">{categoryLabel(r.category)}{me.isGlobal ? ` · ${regionLabelOf(r.region)}` : ''} · {ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}</p>
+                  <p className="truncate text-xs">{r.seller_name} <span className="ops-mute">· {r.seller_phone}</span></p>
+                  {!r.contact_visible && r.admin_in_charge_name && <p className="ops-mute truncate text-xs">In charge: {r.admin_in_charge_name}</p>}
                 </div>
               </div>
-              <div className="flex flex-col gap-2.5 p-3.5">
-                <p className="ops-mute text-[12.5px]">{ageLabel(r.condition_age)} · {workingLabel(r.condition_work)}</p>
-                <p className="text-[13px] font-semibold">{r.seller_name} <span className="ops-mute font-medium">· {r.seller_phone}</span></p>
-                {!r.contact_visible && r.admin_in_charge_name && (
-                  <p className="ops-mute text-[12.5px]">In charge: {r.admin_in_charge_name}. Coordinate with them in the group chat.</p>
-                )}
-                <div className="flex gap-2">
-                  <button type="button" className="ops-chipbtn flex-1 justify-center" onClick={() => copyAd(r)}>
-                    {copied === r.id ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copied === r.id ? 'Copied' : 'Copy ad'}
-                  </button>
-                  <a className="ops-chipbtn flex-1 justify-center !border-[var(--o-green)] !text-[var(--o-green-t)] hover:!bg-[var(--b-green-bg)]" href={share} target="_blank" rel="noopener noreferrer"><Share2 size={14} aria-hidden="true" />WhatsApp</a>
-                </div>
-              </div>
+              <RowActions r={r} wide />
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
 
-      {more && rows.length > 0 && (
-        <button type="button" className="ops-btn mx-auto min-w-48" disabled={loading} onClick={() => load(filters, page + 1, false)}>
-          {loading ? 'Loading…' : 'Load more'}
-        </button>
-      )}
-      </Band>
-    </>
+        <div className="ops-tablefoot">
+          <span className="ops-tnum" aria-live="polite">{shown.length}{more ? '+' : ''} {shown.length === 1 ? 'listing' : 'listings'}</span>
+          {more && rows.length > 0 && <button type="button" className="ops-btn ops-btn-sm" disabled={loading} onClick={() => load(filters, page + 1, false)}>{loading ? 'Loading…' : 'Load more'}</button>}
+        </div>
+      </Card>
+    </Page>
   );
 }
