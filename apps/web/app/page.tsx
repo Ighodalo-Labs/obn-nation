@@ -64,7 +64,7 @@ const NAVLINK = 'flex min-h-12 items-center rounded-full px-4 text-sm font-mediu
 /** Gateway page (PRD 6.1). Server-rendered and complete without scripts. Motion is added on top. */
 export default function Home() {
   return (
-    <main className={`${FULL} bg-[#F6F6F4] pb-24 text-[#0A0A0A] md:pb-0`}>
+    <main className={`${FULL} bg-[#F6F6F4] text-[#0A0A0A]`}>
       <style>{`html,body{background:#F6F6F4 !important;color:#0A0A0A}`}</style>
       <LandingMotion />
 
@@ -121,7 +121,7 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/80 via-[#0A0A0A]/40 to-transparent" aria-hidden="true" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#0A0A0A]/50 via-transparent to-transparent" aria-hidden="true" />
         <div className={`${INNER} flex min-h-[calc(100svh-4.5rem)] flex-col justify-center pb-24 pt-16`}>
-          <p className="hero-fade mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-white/80" style={{ ['--d' as string]: '.1s' }}>
+          <p className="hero-fade mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.14em] text-white/80" style={{ ['--d' as string]: '.1s' }}>
             <span className="flex h-1 w-12 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
             One Beta Nation
           </p>
@@ -200,9 +200,9 @@ export default function Home() {
           <div>
             <h2 id="safe-h" className={H2} data-reveal>A real person checks every listing.</h2>
             <ol className="mt-10 flex flex-col">
-              {TRUST.map(({ n, title, text, bg }) => (
+              {TRUST.map(({ title, text, bg }) => (
                 <li key={title} className="group flex gap-5 border-t border-white/10 py-6 transition-colors hover:border-white/40" data-reveal>
-                  <span className={`${bg} flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-display text-base font-bold text-white transition-transform duration-300 group-hover:scale-110`}>{n}</span>
+                  <span className={`${bg} mt-1 h-10 w-1 shrink-0 rounded-full`} aria-hidden="true" />
                   <span>
                     <h3 className="font-display text-xl font-bold">{title}</h3>
                     <p className="mt-1 max-w-md text-base text-white/70">{text}</p>
@@ -239,19 +239,18 @@ export default function Home() {
       <section id="faq" className={`${BLEED} bg-[#F3E2DF]`} aria-labelledby="faq-h">
         <div className={`${INNER} grid gap-10 py-14 sm:py-20 lg:grid-cols-[.8fr_1.2fr] lg:gap-16`}>
           <div className="lg:sticky lg:top-28 lg:self-start" data-reveal>
-            <h2 id="faq-h" className={H2}>Questions, answered.</h2>
-            <p className="mt-5 max-w-sm text-lg text-[#4A3F3C]">Short answers about listing, checking and fixing.</p>
+            <h2 id="faq-h" className={H2}>Common questions</h2>
+            <p className="mt-5 max-w-sm text-lg text-[#4A3F3C]">Quick answers before you start.</p>
             <Link href="/list" className={`${BTN} mt-8 w-fit bg-[#0A0A0A] text-white hover:bg-brand-red focus-visible:outline-[#0A0A0A]`}>Start a listing</Link>
           </div>
           <div className="flex flex-col gap-3">
-            {FAQ.map((f, i) => (
+            {FAQ.map((f) => (
               <details key={f.q} className="group overflow-hidden rounded-2xl bg-white/70 transition-colors open:bg-white hover:bg-white" data-reveal>
                 <summary className="flex min-h-16 items-center gap-4 px-5 py-4 text-lg font-semibold">
-                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold text-white ${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i % 3]}`}>{i + 1}</span>
                   <span className="flex-1">{f.q}</span>
                   <span className="plus flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/15 text-xl transition-transform" aria-hidden="true">+</span>
                 </summary>
-                <p className="px-5 pb-5 pl-[4.25rem] text-base text-[#5C5C58]">{f.a}</p>
+                <p className="px-5 pb-5 text-base text-[#5C5C58]">{f.a}</p>
               </details>
             ))}
           </div>
@@ -265,8 +264,7 @@ export default function Home() {
           <ul className="mt-10 grid gap-3 md:grid-cols-3">
             {VALUES.map((v, i) => (
               <li key={v.title} className={`${['bg-brand-red', 'bg-brand-green', 'bg-brand-blue'][i]} rounded-2xl p-6 text-white transition-transform duration-300 hover:-translate-y-1`} data-reveal>
-                <span className="font-display text-sm font-bold text-white/60">0{i + 1}</span>
-                <b className="font-display mt-6 block text-2xl font-bold leading-tight">{v.title}</b>
+                <b className="font-display block text-2xl font-bold leading-tight">{v.title}</b>
               </li>
             ))}
           </ul>
@@ -280,7 +278,7 @@ export default function Home() {
       <section className={`${BLEED} relative isolate overflow-hidden bg-[#0A0A0A]`}>
         <Image src="/photos/living-room.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-[70%_50%]" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#0A0A0A]/90 via-[#0A0A0A]/65 to-[#0A0A0A]/30" aria-hidden="true" />
-        <div className={`${INNER} grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.2fr_.8fr]`}>
+        <div className={`${INNER} py-16 sm:py-24`}>
           <div>
             <h2 className="font-display text-[clamp(2.4rem,6vw,4.8rem)] font-bold leading-[1.02] tracking-[-0.01em] text-white" data-reveal>Got something to sell?</h2>
             <p className="mt-5 max-w-lg text-lg text-white/80" data-reveal>Take photos, record a short video, set a price. An admin does the rest.</p>
@@ -289,14 +287,6 @@ export default function Home() {
               <a href="#how" className={`${BTN} border border-white/40 text-white hover:border-white hover:bg-white/10 focus-visible:outline-white`}>See how it works</a>
             </div>
           </div>
-          <ul className="grid gap-3" data-reveal>
-            {[['1', 'bg-brand-red', 'Add photos and a video'], ['2', 'bg-brand-blue', 'An admin checks it'], ['3', 'bg-brand-green', 'It goes live']].map(([n, c, t]) => (
-              <li key={n} className="flex items-center gap-4 rounded-2xl bg-white/10 p-4 text-white backdrop-blur">
-                <span className={`${c} flex h-10 w-10 items-center justify-center rounded-full font-display font-bold`}>{n}</span>
-                <span className="text-lg font-semibold">{t}</span>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 
@@ -330,10 +320,6 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Phone only: the top bar already carries the button on larger screens (LP-1) */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0A0A0A]/95 p-3 backdrop-blur md:hidden">
-        <Link href="/list" className={`${BTN} w-full bg-brand-red text-white focus-visible:outline-[#0A0A0A]`}>List an item</Link>
-      </div>
     </main>
   );
 }
