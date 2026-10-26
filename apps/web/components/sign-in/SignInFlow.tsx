@@ -53,7 +53,7 @@ export function SignInFlow({ next }: { next: string | null }) {
     if (!link || checking.current) return; // one check at a time, so the code is asked for once
     checking.current = true;
     try {
-      const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}`);
+      const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}&phone=${encodeURIComponent(phone)}`);
       if (r.ok && r.data.linked) {
         setError(null);
         await sendCode(true);
