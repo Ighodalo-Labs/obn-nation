@@ -15,7 +15,8 @@ create temp table doomed on commit drop as
   where phone = any (array[
     '+2348100000002',   -- Regional Test Admin (old test number)
     '+2348100000003',   -- Test Seller Three (old test number)
-    '+2349127289240'    -- real test seller. Add the other test numbers here, in the same format
+    '+2349127289240',   -- real test seller (26 Oct 2026)
+    '+2349165253243'    -- real test regional admin (26 Oct 2026)
   ]);
 
 delete from public.audit_log;
