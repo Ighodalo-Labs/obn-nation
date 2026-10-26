@@ -59,7 +59,7 @@ jobs:
           for f in supabase/tests/stub_auth.sql supabase/migrations/*.sql; do
             psql -v ON_ERROR_STOP=1 -q obn_test -f "$f"
           done
-          for t in supabase/tests/rls_test.sql supabase/tests/otp_attempts_test.sql supabase/tests/ref_region_test.sql; do
+          for t in supabase/tests/rls_test.sql supabase/tests/otp_attempts_test.sql supabase/tests/ref_region_test.sql supabase/tests/telegram_link_test.sql; do
             psql -v ON_ERROR_STOP=1 obn_test -f "$t" 2>&1 | tee /tmp/out.txt
-            grep -q -E "ALL TESTS PASSED|OTP TESTS PASSED|REF REGION TESTS PASSED" /tmp/out.txt
+            grep -q -E "ALL TESTS PASSED|OTP TESTS PASSED|REF REGION TESTS PASSED|TELEGRAM TESTS PASSED" /tmp/out.txt
           done

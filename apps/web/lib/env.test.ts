@@ -59,4 +59,24 @@ describe('environment checks', () => {
   it('rejects a site URL that is not a URL', () => {
     expect(() => parsePublicEnv({ ...good, NEXT_PUBLIC_SITE_URL: 'obn.example' })).toThrow();
   });
+
+  describe('message channel', () => {
+    const tg = { ...good, NEXT_PUBLIC_MESSAGE_CHANNEL: 'telegram', TELEGRAM_BOT_TOKEN: '123456789:' + 'A'.repeat(30), TELEGRAM_WEBHOOK_SECRET: 'w'.repeat(32), TELEGRAM_BOT_USERNAME: 'obnnation_bot' };
+    const noTwilio = { ...tg, TWILIO_ACCOUNT_SID: undefined, TWILIO_AUTH_TOKEN: undefined, TWILIO_WHATSAPP_FROM: undefined, TWILIO_OTP_CONTENT_SID: undefined, TWILIO_REJECT_CONTENT_SID: undefined };
+    it('defaults to WhatsApp', () => {
+      expect(parseServerEnv(good).NEXT_PUBLIC_MESSAGE_CHANNEL).toBe('whatsapp');
+    });
+    it('Telegram needs no Twilio keys', () => {
+      expect(parseServerEnv(noTwilio).NEXT_PUBLIC_MESSAGE_CHANNEL).toBe('telegram');
+    });
+    it('Telegram live needs the token, the secret and the username', () => {
+      expect(() => parseServerEnv({ ...noTwilio, TELEGRAM_BOT_TOKEN: undefined, TELEGRAM_WEBHOOK_SECRET: undefined, TELEGRAM_BOT_USERNAME: undefined })).toThrow(/TELEGRAM_BOT_TOKEN/);
+    });
+    it('Telegram stub needs none of them', () => {
+      expect(parseServerEnv({ ...noTwilio, TELEGRAM_MODE: 'stub', TELEGRAM_BOT_TOKEN: undefined, TELEGRAM_WEBHOOK_SECRET: undefined, TELEGRAM_BOT_USERNAME: undefined }).TELEGRAM_MODE).toBe('stub');
+    });
+    it('rejects a token that is not from BotFather', () => {
+      expect(() => parseServerEnv({ ...noTwilio, TELEGRAM_BOT_TOKEN: 'abc' })).toThrow(/BotFather/);
+    });
+  });
 });

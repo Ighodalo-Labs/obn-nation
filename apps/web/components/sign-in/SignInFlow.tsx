@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { clock, formatSentTo, postJson } from '@/lib/auth/client';
+import { clock, formatSentTo, getJson, postJson } from '@/lib/auth/client';
+import { CHANNEL, CHANNEL_NAME } from '@/lib/channel';
 import { pillButton, primaryButton } from '@/components/listing/ui';
 
-type Step = 'phone' | 'code' | 'name';
+type Step = 'phone' | 'telegram' | 'code' | 'name';
 
 interface SendOk { sent: true; phone: string; resend_after_seconds: number }
+interface NeedsLink { sent: false; needs_telegram_link: true; phone: string; deep_link: string; link_nonce: string }
 interface VerifyOk { user: { needs_name: boolean }; next: string }
 
 const input = 'min-h-14 w-full rounded-2xl border-2 border-[#E2D9CA] bg-white px-4 text-lg text-[#16140F] placeholder:text-[#8E8778] transition-colors hover:border-[#BDB3A1] focus:border-[#1565C0] focus:outline-none focus:ring-4 focus:ring-[#1565C0]/15';
@@ -31,6 +33,7 @@ export function SignInFlow({ next }: { next: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [wait, setWait] = useState(0);
+  const [link, setLink] = useState<{ url: string; nonce: string } | null>(null);
   const firstField = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -43,15 +46,40 @@ export function SignInFlow({ next }: { next: string | null }) {
     firstField.current?.focus();
   }, [step]);
 
+  // While the person links Telegram, ask every 2 seconds whether it is done, then send the code.
+  useEffect(() => {
+    if (step !== 'telegram' || !link) return;
+    let stopped = false;
+    const timer = setInterval(async () => {
+      const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}`);
+      if (stopped || !r.ok || !r.data.linked) return;
+      stopped = true;
+      clearInterval(timer);
+      sendCode();
+    }, 2000);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+    // sendCode reads the current number; it is safe to call once when the link finishes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, link]);
+
   async function sendCode() {
     setBusy(true);
     setError(null);
-    const r = await postJson<SendOk>('/api/auth/otp/send', { phone: `+234${digits.replace(/\D/g, '')}` });
+    const r = await postJson<SendOk | NeedsLink>('/api/auth/otp/send', { phone: `+234${digits.replace(/\D/g, '')}` });
     setBusy(false);
     if (!r.ok) {
       const retry = r.error.details?.retry_after_seconds;
       if (typeof retry === 'number') setWait(retry);
       return setError(r.error.message);
+    }
+    if (!r.data.sent) {
+      // Telegram only: this number is not linked yet. Show the Start link and wait for the link to finish.
+      setPhone(r.data.phone);
+      setLink({ url: r.data.deep_link, nonce: r.data.link_nonce });
+      return setStep('telegram');
     }
     setPhone(r.data.phone);
     setCode('');
@@ -97,8 +125,8 @@ export function SignInFlow({ next }: { next: string | null }) {
         <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(sendCode)} noValidate>
           {eyebrow('Sell on OBN NATION')}
           <h1 className={heading}>Let’s get you in.</h1>
-          <p className="-mt-2 text-lg text-[#6B655A]">We send a 6-digit code on WhatsApp. No password to remember.</p>
-          <label htmlFor="phone" className="text-base font-bold">Your WhatsApp number</label>
+          <p className="-mt-2 text-lg text-[#6B655A]">We send a 6-digit code on {CHANNEL_NAME}. No password to remember.</p>
+          <label htmlFor="phone" className="text-base font-bold">{CHANNEL === 'telegram' ? 'Your phone number' : 'Your WhatsApp number'}</label>
           <div className="flex gap-2">
             <span className="sell-chip flex min-h-14 items-center rounded-2xl bg-[#16140F] px-4 text-lg font-bold text-white">+234</span>
             <input
@@ -106,18 +134,38 @@ export function SignInFlow({ next }: { next: string | null }) {
               placeholder="803 123 4567" value={digits} onChange={(e) => setDigits(e.target.value)} aria-describedby="phone-help"
             />
           </div>
-          <p id="phone-help" className="text-sm text-[#6B655A]">Use a number that has WhatsApp. Buyers never see it.</p>
+          <p id="phone-help" className="text-sm text-[#6B655A]">{CHANNEL === 'telegram' ? 'Use the number on your Telegram account. Buyers never see it.' : 'Use a number that has WhatsApp. Buyers never see it.'}</p>
           <button className={primary} type="submit" disabled={busy || digits.replace(/\D/g, '').length < 10}>
             {busy ? 'Sending…' : 'Send code'}
           </button>
         </form>
       )}
 
+      {step === 'telegram' && link && (
+        <div className="sell-stagger flex flex-col gap-4">
+          {eyebrow('Link Telegram')}
+          <h1 className={heading}>Open Telegram once.</h1>
+          <p className="text-lg text-[#6B655A]">We send your code there. You only do this the first time.</p>
+          <ol className="flex flex-col gap-3 text-base text-[#16140F]">
+            <li className="flex gap-3"><b className="font-display text-xl">1</b><span>Tap <b>Open Telegram</b> below.</span></li>
+            <li className="flex gap-3"><b className="font-display text-xl">2</b><span>Press <b>Start</b> in the chat.</span></li>
+            <li className="flex gap-3"><b className="font-display text-xl">3</b><span>Tap <b>Share my number</b>. It must be {formatSentTo(phone)}.</span></li>
+          </ol>
+          <a className={`${primary} flex items-center justify-center`} href={link.url} target="_blank" rel="noopener noreferrer">Open Telegram</a>
+          <p className="text-sm text-[#6B655A]" role="status">Waiting for you. This page moves on by itself.</p>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <button type="button" className={pillButton} onClick={() => { setStep('phone'); setLink(null); setError(null); }}>
+              Change number
+            </button>
+          </div>
+        </div>
+      )}
+
       {step === 'code' && (
         <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(verify)} noValidate>
-          {eyebrow('Check WhatsApp')}
+          {eyebrow(`Check ${CHANNEL_NAME}`)}
           <h1 className={heading}>Enter your code.</h1>
-          <p className="text-lg text-[#6B655A]">Sent to WhatsApp {formatSentTo(phone)}</p>
+          <p className="text-lg text-[#6B655A]">Sent to {CHANNEL_NAME} {formatSentTo(phone)}</p>
           <label htmlFor="code" className="sr-only">6-digit code</label>
           <div className="relative">
             <div className="grid grid-cols-6 gap-2 sm:gap-3" aria-hidden="true">

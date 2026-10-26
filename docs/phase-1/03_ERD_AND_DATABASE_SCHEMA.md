@@ -4,7 +4,7 @@ Project: OBN NATION ONLINE.COM · Phase 1, the Listing Cloud · Version 1.0 · 1
 Database: Supabase PostgreSQL 15 · Migrations: `supabase/migrations/0001_core_schema.sql`, `0002_storage.sql` · Tests: `supabase/tests/`
 Related: [01 Architecture](01_SYSTEM_ARCHITECTURE.md) · [02 PRD](02_PRD_PHASE_1.md) · [06 RBAC](06_RACI_AND_RBAC_MATRIX.md) · [07 API](07_API_CONTRACTS_AND_INTEGRATIONS.md)
 
-Migration `0003_otp_attempts.sql` (wrong-code counter for the WhatsApp sign-in, service role only, tested by `supabase/tests/otp_attempts_test.sql`) and `0004_storage_replace_draft_files.sql` (lets a seller replace files in their own draft folder so an upload retry works) were added after this document and are not repeated in section 9. The SQL in section 9 is the exact content of the first two migration files and is the version that the automated tests run against (92 checks, all passing on PostgreSQL 16). If this document and the files ever disagree, the files win.
+Migration `0003_otp_attempts.sql` (wrong-code counter for the WhatsApp sign-in, service role only, tested by `supabase/tests/otp_attempts_test.sql`) and `0004_storage_replace_draft_files.sql` (lets a seller replace files in their own draft folder so an upload retry works) were added after this document and are not repeated in section 9. The SQL in section 9 is the exact content of the first two migration files and is the version that the automated tests run against (92 checks, all passing on PostgreSQL 16). Migration `0006_telegram_link.sql` (links a phone number to a Telegram chat, service role only, tested by `supabase/tests/telegram_link_test.sql`, change request CR-01) is described in section 4.5a and is not repeated in section 9. If this document and the files ever disagree, the files win.
 
 ---
 
@@ -27,6 +27,8 @@ erDiagram
   PROFILES ||--o{ AUDIT_LOG : "acts via actor_id"
   LISTINGS |o--o{ AUDIT_LOG : "is subject of"
   PROFILES |o--o{ PROFILES : "revoked_by and blacklisted_by"
+  PROFILES |o..o| TELEGRAM_LINKS : "same phone, no foreign key"
+  TELEGRAM_LINK_REQUESTS }o..o| TELEGRAM_LINKS : "completes into"
 
   AUTH_USERS {
     uuid id PK
@@ -88,6 +90,22 @@ erDiagram
     timestamptz expires_at
     timestamptz used_at
     timestamptz revoked_at
+  }
+  TELEGRAM_LINKS {
+    text phone PK
+    bigint chat_id
+    bigint telegram_user_id UK
+    text username
+    timestamptz linked_at
+  }
+  TELEGRAM_LINK_REQUESTS {
+    text nonce PK
+    text phone
+    bigint tg_chat_id
+    bigint tg_user_id
+    timestamptz created_at
+    timestamptz expires_at
+    timestamptz used_at
   }
   AUDIT_LOG {
     bigint id PK
@@ -225,6 +243,18 @@ Rows returned (never drafts, nothing for anonymous or blacklisted users):
 |---|---|
 | Global Admin | All non-draft listings, all regions |
 | Regional admin | Listings assigned to them in any non-draft status, plus in their own region: all `approved` listings and `pending_review` listings that nobody has claimed |
+
+### 4.5a Telegram link tables (migration 0006, CR-01)
+
+Used only when `NEXT_PUBLIC_MESSAGE_CHANNEL=telegram`. RLS is on with no policies, so only the service role reaches them (same as `otp_attempts`). The link is by phone number and has no foreign key, because a person links Telegram before their profile exists.
+
+`telegram_links`: `phone` (primary key, E.164), `chat_id` (where the bot sends), `telegram_user_id` (unique, the account that proved the number), `username` (optional), `linked_at`. One number per Telegram account and one account per number: a relink replaces the old row.
+
+`telegram_link_requests`: `nonce` (primary key, 32 hex characters, goes in the Start link), `phone` (typed on the site), `tg_chat_id` and `tg_user_id` (filled when the person presses Start), `created_at`, `expires_at` (15 minutes), `used_at` (set when linking completes).
+
+Functions, service role only: `telegram_request_link(phone)` returns a live nonce (reuses one if it exists), `telegram_attach_start(nonce, chat, user)` records who pressed Start, `telegram_complete_link(chat, user, contact_phone, username)` returns `linked`, `phone_mismatch` or `no_request`, `telegram_link_done(nonce)` tells the browser it finished, `telegram_chat_for(phone)` returns the chat or null.
+
+Why it is safe: a number is linked only when the shared contact belongs to the account that sent it (checked in the webhook: `contact.user_id = from.id`) and equals the number typed on the site (checked in `telegram_complete_link`). Someone who types a victim's number cannot finish the link with their own Telegram.
 
 ## 5. Functions
 
@@ -1055,9 +1085,11 @@ psql obn_test -f supabase/migrations/0002_storage.sql
 psql obn_test -f supabase/migrations/0003_otp_attempts.sql
 psql obn_test -f supabase/migrations/0004_storage_replace_draft_files.sql
 psql obn_test -f supabase/migrations/0005_region_for_ref.sql
+psql obn_test -f supabase/migrations/0006_telegram_link.sql
 psql obn_test -f supabase/tests/rls_test.sql                       # prints "ALL TESTS PASSED"
 psql obn_test -f supabase/tests/otp_attempts_test.sql              # prints "OTP TESTS PASSED"
 psql obn_test -f supabase/tests/ref_region_test.sql                # prints "REF REGION TESTS PASSED"
+psql obn_test -f supabase/tests/telegram_link_test.sql             # prints "TELEGRAM TESTS PASSED"
 ```
 
 The suite has 92 checks. They cover masking, claim races, single approval, referral routing, the token life cycle (valid, burned, expired, revoked, replay), duplicate prevention, revoke and blacklist effects, privilege boundaries, the daily limit, draft purge and storage access. Section 5 of [08](08_QA_TEST_CASES_AND_ACCEPTANCE.md) lists them and section 2 maps them to the QA scenarios.

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CHANNEL_NAME } from '@/lib/channel';
 import { primaryButton, secondaryButton } from './ui';
 
 const NEXT = [
@@ -15,7 +16,7 @@ export function UnderReview({ onAnother }: { onAnother: () => void }) {
         <span className="flex h-1.5 w-20 overflow-hidden rounded-full" aria-hidden="true"><i className="flex-1 bg-brand-red" /><i className="flex-1 bg-brand-green" /><i className="flex-1 bg-brand-blue" /></span>
         <h1 className="font-display text-[clamp(2.4rem,7vw,3.6rem)] font-bold leading-[1] tracking-[-0.01em]">Under review.<br />Nice one.</h1>
         <p className="max-w-sm text-lg text-[#6B655A]">
-          Thank you. If something needs fixing, we will message you on WhatsApp.
+          Thank you. If something needs fixing, we will message you on {CHANNEL_NAME}.
         </p>
       </div>
       <ol className="grid gap-3 sm:grid-cols-3">

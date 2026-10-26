@@ -206,7 +206,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (!r.ok) setMessage(r.error.message);
     else if (r.data.notification.stub_edit_link) {
       setTestLink({ title: row.title, url: r.data.notification.stub_edit_link });
-      markNotice(row.id, true, 'Rejected. Test mode: WhatsApp is off, so nothing was sent. Use the test link.');
+      markNotice(row.id, true, 'Rejected. Test mode: messages are off, so nothing was sent. Use the test link.');
     } else markNotice(row.id, r.data.notification.status === 'sent', 'Rejected. The seller has been messaged.');
     refresh();
   }
@@ -220,7 +220,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
     if (!r.ok) setMessage(r.error.message);
     else if (r.data.notification.stub_edit_link) {
       setTestLink({ title: row.title, url: r.data.notification.stub_edit_link });
-      markNotice(row.id, true, 'New link made. Test mode: WhatsApp is off, so nothing was sent.');
+      markNotice(row.id, true, 'New link made. Test mode: messages are off, so nothing was sent.');
     } else markNotice(row.id, r.data.notification.status === 'sent', 'New link sent to the seller.');
     refresh();
   }
@@ -228,7 +228,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
   function markNotice(id: string, sent: boolean, okText: string) {
     setFailedIds((s) => { const n = new Set(s); if (sent) n.delete(id); else n.add(id); return n; });
     setNotice(sent ? okText : null);
-    if (!sent) setMessage('Rejected, but the WhatsApp message was not sent. Choose “Send new link” on the listing.');
+    if (!sent) setMessage('Rejected, but the message to the seller was not sent. Choose “Send new link” on the listing.');
   }
 
   async function copy() {
@@ -332,7 +332,7 @@ export function AdminInbox({ me, rows, thumbs, link }: { me: Me; rows: FeedRow[]
       >
         {message && <Banner tone="crit" onDismiss={() => setMessage(null)}>{message}</Banner>}
         {testLink && (
-          <Banner tone="warn" title="Test mode: WhatsApp is off, nothing was sent" onDismiss={() => setTestLink(null)}>
+          <Banner tone="warn" title="Test mode: messages are off, nothing was sent" onDismiss={() => setTestLink(null)}>
             <p>Open this link as the seller of “{testLink.title}” to fix and resubmit it. It works once.</p>
             <p className="mt-2 break-all text-xs">{testLink.url}</p>
             <div className="mt-2 flex gap-2">

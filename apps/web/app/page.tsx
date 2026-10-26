@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { CHANNEL_NAME } from '@/lib/channel';
 import { MobileMenu } from '@/components/MobileMenu';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -41,7 +42,7 @@ const VALUES = [
 ];
 
 const FAQ = [
-  { q: 'How do I sign in?', a: 'Enter your phone number. We send you a code on WhatsApp. No password to remember.' },
+  { q: 'How do I sign in?', a: `Enter your phone number. We send you a code on ${CHANNEL_NAME}. No password to remember.` },
   { q: 'What do I need to list an item?', a: 'One to six clear photos, one short video of up to 60 seconds, a title, a price and your location. The app shrinks the files for you.' },
   { q: 'Who checks my listing?', a: 'An admin for your region. Your region comes from the link you joined with.' },
   { q: 'What if my listing is turned down?', a: 'You see the reason. Use the link we give you to fix it and send it again. The link works for 30 days.' },

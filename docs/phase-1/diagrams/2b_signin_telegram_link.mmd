@@ -1,0 +1,35 @@
+sequenceDiagram
+  autonumber
+  actor S as Seller
+  participant W as Web app
+  participant A as API route
+  participant DB as Postgres
+  participant TG as Telegram bot
+  participant H as OTP hook route
+
+  S->>W: Enters phone number
+  W->>A: POST /api/auth/otp/send
+  A->>DB: Is this phone linked? (telegram_chat_for)
+  alt Linked
+    A->>H: Supabase Auth calls the Send SMS hook
+    H->>TG: sendMessage with the 6-digit code
+    TG-->>S: Message in Telegram
+    A-->>W: 200 sent
+  else Not linked
+    A->>DB: telegram_request_link (one-time code, 15 min)
+    A-->>W: 200 needs_telegram_link and Start link
+    W-->>S: Open Telegram
+    S->>TG: Presses Start
+    TG->>A: Webhook /start one-time code
+    A->>DB: telegram_attach_start
+    TG-->>S: Share my number button
+    S->>TG: Shares own contact
+    TG->>A: Webhook with contact
+    A->>A: contact.user_id equals sender?
+    A->>DB: telegram_complete_link (number equals typed number?)
+    DB-->>A: linked
+    TG-->>S: Linked message
+    W->>A: Polls /api/auth/telegram/status
+    A-->>W: linked true
+    W->>A: POST /api/auth/otp/send again, code is sent
+  end

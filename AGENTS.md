@@ -3,7 +3,7 @@
 Project: OBN NATION ONLINE.COM, Phase 1 (the Listing Cloud). A trust-verified marketplace for second-hand goods in Nigeria. Built by Ighodalo Labs.
 
 ## What Phase 1 is
-Sellers sign in with a WhatsApp code, submit a listing (photos and a video), and regional admins review it. Rejected sellers get a WhatsApp link to fix and resubmit. Approved listings join a regional pool where seller contacts are masked. A Global Admin governs everything.
+Sellers sign in with a code (Telegram bot now, WhatsApp later, one setting, see doc 11), submit a listing (photos and a video), and regional admins review it. Rejected sellers get a link by message to fix and resubmit. Approved listings join a regional pool where seller contacts are masked. A Global Admin governs everything.
 
 ## Where the truth is
 Read in this order. Read only what your task needs.
@@ -18,7 +18,7 @@ Read in this order. Read only what your task needs.
 If code and docs disagree, stop and report. Do not guess.
 
 ## Stack
-Next.js 14 (App Router, TypeScript strict, Tailwind) on Vercel. Supabase: Postgres 15, Auth (phone OTP with a Send SMS hook), private Storage buckets `photos` and `videos`. Twilio WhatsApp. Browser-side compression (`browser-image-compression`, FFmpeg.wasm self-hosted in `public/ffmpeg`).
+Next.js 14 (App Router, TypeScript strict, Tailwind) on Vercel. Supabase: Postgres 15, Auth (phone OTP with a Send SMS hook), private Storage buckets `photos` and `videos`. Messaging through a Telegram bot or Twilio WhatsApp (`NEXT_PUBLIC_MESSAGE_CHANNEL`). Browser-side compression (`browser-image-compression`, FFmpeg.wasm self-hosted in `public/ffmpeg`).
 
 ## Hard rules
 1. The database enforces the rules (RLS, triggers, functions). The app never replaces that. Do not weaken a policy to make a screen work.

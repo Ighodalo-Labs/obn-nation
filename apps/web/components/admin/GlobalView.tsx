@@ -1,5 +1,6 @@
 'use client';
 
+import { CHANNEL_NAME } from '@/lib/channel';
 import { useMemo, useState } from 'react';
 import { Check, Copy, ShieldAlert, Users, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -289,7 +290,7 @@ export function GlobalView({ siteUrl, admins, listings, audit }: {
         {audit.length > auditCount && <button type="button" className="ops-btn mt-3" onClick={() => setAuditCount((n) => n + AUDIT_STEP)}>Show older ({audit.length - auditCount} more)</button>}
       </Card>
 
-      {dialog?.kind === 'add' && <AddAdmin onCancel={() => setDialog(null)} onDone={(b) => run('/api/admin/create', b, 'Admin added. They can sign in with a WhatsApp code now.')} />}
+      {dialog?.kind === 'add' && <AddAdmin onCancel={() => setDialog(null)} onDone={(b) => run('/api/admin/create', b, `Admin added. They can sign in with a ${CHANNEL_NAME} code now.`)} />}
       {dialog?.kind === 'revoke' && (
         <ReasonDialog title={`Revoke ${dialog.admin.full_name || dialog.admin.phone}`} help="Their pending listings go back to the open queue. You can reinstate them later."
           action="Revoke" onCancel={() => setDialog(null)}

@@ -1,4 +1,6 @@
 import 'server-only';
+import { serverEnv } from '@/lib/env';
+import { chatIdForPhone, requestLink } from '@/lib/telegram-deps';
 import { createAdminSupabase } from '@/lib/supabase/admin';
 import { createServerSupabase } from '@/lib/supabase/server';
 import type { OtpDeps, ProfileRow } from './otp';
@@ -18,8 +20,17 @@ export async function phoneIsBlacklisted(phone: string): Promise<boolean> {
 export function buildOtpDeps(): OtpDeps {
   const admin = createAdminSupabase();
   const session = createServerSupabase();
+  const env = serverEnv();
+  const telegramGate = env.NEXT_PUBLIC_MESSAGE_CHANNEL === 'telegram' && env.TELEGRAM_MODE === 'live';
   return {
     isBlacklisted: phoneIsBlacklisted,
+    needsTelegramLink: telegramGate
+      ? async (phone) => {
+          if ((await chatIdForPhone(phone)) !== null) return null;
+          const nonce = await requestLink(phone);
+          return { nonce, deepLink: `https://t.me/${env.TELEGRAM_BOT_USERNAME}?start=${nonce}` };
+        }
+      : undefined,
     markSent: async (phone) => void must(await admin.rpc('otp_mark_sent', { p_phone: phone })),
     state: async (phone) => {
       const rows = must(await admin.rpc('otp_state', { p_phone: phone })) as { tries_left: number; expired: boolean }[];

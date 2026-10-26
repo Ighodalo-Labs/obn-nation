@@ -113,6 +113,8 @@ Route handlers translate database errors with this table ([03](03_ERD_AND_DATABA
 | 13 | `POST /api/listings/decide` | Claim or approve a listing (wraps the two database functions, maps errors) | Admin session |
 | 14 | `POST /api/admin/status` | Revoke or reinstate a regional admin | Global Admin session |
 | 15 | `POST /api/listings/reassign` | Change the admin in charge of a listing | Global Admin session |
+| 16 | `GET /api/auth/telegram/status` | Telegram channel: has the link finished? | One-time code |
+| 17 | `POST /api/telegram/webhook` | Telegram channel: messages to the bot (internal) | Secret header |
 
 ## 3. Endpoint contracts
 
@@ -138,6 +140,20 @@ Success `200`:
   "expires_in_seconds": 600
 }
 ```
+
+Telegram channel only (`NEXT_PUBLIC_MESSAGE_CHANNEL=telegram`): if the number is not linked yet, no code is sent and the answer is `200`:
+
+```json
+{
+  "sent": false,
+  "needs_telegram_link": true,
+  "phone": "+2348031234567",
+  "deep_link": "https://t.me/obnnation_bot?start=0123456789abcdef0123456789abcdef",
+  "link_nonce": "0123456789abcdef0123456789abcdef"
+}
+```
+
+The page shows "Open Telegram" and polls `GET /api/auth/telegram/status?nonce=…` (section 3.16). When it answers `linked: true`, the page calls this endpoint again and the code is sent.
 
 Errors:
 
@@ -453,6 +469,14 @@ Payload from Supabase (fields used):
 
 Success: `200` with `{}`. Refusal or failure: `400` with `{ "error": { "http_code": 400, "message": "Could not send the code." } }`, which Supabase turns into an error for the `otp/send` call (mapped to `502 whatsapp_unavailable`, or `403 phone_blocked` for blacklisted numbers).
 
+### 3.16 `GET /api/auth/telegram/status` (Telegram channel)
+
+Query: `nonce` (32 hex characters, from the send answer). Answer `200`: `{ "linked": true }` or `{ "linked": false }`. The one-time code is the secret, so no session is needed. A bad nonce gives `400 validation_failed`.
+
+### 3.17 `POST /api/telegram/webhook` (internal, Telegram channel)
+
+Called by Telegram only. Telegram sends the secret we set in `setWebhook` in the `X-Telegram-Bot-Api-Secret-Token` header; a wrong or missing header gives `401`. When the channel is not Telegram or the mode is stub, the route answers `404`. After the header check the route always answers `200 {}`, even if handling failed, so Telegram does not retry the same update. It handles two things: `/start <nonce>` (remember the chat, ask for the contact) and a shared contact (link the number only if `contact.user_id` equals the sender and the number equals the one typed on the site). Groups and channels are ignored.
+
 ### 3.12 `GET /api/cron/purge-drafts` (internal)
 
 Header `Authorization: Bearer <CRON_SECRET>`. Calls `purge_stale_drafts(7)`, removes each returned folder from the `photos` and `videos` buckets, answers `{ "purged": 9 }`.
@@ -510,6 +534,17 @@ Both templates must be submitted to Meta by OBN NATION's verified business accou
 Rules the code follows: variables never contain line breaks or tabs; the reason is cut to 300 characters; the template never ends with a variable; no marketing text is added. Environment variables: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `TWILIO_OTP_CONTENT_SID`, `TWILIO_REJECT_CONTENT_SID`.
 
 Cost control: each message is a template message billed by Twilio plus Meta's conversation fee. The monthly line in the cost proposal is the ceiling. The first alert is at 80%.
+
+### 5a. Telegram messages (CR-01)
+
+With `NEXT_PUBLIC_MESSAGE_CHANNEL=telegram` the same two messages go through the Telegram Bot API `sendMessage`, as plain text, with no template approval and no per-message fee. Variables are flattened the same way (no line breaks in a title or reason; the reason is cut to 500 characters).
+
+| Message | Text |
+|---|---|
+| Sign-in code | "Your OBN NATION sign-in code is {code}. It works for 10 minutes. Do not share it with anyone." |
+| Rejection notice | "Hi {first name}, your listing "{title}" needs a fix before we can approve it. Reason: {reason} Fix it and send it again here: {link} The link works once. If it stops working, ask your admin for a new one." |
+
+Environment variables: `NEXT_PUBLIC_MESSAGE_CHANNEL`, `TELEGRAM_MODE` (`live` or `stub`), `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_BOT_USERNAME`. A number that is not linked cannot receive a message: the sender returns `telegram_not_linked`, and a rejection then shows "Message not sent" with Send new link (AD-6). A person who blocks the bot gets `telegram_403` and must unblock it.
 
 ## 6. Client-side compression
 

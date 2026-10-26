@@ -21,6 +21,8 @@ export interface ProfileRow {
 /** Everything the sign-in flow needs from the outside. Real versions are in the route files; tests pass fakes. */
 export interface OtpDeps {
   isBlacklisted(phone: string): Promise<boolean>;
+  /** Telegram channel only: when the number is not linked yet, returns the Start link and its one-time code. */
+  needsTelegramLink?(phone: string): Promise<{ deepLink: string; nonce: string } | null>;
   markSent(phone: string): Promise<void>;
   state(phone: string): Promise<{ triesLeft: number; expired: boolean }>;
   registerWrong(phone: string): Promise<number>;
@@ -40,6 +42,9 @@ export async function sendCode(deps: OtpDeps, rawPhone: string) {
   if (!phone) throw new ApiError('invalid_phone', undefined, { field: 'phone' });
   if (await deps.isBlacklisted(phone)) throw new ApiError('phone_blocked');
 
+  const link = await deps.needsTelegramLink?.(phone);
+  if (link) return { sent: false as const, needs_telegram_link: true as const, phone, deep_link: link.deepLink, link_nonce: link.nonce };
+
   const { error } = await deps.signInWithOtp(phone);
   if (error) {
     if (error.status === 429 || error.code === 'over_sms_send_rate_limit' || error.code === 'over_request_rate_limit') {
@@ -50,7 +55,7 @@ export async function sendCode(deps: OtpDeps, rawPhone: string) {
     throw new ApiError('whatsapp_unavailable');
   }
   await deps.markSent(phone);
-  return { sent: true, phone, resend_after_seconds: OTP_RESEND_SECONDS, expires_in_seconds: OTP_TTL_SECONDS };
+  return { sent: true as const, phone, resend_after_seconds: OTP_RESEND_SECONDS, expires_in_seconds: OTP_TTL_SECONDS };
 }
 
 export async function verifyCode(deps: OtpDeps, rawPhone: string, code: string, rawNext?: string | null) {

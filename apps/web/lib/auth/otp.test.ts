@@ -113,3 +113,28 @@ describe('verifyCode', () => {
     expect(calls).toEqual(['signOut']);
   });
 });
+
+describe('sendCode with the Telegram link step', () => {
+  it('asks for the link first and sends no code when the number is not linked', async () => {
+    let sent = false;
+    const { deps, calls } = fakeDeps({
+      needsTelegramLink: async () => ({ deepLink: 'https://t.me/obn_bot?start=abc', nonce: 'abc' }),
+      signInWithOtp: async () => { sent = true; return { error: null }; },
+    });
+    const out = await sendCode(deps, '08031234567');
+    expect(out).toEqual({ sent: false, needs_telegram_link: true, phone: '+2348031234567', deep_link: 'https://t.me/obn_bot?start=abc', link_nonce: 'abc' });
+    expect(sent).toBe(false);
+    expect(calls).toEqual([]);
+  });
+  it('sends the code as normal once the number is linked', async () => {
+    const { deps, calls } = fakeDeps({ needsTelegramLink: async () => null });
+    expect((await sendCode(deps, '08031234567')).sent).toBe(true);
+    expect(calls).toEqual(['markSent']);
+  });
+  it('still refuses a blacklisted number before the link step', async () => {
+    let asked = false;
+    const { deps } = fakeDeps({ isBlacklisted: async () => true, needsTelegramLink: async () => { asked = true; return null; } });
+    expect((await fails(sendCode(deps, '08031234567'))).code).toBe('phone_blocked');
+    expect(asked).toBe(false);
+  });
+});

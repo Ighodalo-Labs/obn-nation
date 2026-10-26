@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { REASON_CHIPS, validateReason } from '@/lib/admin/reasons';
+import { CHANNEL_NAME } from '@/lib/channel';
 import { Dialog } from './ui';
 
 /** PRD AD-5: a required reason of 5 to 500 characters, with quick-pick chips. */
@@ -21,7 +22,7 @@ export function RejectModal({ title, busy, onCancel, onSubmit }: {
 
   return (
     <Dialog title={`Reject “${title}”`} onClose={onCancel} busy={busy} z={80}>
-      <p className="ops-mute text-[13px]">The seller gets this reason on WhatsApp, with a link to fix the listing.</p>
+      <p className="ops-mute text-[13px]">The seller gets this reason on {CHANNEL_NAME}, with a link to fix the listing.</p>
       <div className="flex flex-wrap gap-2">
         {REASON_CHIPS.map((c) => (
           <button key={c} type="button" className="ops-btn ops-btn-sm" onClick={() => { setReason(c); setError(null); box.current?.focus(); }}>

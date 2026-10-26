@@ -6,6 +6,9 @@ Related: [01 Architecture](01_SYSTEM_ARCHITECTURE.md) · [03 Database](03_ERD_AN
 
 Priority labels: **Must** = needed for the Phase 1 gate. **Should** = included in the build if time allows inside Milestone 1.
 
+
+> **Change request CR-01 (26 Oct 2026):** the client asked to start with Telegram and add WhatsApp later. Wherever this document says the sign-in code or the rejection notice goes by WhatsApp, the message now goes through a Telegram bot when `NEXT_PUBLIC_MESSAGE_CHANNEL=telegram`. Each phone number is linked to its Telegram chat once (Start, then Share my number). The rules, screens and limits below stay the same. Details: [11 CR-01](11_CR01_TELEGRAM_CHANNEL.md).
+
 ---
 
 ## 1. Executive summary

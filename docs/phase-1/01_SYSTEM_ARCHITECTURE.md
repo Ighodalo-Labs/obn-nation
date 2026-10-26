@@ -8,6 +8,9 @@ Related: [02 PRD](02_PRD_PHASE_1.md) · [03 Database](03_ERD_AND_DATABASE_SCHEMA
 
 ## 1. Purpose and scope
 
+> **CR-01 (26 Oct 2026):** the messaging box can be a Telegram bot instead of Twilio WhatsApp. One setting picks it (`NEXT_PUBLIC_MESSAGE_CHANNEL`). The bot calls `/api/telegram/webhook` on the same Vercel app, and two small tables link a phone number to a chat. See [11 CR-01](11_CR01_TELEGRAM_CHANNEL.md).
+
+
 This document describes how Phase 1 is built and how it fits the six-phase blueprint (OBN-PDP-2026-V1), the CTO's conditional sign-off (OBN-CP1-2026-V1) and the cost proposals. It answers four questions:
 
 1. What are the parts, and what does each part do?

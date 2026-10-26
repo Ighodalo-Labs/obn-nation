@@ -32,6 +32,18 @@ export async function postJson<T>(url: string, body: unknown, method: 'POST' | '
   }
 }
 
+/** Reads one JSON answer with GET. Same result shape as postJson. */
+export async function getJson<T>(url: string): Promise<ApiResult<T>> {
+  try {
+    const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+    const json = await res.json().catch(() => null);
+    if (res.ok) return { ok: true, data: json as T };
+    return { ok: false, error: { code: 'internal_error', message: 'Something went wrong. Please try again.' } };
+  } catch {
+    return { ok: false, error: { code: 'network', message: 'No connection. Check your network and try again.' } };
+  }
+}
+
 /** "+2348031234567" -> "+234 803 *** 4567" (wireframe 2B). */
 export function formatSentTo(phone: string): string {
   const m = /^\+234(\d{3})\d{3}(\d{4})$/.exec(phone);
