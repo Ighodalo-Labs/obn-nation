@@ -48,11 +48,21 @@ export function SignInFlow({ next }: { next: string | null }) {
 
   // While the person links Telegram, ask whether it is done: every 2 seconds, and at once when they come back to this page.
   // Phones pause a page while another app is open, so the "come back" check is the one that matters.
+  const checking = useRef(false);
   async function checkLinked(manual: boolean) {
-    if (!link || busy) return;
-    const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}`);
-    if (r.ok && r.data.linked) return void (await sendCode());
-    if (manual) setError('Not linked yet. In Telegram, press Start, then tap Share my number. Then come back and try again.');
+    if (!link || checking.current) return; // one check at a time, so the code is asked for once
+    checking.current = true;
+    try {
+      const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}`);
+      if (r.ok && r.data.linked) {
+        setError(null);
+        await sendCode(true);
+      } else if (manual) {
+        setError('Not linked yet. In Telegram, press Start, then tap Share my number. Then come back and tap this button again.');
+      }
+    } finally {
+      checking.current = false;
+    }
   }
   const checkRef = useRef(checkLinked);
   checkRef.current = checkLinked;
@@ -70,7 +80,7 @@ export function SignInFlow({ next }: { next: string | null }) {
     };
   }, [step, link]);
 
-  async function sendCode() {
+  async function sendCode(fromLink = false) {
     setBusy(true);
     setError(null);
     const r = await postJson<SendOk | NeedsLink>('/api/auth/otp/send', { phone: `+234${digits.replace(/\D/g, '')}` });
@@ -78,6 +88,11 @@ export function SignInFlow({ next }: { next: string | null }) {
     if (!r.ok) {
       const retry = r.error.details?.retry_after_seconds;
       if (typeof retry === 'number') setWait(retry);
+      // Coming back from Telegram: a code was sent a moment ago, so go on to the code step instead of showing an error.
+      if (fromLink && r.error.code === 'rate_limited') {
+        setCode('');
+        return setStep('code');
+      }
       return setError(r.error.message);
     }
     if (!r.data.sent) {
@@ -127,7 +142,7 @@ export function SignInFlow({ next }: { next: string | null }) {
   return (
     <section className="flex flex-col gap-5" aria-live="polite">
       {step === 'phone' && (
-        <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(sendCode)} noValidate>
+        <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(() => void sendCode())} noValidate>
           {eyebrow('Sell on OBN NATION')}
           <h1 className={heading}>Let’s get you in.</h1>
           <p className="-mt-2 text-lg text-[#6B655A]">We send a 6-digit code on {CHANNEL_NAME}. No password to remember.</p>
@@ -193,7 +208,7 @@ export function SignInFlow({ next }: { next: string | null }) {
             />
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <button type="button" className={pillButton} disabled={wait > 0 || busy} onClick={sendCode}>
+            <button type="button" className={pillButton} disabled={wait > 0 || busy} onClick={() => void sendCode()}>
               {wait > 0 ? `Resend in ${clock(wait)}` : 'Resend code'}
             </button>
             <button type="button" className={pillButton} onClick={() => { setStep('phone'); setError(null); }}>
