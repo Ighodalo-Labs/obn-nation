@@ -79,6 +79,10 @@ export function ListingForm({ lockedRegion }: { lockedRegion: string | null }) {
         <StepHeader step={step} title={step === 1 ? 'What are you selling?' : step === 2 ? 'Tell buyers about it' : 'Add photos'} />
       </div>
 
+      {step === 1 && (
+        <p className="-mt-3 text-base text-[#6B655A]">Two quick taps, then the details. Buyers never see your phone number.</p>
+      )}
+
       {step > 1 && (
         <p className="flex w-fit flex-wrap items-center gap-3 rounded-full bg-[#FAF7F2] py-1.5 pl-5 pr-1.5 text-sm">
           <span className="font-bold">{regionOptions.find((r) => r.value === draft.region)?.label}</span>

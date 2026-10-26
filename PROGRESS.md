@@ -3,6 +3,10 @@
 State file for people and AI tools. Update it at the end of every task.
 
 ## Current
+**26 Oct 2026, Telegram real test passed.** On the live site with three real Telegram accounts (Global Admin, Regional Admin, seller): link, code, sign in, list, review, reject, fix link received in Telegram, resubmit, approve. The seller form was restyled (tiles with badges and plain examples). Bot `obnnation_bot` is owned by Desmond's Telegram account for now; hand over to the client later. Test numbers were removed from Supabase "Phone test OTPs".
+
+Left for Milestone 1: (1) recording on a real Android phone with a real MP4, (2) live masking check with a third admin in the same region (optional; database tests cover it), (3) run `supabase/ops/reset_test_data.sql` before the beta, (4) client sign-off, then DNS and Zoho (needs client DNS login).
+
 **CR-01 Telegram channel (26 Oct 2026): built and tested, switched off by default.** Sign-in codes and rejection links can go through a Telegram bot (`NEXT_PUBLIC_MESSAGE_CHANNEL=telegram`). Plan and steps: `docs/phase-1/11_CR01_TELEGRAM_CHANNEL.md`. 309 unit tests and 5 SQL suites pass. Needs the human steps below before it is live.
 
 Human steps to switch it on:
@@ -31,8 +35,8 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 ## Gates still open
 - [x] GitHub repository pushed (Ighodalo-Labs/obn-nation, 2026-10-20)
 - [ ] Supabase, Vercel, Twilio accounts created; keys in `.env.local`
-- [ ] Written yes from the client to start on Telegram (CR-01)
-- [ ] Telegram bot created, token in Vercel, migration 0006 applied, webhook set (Desmond, steps above)
+- [x] Written yes from the client to start on Telegram (CR-01, 26 Oct 2026)
+- [x] Telegram bot created, token in Vercel, migration 0006 applied, webhook set (Desmond, 26 Oct 2026)
 - [ ] Meta business verification started (client, needed only when WhatsApp is switched on later)
 - [ ] WhatsApp templates approved (client)
 - [ ] Domain DNS access (client)
@@ -71,6 +75,7 @@ Diagrams to view: https://claude.ai/artifact/N821x5YLKfqVmEoZQ6dZaM
 - [ ] T21 Closed beta and gate measurement
 
 ## Decisions log
+- 2026-10-26 Lessons from the Telegram go-live: a new Vercel variable needs a redeploy; Supabase API caches the function list (run `select pg_notify('pgrst','reload schema');` in its own query after a migration that adds functions); check the Supabase project id before running SQL. Deploy logs now name bad environment settings and database errors (no values).
 - 2026-10-26 CR-01: client wants Telegram first, WhatsApp later. One switch (`NEXT_PUBLIC_MESSAGE_CHANNEL`, default `whatsapp`). New migration `0006_telegram_link.sql` (two tables, five functions, service role only). A number is linked once: Start link, then Share my number. Linked only if the contact belongs to the sender and equals the typed number. `TELEGRAM_MODE=stub` sends nothing and skips the link step (for test numbers). The bot is owned by Desmond's Telegram account for now; hand over to the client later. Sellers need Telegram (about 27% of Nigerian smartphones against 95% for WhatsApp). The normal bot is free at our volume; Telegram Gateway (paid per code) was not chosen.
 - 2026-10-20 New migration `0003_otp_attempts.sql`: Supabase cannot tell a wrong code from an expired one and does not void a code after 5 wrong tries, so the server counts tries (PRD SI-5). Service role only. Tests in `supabase/tests/otp_attempts_test.sql`.
 - 2026-10-20 `WHATSAPP_MODE=stub` sends nothing and never logs the code. Testers sign in with fixed codes from "Phone test OTPs" in the Supabase dashboard.

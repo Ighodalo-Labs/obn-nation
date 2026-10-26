@@ -64,10 +64,24 @@ export function Field({ id, label, hint, error, children }: { id: string; label:
   );
 }
 
+export type Tone = 'red' | 'blue' | 'green' | 'amber' | 'ink';
+
+/** Soft badge colours. Written out in full so Tailwind keeps them. */
+const BADGE: Record<Tone, string> = {
+  red: 'bg-[#FCE6E4] text-[#B3261E]',
+  blue: 'bg-[#E1EDFB] text-[#0F4F9E]',
+  green: 'bg-[#E1F2E4] text-[#1B6B2A]',
+  amber: 'bg-[#FFF0CF] text-[#8A5A00]',
+  ink: 'bg-[#ECE6DA] text-[#3F3A30]',
+};
+
 interface Option {
   value: string;
   label: string;
-  icon: ReactNode;
+  icon?: ReactNode;
+  /** One short example line under the label. */
+  hint?: string;
+  tone?: Tone;
 }
 
 /** Radio group drawn as large tiles. Real radio inputs underneath, so keyboards and screen readers work. */
@@ -85,11 +99,12 @@ export function CardChoice({
         {options.map((o) => {
           const selected = value === o.value;
           const row = columns === 1;
+          const badge = selected ? 'bg-white/15 text-white' : BADGE[o.tone ?? 'ink'];
           return (
             <label
               key={o.value}
-              className={`relative flex min-h-14 cursor-pointer items-center gap-3 rounded-2xl border-2 p-3.5 text-base transition-all focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#16140F] active:scale-[.98] ${
-                row ? 'flex-row' : 'flex-col justify-center text-center text-sm'
+              className={`relative flex min-h-14 cursor-pointer gap-3 rounded-2xl border-2 p-3.5 text-base transition-all focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#16140F] active:scale-[.98] ${
+                row ? 'flex-row items-center' : 'flex-col items-start justify-start text-left text-sm'
               } ${
                 selected
                   ? 'border-[#16140F] bg-[#16140F] text-white shadow-[0_14px_28px_-16px_rgba(22,20,15,.8)]'
@@ -97,8 +112,13 @@ export function CardChoice({
               } ${disabled && !selected ? 'opacity-40' : ''}`}
             >
               <input type="radio" className="sr-only" name={name} value={o.value} checked={selected} onChange={() => onChange(o.value)} />
-              {o.icon && <span aria-hidden="true" className={selected ? 'text-white' : 'text-[#6B655A]'}>{o.icon}</span>}
-              <span className={row ? 'font-bold' : 'font-bold leading-tight'}>{o.label}</span>
+              {o.icon && (
+                <span aria-hidden="true" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${badge}`}>{o.icon}</span>
+              )}
+              <span className="flex min-w-0 flex-col">
+                <span className="font-bold leading-tight">{o.label}</span>
+                {o.hint && <span className={`mt-0.5 text-xs leading-snug ${selected ? 'text-white/75' : 'text-[#6B655A]'}`}>{o.hint}</span>}
+              </span>
               {selected && (
                 <span aria-hidden="true" className="absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs font-bold text-[#16140F]">✓</span>
               )}
