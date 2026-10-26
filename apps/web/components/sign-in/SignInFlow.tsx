@@ -46,23 +46,28 @@ export function SignInFlow({ next }: { next: string | null }) {
     firstField.current?.focus();
   }, [step]);
 
-  // While the person links Telegram, ask every 2 seconds whether it is done, then send the code.
+  // While the person links Telegram, ask whether it is done: every 2 seconds, and at once when they come back to this page.
+  // Phones pause a page while another app is open, so the "come back" check is the one that matters.
+  async function checkLinked(manual: boolean) {
+    if (!link || busy) return;
+    const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}`);
+    if (r.ok && r.data.linked) return void (await sendCode());
+    if (manual) setError('Not linked yet. In Telegram, press Start, then tap Share my number. Then come back and try again.');
+  }
+  const checkRef = useRef(checkLinked);
+  checkRef.current = checkLinked;
   useEffect(() => {
     if (step !== 'telegram' || !link) return;
-    let stopped = false;
-    const timer = setInterval(async () => {
-      const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}`);
-      if (stopped || !r.ok || !r.data.linked) return;
-      stopped = true;
-      clearInterval(timer);
-      sendCode();
-    }, 2000);
+    const tick = () => void checkRef.current(false);
+    const onVisible = () => { if (document.visibilityState === 'visible') tick(); };
+    const timer = setInterval(tick, 2000);
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', tick);
     return () => {
-      stopped = true;
       clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', tick);
     };
-    // sendCode reads the current number; it is safe to call once when the link finishes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, link]);
 
   async function sendCode() {
@@ -152,7 +157,10 @@ export function SignInFlow({ next }: { next: string | null }) {
             <li className="flex gap-3"><b className="font-display text-xl">3</b><span>Tap <b>Share my number</b>. It must be {formatSentTo(phone)}.</span></li>
           </ol>
           <a className={`${primary} flex items-center justify-center`} href={link.url} target="_blank" rel="noopener noreferrer">Open Telegram</a>
-          <p className="text-sm text-[#6B655A]" role="status">Waiting for you. This page moves on by itself.</p>
+          <button type="button" className={pillButton} disabled={busy} onClick={() => void checkLinked(true)}>
+            {busy ? 'Sending…' : 'I’ve shared my number, send my code'}
+          </button>
+          <p className="text-sm text-[#6B655A]" role="status">This page also checks by itself when you come back from Telegram.</p>
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <button type="button" className={pillButton} onClick={() => { setStep('phone'); setLink(null); setError(null); }}>
               Change number

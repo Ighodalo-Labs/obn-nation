@@ -66,7 +66,7 @@ export function rejectionText(d: { firstName: string; title: string; reason: str
 
 export const botTexts = {
   askContact: 'Almost done. Tap the button below to share your number, so we know this Telegram is yours.',
-  linked: 'Done. This Telegram is now linked to your number. Go back to the OBN NATION page. Your code is on its way.',
+  linked: 'Done. Your number is linked. Go back to the OBN NATION page. Your sign-in code will arrive in this chat within a few seconds. If it does not, tap "I’ve shared my number, send my code" on the page.',
   mismatch: 'That number is not the one you typed on the OBN NATION page. Go back, check the number, and start again.',
   noRequest: 'This link has expired. Go back to the OBN NATION page and ask for a new code.',
   notYours: 'Please share your own number with the button below.',
