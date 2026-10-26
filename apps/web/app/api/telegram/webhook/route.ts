@@ -1,6 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { serverEnv } from '@/lib/env';
+import { EnvError, serverEnv } from '@/lib/env';
 import { buildWebhookDeps } from '@/lib/telegram-deps';
 import { handleUpdate } from '@/lib/telegram-webhook';
 
@@ -13,7 +13,8 @@ export async function POST(req: Request) {
   let env;
   try {
     env = serverEnv();
-  } catch {
+  } catch (e) {
+    if (e instanceof EnvError) console.error(`[telegram] bad environment settings: ${e.problems.join('; ')}`);
     return NextResponse.json({}, { status: 404 });
   }
   if (env.NEXT_PUBLIC_MESSAGE_CHANNEL !== 'telegram' || env.TELEGRAM_MODE !== 'live' || !env.TELEGRAM_WEBHOOK_SECRET) {

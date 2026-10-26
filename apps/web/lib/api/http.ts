@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { ZodTypeAny, z } from 'zod';
+import { EnvError } from '@/lib/env.public';
 import { ApiError, errorBody, newRequestId } from './errors';
 
 export interface Ctx {
@@ -18,7 +19,9 @@ export function handle(handler: Handler) {
       return res;
     } catch (e) {
       const err = e instanceof ApiError ? e : new ApiError('internal_error');
-      if (!(e instanceof ApiError)) console.error(`[${requestId}] unexpected error`, e instanceof Error ? e.name : 'unknown');
+      // A bad setting: log which names are wrong (names and rules only, never values) so the deploy log says what to fix.
+      if (e instanceof EnvError) console.error(`[${requestId}] bad environment settings: ${e.problems.join('; ')}`);
+      else if (!(e instanceof ApiError)) console.error(`[${requestId}] unexpected error`, e instanceof Error ? e.name : 'unknown');
       const res = NextResponse.json(errorBody(err, requestId), { status: err.status });
       res.headers.set('x-request-id', requestId);
       if (err.code === 'rate_limited' && typeof err.details?.retry_after_seconds === 'number') {
