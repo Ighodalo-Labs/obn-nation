@@ -21,7 +21,7 @@ export function handle(handler: Handler) {
       const err = e instanceof ApiError ? e : new ApiError('internal_error');
       // A bad setting: log which names are wrong (names and rules only, never values) so the deploy log says what to fix.
       if (e instanceof EnvError) console.error(`[${requestId}] bad environment settings: ${e.problems.join('; ')}`);
-      else if (!(e instanceof ApiError)) console.error(`[${requestId}] unexpected error`, e instanceof Error ? e.name : 'unknown');
+      else if (!(e instanceof ApiError)) console.error(`[${requestId}] unexpected error`, e instanceof Error ? e.name : 'unknown', e instanceof Error && e.message.startsWith('database call failed') ? e.message : '');
       const res = NextResponse.json(errorBody(err, requestId), { status: err.status });
       res.headers.set('x-request-id', requestId);
       if (err.code === 'rate_limited' && typeof err.details?.retry_after_seconds === 'number') {
