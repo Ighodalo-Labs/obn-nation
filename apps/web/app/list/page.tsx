@@ -1,7 +1,8 @@
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { AppShell } from '@/components/AppShell';
 import { SignInFlow } from '@/components/sign-in/SignInFlow';
-import { safeNext } from '@/lib/middleware/rules';
+import { hasSessionCookie, safeNext } from '@/lib/middleware/rules';
 import { createServerSupabase } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,8 @@ export const metadata = { title: 'Sign in · OBN NATION' };
 
 /** Signed-in admins get a shortcut (PRD SI-8). Any failure here just means "show the plain sign-in". */
 async function isSignedInAdmin(): Promise<boolean> {
+  // No session cookie means signed out: skip the two database calls, so the common visit is fast.
+  if (!hasSessionCookie(cookies().getAll().map((c) => c.name))) return false;
   try {
     const supabase = createServerSupabase();
     const { data } = await supabase.auth.getUser();

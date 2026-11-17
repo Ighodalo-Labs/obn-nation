@@ -80,3 +80,15 @@ describe('environment checks', () => {
     });
   });
 });
+
+describe('DEMO_PHONES', () => {
+  it('accepts a list of Nigerian numbers, or nothing', () => {
+    expect(parseServerEnv({ ...good, DEMO_PHONES: '+2348000000001,+2348000000002' }).DEMO_PHONES).toBe('+2348000000001,+2348000000002');
+    expect(parseServerEnv({ ...good, DEMO_PHONES: '' }).DEMO_PHONES).toBe('');
+    expect(parseServerEnv(good).DEMO_PHONES).toBeUndefined();
+  });
+  it('refuses a bad list', () => {
+    expect(() => parseServerEnv({ ...good, DEMO_PHONES: '08000000001' })).toThrow(/DEMO_PHONES/);
+    expect(() => parseServerEnv({ ...good, DEMO_PHONES: '+2348000000001, +2348000000002' })).toThrow(/DEMO_PHONES/);
+  });
+});

@@ -20,6 +20,17 @@ const eyebrow = (text: string) => (
     {text}
   </p>
 );
+const STEP_LABELS: [Step[], string][] = [[['phone'], '1 Phone'], [['telegram'], '2 Telegram (first time only)'], [['code', 'name'], '3 Code']];
+function Steps({ step, show }: { step: Step; show: boolean }) {
+  if (!show) return null;
+  return (
+    <ol className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-[#8E8778]" aria-label="Sign-in steps">
+      {STEP_LABELS.map(([on, label]) => (
+        <li key={label} aria-current={on.includes(step) ? 'step' : undefined} className={on.includes(step) ? 'text-[#16140F] underline decoration-2 underline-offset-4' : ''}>{label}</li>
+      ))}
+    </ol>
+  );
+}
 const heading = 'font-display text-[clamp(2rem,6vw,2.9rem)] font-bold leading-[1.03] tracking-[-0.01em]';
 
 export function SignInFlow({ next }: { next: string | null }) {
@@ -49,11 +60,15 @@ export function SignInFlow({ next }: { next: string | null }) {
   // While the person links Telegram, ask whether it is done: every 2 seconds, and at once when they come back to this page.
   // Phones pause a page while another app is open, so the "come back" check is the one that matters.
   const checking = useRef(false);
+  const [offline, setOffline] = useState(false);
+  const failures = useRef(0);
   async function checkLinked(manual: boolean) {
     if (!link || checking.current) return; // one check at a time, so the code is asked for once
     checking.current = true;
     try {
       const r = await getJson<{ linked: boolean }>(`/api/auth/telegram/status?nonce=${link.nonce}&phone=${encodeURIComponent(phone)}`);
+      failures.current = r.ok ? 0 : failures.current + 1;
+      setOffline(failures.current >= 3);
       if (r.ok && r.data.linked) {
         setError(null);
         await sendCode(true);
@@ -83,8 +98,7 @@ export function SignInFlow({ next }: { next: string | null }) {
   async function sendCode(fromLink = false) {
     setBusy(true);
     setError(null);
-    const r = await postJson<SendOk | NeedsLink>('/api/auth/otp/send', { phone: `+234${digits.replace(/\D/g, '')}` });
-    setBusy(false);
+    const r = await postJson<SendOk | NeedsLink>('/api/auth/otp/send', { phone: `+234${digits.replace(/\D/g, '')}` }).finally(() => setBusy(false));
     if (!r.ok) {
       const retry = r.error.details?.retry_after_seconds;
       if (typeof retry === 'number') setWait(retry);
@@ -141,6 +155,7 @@ export function SignInFlow({ next }: { next: string | null }) {
 
   return (
     <section className="flex flex-col gap-5" aria-live="polite">
+      <Steps step={step} show={CHANNEL === 'telegram' && step !== 'name'} />
       {step === 'phone' && (
         <form className="sell-stagger flex flex-col gap-4" onSubmit={onSubmit(() => void sendCode())} noValidate>
           {eyebrow('Sell on OBN NATION')}
@@ -165,7 +180,7 @@ export function SignInFlow({ next }: { next: string | null }) {
         <div className="sell-stagger flex flex-col gap-4">
           {eyebrow('Link Telegram')}
           <h1 className={heading}>Open Telegram once.</h1>
-          <p className="text-lg text-[#6B655A]">We send your code there. You only do this the first time.</p>
+          <p className="text-lg text-[#6B655A]">Open Telegram on the phone that has this number. We send your code there. You only do this the first time.</p>
           <ol className="flex flex-col gap-3 text-base text-[#16140F]">
             <li className="flex gap-3"><b className="font-display text-xl">1</b><span>Tap <b>Open Telegram</b> below.</span></li>
             <li className="flex gap-3"><b className="font-display text-xl">2</b><span>Press <b>Start</b> in the chat.</span></li>
@@ -175,7 +190,11 @@ export function SignInFlow({ next }: { next: string | null }) {
           <button type="button" className={pillButton} disabled={busy} onClick={() => void checkLinked(true)}>
             {busy ? 'Sending…' : 'I’ve shared my number, send my code'}
           </button>
-          <p className="text-sm text-[#6B655A]" role="status">This page also checks by itself when you come back from Telegram.</p>
+          <p className="flex items-center gap-2 text-sm text-[#6B655A]" role="status">
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-blue motion-reduce:animate-none" aria-hidden="true" />
+            Waiting for you in Telegram… This page moves on by itself.
+          </p>
+          {offline && <p role="alert" className="text-sm font-semibold text-[#B3261E]">We cannot reach the server. Check your network.</p>}
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
             <button type="button" className={pillButton} onClick={() => { setStep('phone'); setLink(null); setError(null); }}>
               Change number

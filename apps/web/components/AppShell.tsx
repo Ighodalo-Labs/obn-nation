@@ -2,6 +2,7 @@ import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { Footer } from './Footer';
 import { Header } from './Header';
+import { NewsletterBar } from './NewsletterBar';
 
 const STEPS = [
   ['bg-brand-red', 'Add your item', 'Photos, a short video and your price.'],
@@ -50,6 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="rounded-[2rem] border border-[#EDE6D9] bg-white p-5 shadow-[0_30px_70px_-45px_rgba(22,20,15,.45)] sm:p-9">{children}</div>
         </main>
       </div>
+      <NewsletterBar />
       <Footer />
     </div>
   );

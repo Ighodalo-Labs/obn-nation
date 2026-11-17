@@ -1,5 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { LegalHost } from '@/components/legal/LegalHost';
+import { LegalLinks } from '@/components/legal/LegalLinks';
+import { BRAND_HEARTS, BRAND_TAGLINE } from '@/lib/brand';
 import { BLEED } from './Header';
 
 export function Footer() {
@@ -9,7 +12,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-4 py-8 text-center text-sm sm:flex-row sm:justify-between sm:text-left">
         <div className="flex items-center gap-3">
           <Image src="/brand/obn-logo-clear.webp" alt="" width={40} height={40} className="h-10 w-10" />
-          <p>OBN NATION Online. Connecting People.</p>
+          <p>{BRAND_TAGLINE} <span aria-hidden="true">{BRAND_HEARTS}</span></p>
         </div>
         <nav aria-label="Footer" className="flex gap-1">
           <Link href="/" className="flex min-h-12 items-center rounded-full px-4 transition-colors hover:bg-white/10 hover:text-white">Home</Link>
@@ -17,6 +20,8 @@ export function Footer() {
           <Link href="/#about" className="flex min-h-12 items-center rounded-full px-4 transition-colors hover:bg-white/10 hover:text-white">About</Link>
         </nav>
       </div>
+      <div className="mx-auto flex max-w-6xl justify-center border-t border-white/10 px-4 py-2 sm:justify-end"><LegalLinks /></div>
+      <LegalHost />
     </footer>
   );
 }

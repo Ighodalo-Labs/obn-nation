@@ -22,6 +22,8 @@ const serverSchema = publicSchema
     NEXT_PUBLIC_MESSAGE_CHANNEL: z.enum(['whatsapp', 'telegram']).default('whatsapp'),
     WHATSAPP_MODE: z.enum(['live', 'stub']).default('live'),
     TELEGRAM_MODE: z.enum(['live', 'stub']).default('live'),
+    // Demo numbers for testing sign-in without Telegram. Also add them as "Test Phone Numbers" in Supabase Auth. Leave empty in real use.
+    DEMO_PHONES: z.string().regex(/^(\+234[789][0-9]{9})(,\+234[789][0-9]{9})*$/, 'comma-separated Nigerian numbers like +2348000000001,+2348000000002').optional().or(z.literal('')),
     TELEGRAM_BOT_TOKEN: z.string().regex(/^\d{5,}:[A-Za-z0-9_-]{20,}$/, 'must look like 123456:ABC-def… (from @BotFather)').optional(),
     TELEGRAM_WEBHOOK_SECRET: z.string().regex(/^[A-Za-z0-9_-]{16,256}$/, 'must be 16 to 256 letters, digits, _ or -').optional(),
     TELEGRAM_BOT_USERNAME: z.string().regex(/^[A-Za-z][A-Za-z0-9_]{4,31}$/, 'bot username without @, for example obnnation_bot').optional(),

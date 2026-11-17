@@ -22,11 +22,12 @@ export function buildOtpDeps(): OtpDeps {
   const session = createServerSupabase();
   const env = serverEnv();
   const telegramGate = env.NEXT_PUBLIC_MESSAGE_CHANNEL === 'telegram' && env.TELEGRAM_MODE === 'live';
+  const demo = new Set((env.DEMO_PHONES ?? '').split(',').filter(Boolean)); // test numbers: Supabase accepts their fixed code, so no Telegram link is needed
   return {
     isBlacklisted: phoneIsBlacklisted,
     needsTelegramLink: telegramGate
       ? async (phone) => {
-          if ((await chatIdForPhone(phone)) !== null) return null;
+          if (demo.has(phone) || (await chatIdForPhone(phone)) !== null) return null;
           const nonce = await requestLink(phone);
           return { nonce, deepLink: `https://t.me/${env.TELEGRAM_BOT_USERNAME}?start=${nonce}` };
         }

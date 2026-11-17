@@ -8,6 +8,12 @@ export interface ApiFailure {
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiFailure };
 
+/** A slow network must never leave a screen stuck, so every call gives up after 15 seconds. */
+const TIMEOUT_MS = 15_000;
+const SLOW: ApiFailure = { code: 'network', message: 'This is taking too long. Check your network and try again.' };
+const OFFLINE: ApiFailure = { code: 'network', message: 'No connection. Check your network and try again.' };
+const fail = (e: unknown): { ok: false; error: ApiFailure } => ({ ok: false, error: e instanceof DOMException && (e.name === 'TimeoutError' || e.name === 'AbortError') ? SLOW : OFFLINE });
+
 export async function postJson<T>(url: string, body: unknown, method: 'POST' | 'PATCH' = 'POST'): Promise<ApiResult<T>> {
   try {
     const res = await fetch(url, {
@@ -15,6 +21,7 @@ export async function postJson<T>(url: string, body: unknown, method: 'POST' | '
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
       credentials: 'same-origin',
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     const json = await res.json().catch(() => null);
     if (res.ok) return { ok: true, data: json as T };
@@ -27,20 +34,20 @@ export async function postJson<T>(url: string, body: unknown, method: 'POST' | '
         details: e?.details,
       },
     };
-  } catch {
-    return { ok: false, error: { code: 'network', message: 'No connection. Check your network and try again.' } };
+  } catch (e) {
+    return fail(e);
   }
 }
 
 /** Reads one JSON answer with GET. Same result shape as postJson. */
 export async function getJson<T>(url: string): Promise<ApiResult<T>> {
   try {
-    const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
+    const res = await fetch(url, { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT_MS) });
     const json = await res.json().catch(() => null);
     if (res.ok) return { ok: true, data: json as T };
     return { ok: false, error: { code: 'internal_error', message: 'Something went wrong. Please try again.' } };
-  } catch {
-    return { ok: false, error: { code: 'network', message: 'No connection. Check your network and try again.' } };
+  } catch (e) {
+    return fail(e);
   }
 }
 

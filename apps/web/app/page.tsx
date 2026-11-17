@@ -1,6 +1,10 @@
 import Image from 'next/image';
 import { CHANNEL_NAME } from '@/lib/channel';
 import { MobileMenu } from '@/components/MobileMenu';
+import { NewsletterBar } from '@/components/NewsletterBar';
+import { LegalHost } from '@/components/legal/LegalHost';
+import { LegalLinks } from '@/components/legal/LegalLinks';
+import { BRAND_HEARTS, BRAND_TAGLINE } from '@/lib/brand';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { LandingMotion } from '@/components/landing/LandingMotion';
@@ -51,9 +55,9 @@ const FAQ = [
 
 // LP-4: title, description from the first sentence of the About copy, and Open Graph.
 export const metadata: Metadata = {
-  title: 'OBN NATION | Connecting People',
+  title: 'OBN NATION — Connecting People',
   description: ABOUT[0].split('. ')[0] + '.',
-  openGraph: { title: 'OBN NATION | Connecting People', description: ABOUT[0].split('. ')[0] + '.', type: 'website' },
+  openGraph: { title: 'OBN NATION — Connecting People', description: ABOUT[0].split('. ')[0] + '.', type: 'website' },
 };
 
 const FULL = 'ml-[calc(50%-50vw)] w-screen';
@@ -296,7 +300,9 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className={`${BLEED} bg-[#0A0A0A] text-white/70`}>
+      <NewsletterBar />
+
+      <footer className={`${BLEED} mt-14 bg-[#0A0A0A] text-white/70`}>
         <div className="flex h-1" aria-hidden="true"><span className="flex-1 bg-brand-red" /><span className="flex-1 bg-brand-green" /><span className="flex-1 bg-brand-blue" /></div>
         <div className={`${INNER} grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr]`}>
           <div className="flex flex-col items-start gap-4">
@@ -322,7 +328,11 @@ export default function Home() {
           </div>
         </div>
         <div className="border-t border-white/10">
-          <p className={`${INNER} py-5 text-sm text-white/50`}>OBN NATION Online. Connecting People.</p>
+          <div className={`${INNER} flex flex-col items-center justify-between gap-1 py-3 text-sm text-white/60 sm:flex-row`}>
+            <p>{BRAND_TAGLINE} <span aria-hidden="true">{BRAND_HEARTS}</span></p>
+            <LegalLinks />
+          </div>
+          <LegalHost />
         </div>
       </footer>
 
